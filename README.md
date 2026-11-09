@@ -53,6 +53,5 @@ The live app is published from the root of the `gh-pages` branch, generated from
 After committing an app update on `main`, publish the static directory with:
 
 ```sh
-pages_commit=$(git subtree split --prefix=dist main)
-git push origin "$pages_commit":refs/heads/gh-pages
+python3 scripts/deploy_pages.py
 ```

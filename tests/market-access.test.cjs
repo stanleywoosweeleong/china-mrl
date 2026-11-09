@@ -11,10 +11,13 @@ test('every documented record has a valid crop, source, dates and conditions',()
 });
 test('checker renders documented, unknown, changed-form and load-failure results',async()=>{
  const nodes={};global.document={getElementById(id){return nodes[id]??={value:id==='accessForm'?'fresh':'',append(){},addEventListener(k,f){this[k]=f}}},createElement(){return {}}};
- global.fetch=async()=>({ok:true,json:async()=>data});await access.init(db.crops);
+ global.fetch=async()=>({ok:true,json:async()=>data});let opened=0;await access.init(db.crops,()=>{opened++;return '榴莲'});
+ assert.match(nodes.accessResult.innerHTML,/Select an origin/);
+ nodes.originSelector.value='MY';nodes.originSelector.change();assert.equal(opened,1);assert.equal(nodes.accessOrigin.value,'MY');
  assert.match(nodes.accessResult.innerHTML,/Protocol documented/);assert.match(nodes.accessResult.innerHTML,/Current operational clearance: not verified/);
  nodes.accessForm.value='frozen';nodes.accessForm.change();assert.match(nodes.accessResult.innerHTML,/Not verified/);assert(!nodes.accessResult.innerHTML.includes('data-crop='));
- nodes.accessForm.value='fresh';nodes.accessOrigin.value='LA';nodes.accessCrop.value='辣椒';nodes.accessCrop.change();assert.match(nodes.accessResult.innerHTML,/fumigation followed by cold treatment/);
+ nodes.accessForm.value='fresh';nodes.accessOrigin.value='LA';nodes.accessCrop.value='辣椒';nodes.accessCrop.change();assert.equal(nodes.originSelector.value,'LA');assert.match(nodes.accessResult.innerHTML,/fumigation followed by cold treatment/);
+ nodes.originSelector.value='';nodes.originSelector.change();assert.equal(nodes.accessOrigin.value,'');assert.match(nodes.accessResult.innerHTML,/Select an origin/);
  global.fetch=async()=>({ok:false});await access.init(db.crops);assert.match(nodes.accessResult.textContent,/could not load/);
  delete global.document;delete global.fetch;
 });

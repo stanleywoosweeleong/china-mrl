@@ -45,3 +45,14 @@ Browser QA was attempted through the managed preview and CUA services. The previ
 ## Maintenance
 
 New standard revisions must be reviewed and loaded explicitly; this app is a dated reference. Refer to the relevant origin-country authority and GACC for current country–commodity access protocols and establishment requirements. Keep source dates and limitations visible in the app.
+
+## GitHub Pages
+
+The live app is published from the root of the `gh-pages` branch, generated from `dist/`. Do not select the `main` branch root as the Pages source: that renders this README instead of the app.
+
+After committing an app update on `main`, publish the static directory with:
+
+```sh
+pages_commit=$(git subtree split --prefix=dist main)
+git push origin "$pages_commit":refs/heads/gh-pages
+```

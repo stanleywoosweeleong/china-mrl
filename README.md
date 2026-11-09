@@ -67,3 +67,11 @@ The **Market access** tab checks exact origin, commodity and product form combin
 `dist/market-access.json` contains official announcement links, scope, announcement dates, document-review dates and brief conditions. “Protocol documented” means an opening protocol was reviewed, **not** that current operational clearance, registrations or absence of suspensions were verified. Records older than 90 days show a review-due label. There is no automatic regulatory feed. Frozen, dried and processed forms never inherit fresh permissions.
 
 To maintain coverage, review official GACC notices and the origin authority, preserve geographic/species/form restrictions and treatment conditions, and add exact records with source and review date. Review current suspensions and establishment registers before shipment. Duplicate matches fail closed to Not verified. Run `node --test tests/*.test.cjs`, then `python scripts/prepare_pages.py` before publishing.
+
+## Installable PWA and offline use
+
+The app includes a web manifest, 192/512px icons, a separate maskable icon, Apple touch icon, favicon and scoped service workers. Use the in-app Install button where supported, or Safari → Share → Add to Home Screen on iOS. Installation controls depend on the browser.
+
+After **Offline reference ready** appears, the app, both reference datasets and the source PDF are cached (approximately 7 MB). Offline mode displays a notice; regulatory snapshots do not become current by being cached. First use requires connectivity, and device/browser storage eviction can remove offline data. A new deployment installs a versioned cache atomically and offers **Update available · reload** when ready. Saved references remain in browser local storage.
+
+Run `python scripts/prepare_pages.py` after changes: it also generates manifests and content-versioned service workers for both `/china-mrl/` and standalone `dist/` hosting. Commit the generated files together. HTTPS is required for installation/service workers in production; localhost works for development.

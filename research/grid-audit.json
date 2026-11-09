@@ -1,0 +1,17 @@
+{
+  "matched": 10749,
+  "expected": 10749,
+  "grid_rows": 10749,
+  "unmatched_expected": [],
+  "unmatched_grid": [],
+  "raw_matched": 10719,
+  "source_numbering_corrections": [
+    {
+      "page": 185,
+      "printed_continuation_table": 227,
+      "section": 226,
+      "numeric_rows": 30,
+      "basis": "Section 4.226 continues until its testing-method paragraph; section 4.227 starts later on page 185. Numeric values independently matched without alteration."
+    }
+  ]
+}

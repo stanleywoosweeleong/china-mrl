@@ -1,0 +1,7 @@
+research/*.pdf
+research/*.txt
+research/*.html
+research/__pycache__/
+.openai/
+.env
+.env.*

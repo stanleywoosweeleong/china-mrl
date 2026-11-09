@@ -48,10 +48,14 @@ New standard revisions must be reviewed and loaded explicitly; this app is a dat
 
 ## GitHub Pages
 
-The live app is published from the root of the `gh-pages` branch, generated from `dist/`. Do not select the `main` branch root as the Pages source: that renders this README instead of the app.
+Live app: https://stanleywoosweeleong.github.io/china-mrl/
 
-After committing an app update on `main`, publish the static directory with:
+Pages publishes `main` / (root). The root `index.html` is generated from `dist/index.html` with a base URL pointing at `dist/`, so all styling, scripts, data and PDF links load from the application directory. `.nojekyll` prevents README/theme processing from taking over the app entry page.
+
+After changing `dist/index.html`, regenerate the root entry before committing:
 
 ```sh
-python3 scripts/deploy_pages.py
+python3 scripts/prepare_pages.py
 ```
+
+Push the updated `main` branch to deploy. The optional `scripts/deploy_pages.py` publishes a standalone `gh-pages` branch, but that branch is not the active Pages source.

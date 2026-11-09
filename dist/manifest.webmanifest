@@ -1,5 +1,5 @@
 {
-  "id": "./",
+  "id": "/china-mrl/dist/",
   "name": "China MRL \u2014 Export Reference",
   "short_name": "China MRL",
   "description": "China residue limits and source-linked market-access references for produce exporters.",
@@ -27,6 +27,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/desktop.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Fresh produce residue reference"
+    },
+    {
+      "src": "screenshots/mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "China MRL on mobile"
     }
   ]
 }

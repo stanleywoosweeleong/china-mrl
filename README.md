@@ -75,3 +75,9 @@ The app includes a web manifest, 192/512px icons, a separate maskable icon, Appl
 After **Offline reference ready** appears, the app, both reference datasets and the source PDF are cached (approximately 7 MB). Offline mode displays a notice; regulatory snapshots do not become current by being cached. First use requires connectivity, and device/browser storage eviction can remove offline data. A new deployment installs a versioned cache atomically and offers **Update available · reload** when ready. Saved references remain in browser local storage.
 
 Run `python scripts/prepare_pages.py` after changes: it also generates manifests and content-versioned service workers for both `/china-mrl/` and standalone `dist/` hosting. Commit the generated files together. HTTPS is required for installation/service workers in production; localhost works for development.
+
+## Chrome DevTools audit
+
+Run `node scripts/audit_chrome.cjs` with Playwright installed and Chromium available (`CHROMIUM_PATH` can override the executable). `AUDIT_URL` selects a local or deployed URL. The audit uses a regular temporary profile, collects Console/Log warnings and errors, DevTools Issues, failed/HTTP-error requests, manifest errors and Chrome installability errors, exercises navigation/details and checks mobile and offline reloads. It exits unsuccessfully on findings. Browser extensions, user profiles and future browser versions can produce additional diagnostics outside this reproducible check.
+
+The manifest includes wide and narrow screenshots for richer installation, an explicit project-specific app ID, and separate regular/maskable icons. Fonts are bundled locally with their SIL Open Font License files for offline use.

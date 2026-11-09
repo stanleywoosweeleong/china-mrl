@@ -59,3 +59,11 @@ python3 scripts/prepare_pages.py
 ```
 
 Push the updated `main` branch to deploy. The optional `scripts/deploy_pages.py` publishes a standalone `gh-pages` branch, but that branch is not the active Pages source.
+
+## Country-of-origin market access
+
+The **Market access** tab checks exact origin, commodity and product form combinations independently of MRLs. All 184 mapped crops and ISO 3166-1 countries/territories are selectable. Initial evidence coverage is deliberately limited to four fresh-product protocol records: Malaysia durian and coconut, South Africa avocado, and Laos chilli. Other combinations are **Not verified**, never inferred to be prohibited or permitted. Country names/codes are sourced from the system ISO codes dataset.
+
+`dist/market-access.json` contains official announcement links, scope, announcement dates, document-review dates and brief conditions. “Protocol documented” means an opening protocol was reviewed, **not** that current operational clearance, registrations or absence of suspensions were verified. Records older than 90 days show a review-due label. There is no automatic regulatory feed. Frozen, dried and processed forms never inherit fresh permissions.
+
+To maintain coverage, review official GACC notices and the origin authority, preserve geographic/species/form restrictions and treatment conditions, and add exact records with source and review date. Review current suspensions and establishment registers before shipment. Duplicate matches fail closed to Not verified. Run `node --test tests/*.test.cjs`, then `python scripts/prepare_pages.py` before publishing.

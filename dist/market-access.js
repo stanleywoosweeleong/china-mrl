@@ -31,8 +31,8 @@ async function init(crops,onHeaderChange=()=>{},onOriginChange=()=>{}){
   const entries=catalogue(data.records,crops,origin,form),counts={conditional:0,restricted:0,unverified:0};entries.forEach(c=>counts[c.access.status]++);
   el('accessCatalogueTitle').textContent=country+' → China · '+form+' produce';
   el('accessCatalogueSummary').textContent=`${counts.conditional} documented · ${counts.restricted} restrictions documented · ${counts.unverified} not verified. Partial evidence coverage; zero recorded restrictions does not establish their absence.`;
-  const q=el('accessCropSearch').value.trim().toLowerCase(),status=el('accessStatus').value||'conditional',category=el('accessCategory').value;
-  const rows=entries.filter(c=>(status==='all'||c.access.status===status)&&(!category||category===c.category)&&(!q||[c.en,c.zh,...c.aliases||[]].join(' ').toLowerCase().includes(q))).sort((a,b)=>a.en.localeCompare(b.en));
+  const q=el('accessCropSearch').value.trim().toLowerCase(),status=el('accessStatus').value||'all',category=el('accessCategory').value;
+  const rows=entries.filter(c=>(status==='all'||c.access.status===status)&&(!category||category===c.category)&&(!q||[c.en,c.zh,...c.aliases||[]].join(' ').toLowerCase().includes(q))).sort((a,b)=>({conditional:0,restricted:1,unverified:2}[a.access.status]-{conditional:0,restricted:1,unverified:2}[b.access.status])||a.en.localeCompare(b.en));
   el('accessListCount').textContent=`${rows.length} crops shown`;
   el('accessCropList').innerHTML=rows.length?rows.map(c=>`<article><div><strong>${escape(c.en)} · ${escape(c.zh)}</strong><small>${escape(labels[c.access.status])}</small>${c.access.reviewed?`<small>${c.access.evidenceType==='official-guide'?'Official guide':'Protocol'} · reviewed ${escape(c.access.reviewed)}</small>`:''}</div><div><button data-access-crop="${escape(c.id)}">${c.access.status==='unverified'?'Review status':'Conditions & sources'}</button>${form==='fresh'?`<button data-crop="${escape(c.id)}">MRL limits</button>`:''}</div></article>`).join(''):'<p>No crops match this view. Try “All crops” or another produce type. An empty list is not a prohibition or permission.</p>';
  }

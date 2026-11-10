@@ -78,7 +78,7 @@ To maintain coverage, review official GACC notices and the origin authority, pre
 
 ## Languages
 
-The interface is available in English and Simplified Chinese. The header switch (中文 / English) remembers the choice; Chinese-language browsers start in Chinese; `?lang=zh` or `?lang=en` in a link forces a language. In Chinese mode crop, pesticide, food and category names show Chinese first, lists sort by pinyin, and market-access records use their Chinese text (`scopeZh`, `conditionsZh`, `titleZh`). Taiwan is shown as 中国台湾 in Chinese mode, following the GACC list's wording.
+The interface is available in English and Simplified Chinese. The header switch (中文 / English) remembers the choice; Chinese-language browsers start in Chinese; `?lang=zh` or `?lang=en` in a link forces a language. In Chinese mode crop, pesticide, food and category names show Chinese first, lists sort by pinyin, and market-access records use their Chinese text (`scopeZh`, `conditionsZh`, `titleZh`). Taiwan is shown as 台湾 in Chinese mode.
 
 `dist/zh.js` holds the translations keyed by the English text; `dist/i18n.js` applies them. To add or change interface text, write the English in the page or wrap it in `t('…')` in a script, then add the Chinese to `dist/zh.js` — `npm test` fails if any string lacks a translation or drops a placeholder, and the browser layout check flags untranslated visible text. The translations were written without review by a native-speaking regulatory specialist.
 

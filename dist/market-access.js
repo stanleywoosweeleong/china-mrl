@@ -42,8 +42,7 @@
     const countryName = (c) => {
         try {
           const n = regionNames && regionNames.of(c.code);
-          // The GACC list this data comes from names the territory 中国台湾.
-          if (c.code === 'TW' && isZh) return '中国台湾';
+          if (c.code === 'TW' && isZh) return '台湾';
           if (n && n !== c.code) return n;
         } catch {}
         return c.name;

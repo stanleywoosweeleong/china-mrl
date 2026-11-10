@@ -69,7 +69,7 @@
 .pwa-panel{border-top:1px solid var(--line);padding:16px 0;margin-top:24px;font-size:13px}.pwa-panel p{font-size:13px}.pwa-panel button{margin:8px 0;background:var(--green);color:#fff;border:0;border-radius:5px;padding:9px 12px}.pwa-panel details{margin:8px 0;max-width:640px}.pwa-panel summary{cursor:pointer}
 
 @media(max-width:760px){.breadcrumb-trail{display:none}header{min-height:0;padding:10px 18px;flex-wrap:nowrap}.edition{width:100%;margin-left:0;justify-content:space-between}}
-#accessCatalogue{margin-top:20px}#accessCatalogueSummary,#accessListCount{margin-top:12px}.access-crop-list article{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0}.access-crop-list small{display:block;color:var(--muted);margin-top:5px}.access-crop-list button{padding:8px 10px;background:#f1f5ef;border:1px solid var(--line);border-radius:5px;color:var(--green);margin:3px}#accessCropSearch{display:block;width:100%;padding:11px;margin-top:8px;border:1px solid var(--line);border-radius:5px}#accessCatalogue>p{font-size:13px}.crop-access-status{font-size:13px!important}@media(max-width:760px){.access-crop-list article{align-items:flex-start;flex-direction:column;gap:8px}.access-crop-list article>div:last-child{display:flex;flex-wrap:wrap}}
+#accessCatalogue{margin-top:20px}#accessCatalogueSummary,#accessListCount{margin-top:12px}.access-crop-list article{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0}.access-crop-list small{display:block;color:var(--muted);margin-top:5px}.access-crop-list button{padding:8px 10px;background:#f1f5ef;border:1px solid var(--line);border-radius:5px;color:var(--green);margin:3px}#accessCropSearch{display:block;width:100%;padding:11px;margin-top:8px;border:1px solid var(--line);border-radius:5px}#accessCatalogue>p{font-size:13px}.crop-access-status,.unmapped-note{font-size:13px!important}@media(max-width:760px){.access-crop-list article{align-items:flex-start;flex-direction:column;gap:8px}.access-crop-list article>div:last-child{display:flex;flex-wrap:wrap}}
 
 header{justify-content:flex-end}
 
@@ -89,7 +89,7 @@ header{justify-content:flex-end}
  .quick button{padding:8px 12px}.searchbox{height:52px}.searchbox:focus-within{outline:2px solid #17543d;outline-offset:2px}
  td{font-size:16px}td strong{font-weight:600}td small,.access-crop-list small{font-size:14px;font-weight:500}th{font-size:13px;font-weight:700;letter-spacing:.5px}
  td .unit,.badge,.tag,.pagination,footer{font-size:13px;font-weight:500}.row-actions button{font-size:22px;min-width:44px;min-height:44px}.row-actions .view{font-size:14px}
- .crop-card h2 span{font-weight:500}.crop-access-status{font-size:14px!important}dialog dl,dialog label,details,details pre,#comparison{font-size:15px}
+ .crop-card h2 span{font-weight:500}.crop-access-status,.unmapped-note{font-size:14px!important}dialog dl,dialog label,details,details pre,#comparison{font-size:15px}
  .exempt-row strong{font-size:16px;font-weight:600}.exempt-row small,.exempt-row a{font-size:14px}
  .edition{font-size:14px}.edition label{font-size:14px}.edition select{width:210px;max-width:30vw}
  .pagination button:disabled{opacity:1;color:#475569;background:#e8ece8;border-style:dashed}

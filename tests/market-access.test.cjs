@@ -38,3 +38,11 @@ test('country catalogue distinguishes missing evidence, categories and product f
  assert.equal(access.catalogue([restriction],db.crops,'ZZ','fresh').find(c=>c.id===restriction.crop).access.status,'restricted');
 });
 test('every additional source link is https',()=>{for(const r of data.records)for(const s of r.additionalSources||[])assert.match(s.url,/^https:\/\//)});
+test('unreadable review dates show as review due; non-https extra sources are dropped',async()=>{
+ const storage={'china-mrl-origin':'MY'};global.localStorage={getItem:k=>storage[k],setItem:(k,v)=>storage[k]=v};
+ const nodes={};global.document={getElementById(id){return nodes[id]??={value:id==='accessForm'?'fresh':'',append(){},addEventListener(k,f){this[k]=f}}},createElement(){return {}}};
+ const r={...data.records[0],reviewed:'not-a-date',additionalSources:[{title:'bad',url:'javascript:alert(1)',note:'x'},{title:'good',url:'https://example.org/',note:'y'}]};
+ global.fetch=async()=>({ok:true,json:async()=>({...data,records:[r]})});await access.init(db.crops);
+ assert.match(nodes.accessResult.innerHTML,/Review due \(review date unreadable\)/);assert(!nodes.accessResult.innerHTML.includes('javascript:'));assert(nodes.accessResult.innerHTML.includes('https://example.org/'));
+ delete global.localStorage;delete global.document;delete global.fetch;
+});

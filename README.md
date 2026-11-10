@@ -18,7 +18,7 @@ Open http://localhost:8080. Run checks with `node --test tests/*.test.cjs`. This
 - Residue definitions, available testing-method paragraphs, provisional flags, EMRL distinctions, food qualifiers, and source location preserved.
 - Full-standard food categories, search, CSV export, saved references with crop context, and quantified/non-detect arithmetic comparison.
 
-Snapshot researched 2026-11-09. No automated regulatory monitoring, worldwide market-access matrix, official certification or shipment-clearance determination. English labels aid navigation; source Chinese wording controls. Some food labels and technical definitions remain Chinese. A missing match is never treated as zero or assigned a default MRL. Fresh limits are not automatically applied to processed or frozen products.
+Snapshot researched 2026-11-09. No automated regulatory monitoring, worldwide market-access matrix, official certification or shipment-clearance determination. English labels aid navigation; source Chinese wording controls. Some food labels and technical definitions remain Chinese. A missing match is never treated as zero or assigned a default MRL. Two fresh-vegetable rows name foods that Annex A does not define (`甘蓝`, section 4.219, and `白菜`, section 4.360); they are not applied to any crop but are listed for review on the crops whose names contain them (the head cabbages, and the Chinese cabbages and 普通白菜 group), and a test fails if another such row appears. Fresh limits are not automatically applied to processed or frozen products.
 
 ## Source provenance
 
@@ -34,13 +34,13 @@ All 442 pages of extracted text match the original third-party copy. Full-table 
 
 Place the source PDF at `research/usda-standard.pdf`. Run `python research/build_database.py`, then `python research/package_data.py`; copy the verified PDF to `dist/standard.pdf`. PyMuPDF is required for extraction. `research/catalog.py` contains the Annex A crop mappings. Review source changes, classification mappings, qualifiers, residue definitions and exceptions before publication. Preserve source numbering anomalies (sections 173 and 223) in the document while parsing their content correctly.
 
-`research/verify_tables.py` independently checks numerical values by table using pdfplumber's ruled table geometry. Category/commodity interpretation is separately checked through regression cases. Do not represent automated matching as an official legal interpretation.
+`research/verify_tables.py` keeps the reviewed notes already in `research/grid-audit.json` (raw count, source numbering corrections) and independently checks numerical values by table using pdfplumber's ruled table geometry. Category/commodity interpretation is separately checked through regression cases. Do not represent automated matching as an official legal interpretation.
 
 ## Checks
 
 Run `node --test tests/*.test.cjs` and `node --check dist/app.js`. Tests exercise data totals, direct and group application, explicit exclusions, nested qualifiers, alias specificity, missing limits, conflicts, EMRL/provisional distinctions, non-detect handling, application navigation, source links, saves, and CSV exports.
 
-Browser QA was attempted through the managed preview and CUA services. The preview relay and browser runtime could not start; visual/live-browser verification remains uncompleted.
+Browser checks run in headless Chromium with Playwright (set `CHROMIUM_PATH` if Chromium is not at `/usr/bin/chromium`): `node scripts/test_pwa.cjs` serves the repository itself and covers both `/china-mrl/` and `/dist/` scopes, offline reload, market access, the PDF and recovery after the offline cache is cleared; `node scripts/test_standard_search.cjs` expects the repository served at `http://localhost:8089/china-mrl/` (or `AUDIT_URL`). Visual review is still manual.
 
 ## Maintenance
 

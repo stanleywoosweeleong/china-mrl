@@ -10,7 +10,16 @@ def label(t):
  if t in labels:return labels[t]
  if '除外' in t:
   base=re.split(r'[([]',t,1)[0];ex=t[len(base)+1:];ex=re.sub(r'除外[)\]]$','',ex)
-  terms=re.split('[、和]',ex)
+  # Split top-level 、/和 as rules.js parseFood does, but keep known names containing 和 (浆果和其他小型类水果) whole.
+  terms,word,depth=[],'',0
+  for ch in ex:
+   if ch in '([':depth+=1
+   if ch in ')]':depth-=1
+   if depth==0 and (ch=='、' or (ch=='和' and not any(k.startswith(word+'和') for k in labels))):
+    if word:terms.append(word)
+    word=''
+   else:word+=ch
+  if word:terms.append(word)
   return labels.get(base,base)+' (except '+', '.join(labels.get(v,v) for v in terms)+')'
  return t
 for r in rows:
@@ -32,6 +41,6 @@ for c in CATALOG:
  if c['zh'] in ['波森莓','罗甘莓']:c['groups'].append('露莓(包括波森莓和罗甘莓)')
  if c['zh'] in ['哈密瓜','香瓜']:c['groups'].append('甜瓜')
 assert len({c['id'] for c in CATALOG})==len(CATALOG)
-data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
+data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
 Path('dist/database.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')))
 print('Packaged',len(rows),'rows,',len(CATALOG),'crops,',len(exempt),'exemptions')

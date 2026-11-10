@@ -25,4 +25,8 @@ with pdfplumber.open('research/usda-standard.pdf') as pdf:
   if idx%50==0:print('Audited PDF page',idx+1,flush=True)
 missing=expected-actual;extra=actual-expected
 result={'matched':sum((expected&actual).values()),'expected':sum(expected.values()),'grid_rows':sum(actual.values()),'unmatched_expected':list(missing.elements()),'unmatched_grid':list(extra.elements())}
+# Keep reviewed notes (raw count, source numbering corrections) that this audit does not recompute.
+try:previous=json.load(open('research/grid-audit.json'))
+except FileNotFoundError:previous={}
+result={**result,**{k:v for k,v in previous.items() if k not in result}}
 open('research/grid-audit.json','w').write(json.dumps(result,ensure_ascii=False,indent=2));print(json.dumps({k:v for k,v in result.items() if not k.startswith('unmatched')}));print('Unmatched expected',len(list(missing.elements())))

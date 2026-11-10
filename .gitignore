@@ -5,3 +5,5 @@ research/__pycache__/
 .openai/
 .env
 .env.*
+node_modules/
+test-results/

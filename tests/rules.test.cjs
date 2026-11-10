@@ -1,27 +1,197 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),MRL=require('../dist/rules.js');const d=JSON.parse(fs.readFileSync('dist/database.json')),crop=id=>d.crops.find(x=>x.id===id),find=(id,p)=>MRL.resolve(d.rows,crop(id)).filter(x=>x.pesticideId===p);
-test('full numerical standard and Annex B reconciled',()=>{assert.equal(d.rows.length,10749);assert.equal(d.pesticides.length,568);assert.equal(d.exemptions.length,44);assert.equal(new Set(d.rows.map(x=>x.id)).size,10749);assert(d.pesticides.every(x=>x.residue));assert(d.rows.every(x=>Number.isFinite(x.mrl)&&x.mrl>=0&&x.page>=23&&x.page<=412));assert.equal(d.rows.filter(x=>['水果','蔬菜'].includes(x.category)).length,6077)});
-test('durian direct entry and inherited paraquat group',()=>{const cy=find('榴莲',312);assert.equal(cy.length,1);assert.equal(cy[0].mrl,1);assert.equal(cy[0].match,'direct');assert.equal(cy[0].page,252);const ab=find('榴莲',21);assert.equal(ab.length,1);assert.equal(ab[0].mrl,0.01);assert.equal(ab[0].match,'group');assert(ab[0].food.includes('香蕉除外'))});
-test('banana exception does not inherit lower abamectin group limit',()=>{const rs=find('香蕉',12);assert.equal(rs.length,1);assert.equal(rs[0].mrl,0.05);assert.equal(rs[0].match,'direct')});
-test('head-lettuce and tomato exact entries retained',()=>{assert.equal(find('结球莴苣',12)[0].mrl,0.15);assert.equal(find('番茄',12)[0].mrl,0.02)});
-test('Annex classification and sampling basis retained',()=>{assert(crop('榴莲').part.includes('seed weight'));assert(crop('榴莲').groups.includes('皮不可食的热带和亚热带类水果'));assert.equal(crop('椰子').part,'Coconut water and flesh.');assert(crop('小白菜').groups.includes('普通白菜'))});
-test('nested exceptions do not drop a Chinese food qualifier',()=>{assert.deepEqual(MRL.parseFood('核果类水果[桃、杏、枣(鲜)、李子除外]').except,['桃','杏','枣(鲜)','李子']);const r={food:'叶菜类蔬菜(普通白菜除外)',category:'蔬菜'};assert.equal(MRL.matches(r,crop('小白菜')),null)});
-test('inapplicable missing numeric limit is never filled in',()=>{const fake={...crop('榴莲'),id:'unknown',zh:'unknown',groups:[],aliases:[]};assert.equal(MRL.resolve(d.rows,fake).length,0)});
-test('EMRL remains different from MRL and provisional differs from LOQ',()=>{assert(d.rows.filter(x=>x.table>=559).every(x=>x.kind==='EMRL'));assert(d.rows.some(x=>x.provisional));assert(!d.rows.some(x=>'loq' in x))});
-test('comparison boundaries, invalid input and non-detect handling',()=>{assert.equal(MRL.compare(.011,.01).status,'above');assert.equal(MRL.compare(.01,.01).status,'equal');assert.equal(MRL.compare(0,.01).status,'below');assert.equal(MRL.compare(-1,.01).status,'review');assert.equal(MRL.compare(null,.01).status,'review');assert(MRL.compare(null,.01,'nd',.02).text.includes('cannot establish'));assert.equal(MRL.compare(null,.01,'nd',null).status,'review')});
-test('equal-specificity conflicts are flagged rather than chosen silently',()=>{const c=crop('榴莲'),base={id:'a',category:'水果',pesticideId:1,food:'热带和亚热带类水果',qualifier:'',mrl:.1};const rs=MRL.resolve([base,{...base,id:'b',mrl:.2}],c);assert.equal(rs.length,2);assert(rs.every(r=>r.conflict))});
-test('all mapped crop resolutions preserve actual source rows',()=>{const ids=new Set(d.rows.map(r=>r.id));for(const c of d.crops)for(const r of MRL.resolve(d.rows,c)){assert(ids.has(r.id));assert([c.category,...(c.extraCategories||[])].includes(r.category));assert.equal(r.cropId,c.id)}});
-test('Chinese exact commodity aliases outrank broad category limits',()=>{const c=crop('蚕豆'),rows=[{id:'g',category:'蔬菜',food:'豆类蔬菜',pesticideId:1,mrl:1},{id:'d',category:'蔬菜',food:'蚕豆(鲜)',pesticideId:1,mrl:.1}];const out=MRL.resolve(rows,c);assert.equal(out.length,1);assert.equal(out[0].id,'d');assert.equal(out[0].match,'direct')});
-test('source anomalies and fat-basis context remain visible',()=>{const notes=d.rows.filter(r=>r.sourceNote);assert.equal(notes.length,31);assert.equal(notes.filter(r=>r.table===226&&r.page===185).length,30);const sugar=d.rows.find(r=>r.id==='152:3310');assert.equal(sugar.food,'甘蔗');assert.equal(sugar.category,'糖料');assert(sugar.sourceNote.includes('糖类'));const fat=d.rows.find(r=>r.table===560&&r.food==='脂肪含量10%及以上');assert.equal(fat.category,'哺乳动物肉类');assert.equal(fat.qualifier,'(以脂肪计)');assert(fat.categoryScope.includes('及其制品'))});
-test('wrapped category headings keep their full exclusion scope',()=>{for(const r of d.rows)for(const s of [r.food,r.categoryScope]){assert.equal((s.match(/[([]/g)||[]).length,(s.match(/[)\]]/g)||[]).length,r.id+' '+s);assert(!MRL.parseFood(s).unparsed,r.id+' '+s)}const az=find('榴莲',23);assert.equal(az.length,1);assert.equal(az[0].mrl,1);assert.equal(az[0].match,'group');assert.equal(find('苹果',23)[0].mrl,2);assert.equal(find('苹果',23)[0].match,'direct')});
-test('fresh produce rows without an Annex A crop mapping are only the reviewed exceptions',()=>{const names=new Set(d.crops.flatMap(c=>[...MRL.membership(c)]));const unmapped=d.rows.filter(r=>['水果','蔬菜'].includes(r.category)&&!names.has(MRL.parseFood(r.food).base)).map(r=>r.id+' '+r.food).sort();assert.deepEqual(unmapped,['219:4518 甘蓝','360:7567 白菜'])});
-test('foods Annex A does not define are surfaced for review on related crops, never applied',()=>{const known=new Set(d.crops.flatMap(c=>[...MRL.membership(c)]));const u=id=>MRL.unmapped(d.rows,crop(id),known).map(r=>r.id);assert.deepEqual(u('结球甘蓝'),['219:4518']);assert.deepEqual(u('大白菜'),['360:7567']);assert.deepEqual(u('小白菜'),['360:7567']);assert.deepEqual(u('榴莲'),[]);assert.equal(find('结球甘蓝',219).length,0);assert.equal(d.meta.printedPageOffset,16)});
-test('English exclusion labels keep names that contain 和',()=>{const r=d.rows.find(r=>r.food==='浆果和其他小型类水果[黑莓、醋栗、露莓(包括波森莓和罗甘莓)、草莓除外]');assert(r);assert(!/[一-鿿]/.test(r.foodEn),r.foodEn);const c=d.rows.find(r=>r.food==='柑橘类水果(柑、橘、橙、柠檬、柚和金橘除外)');assert.equal(c.foodEn,'Citrus fruit (except Mandarin, Tangerine, Orange, Lemon, Pomelo, Kumquat)')});
-test('English pesticide and exemption names are readable',()=>{const glued=/(fop|raz|xyl|pyr|ate|carb|acid|methyl|ethyl|DB|zan)and[a-z0-9]|[a-z](acid|salt)\b|\b(Sodium|Aluminium|Hydrogen|Methyl|Allyl|Piperonyl|Mepiquat|Emamectin|Bacillus)[a-z]|\u{1001b0}/u;for(const x of [...d.pesticides,...d.exemptions])assert(!glued.test(x.en),x.id+' '+x.en);assert.equal(d.pesticides.find(p=>p.id===226).en,'Emamectin benzoate')});
-test('English labels, residue definitions and testing methods cover the standard',()=>{
- const zh=d.rows.filter(r=>/[一-鿿]/.test(r.foodEn)).map(r=>r.food).sort();assert.deepEqual(zh,['栗','甘蓝','白菜']);
- assert.equal(d.rows.find(r=>r.food==='蘑菇类(鲜)[平菇(鲜)除外]').foodEn,'Mushrooms (fresh) (except Oyster mushroom (fresh))');
- assert.deepEqual(MRL.parseFood('蘑菇类(鲜)[平菇(鲜)除外]').except,['平菇(鲜)']);assert.equal(MRL.parseFood('蘑菇类(鲜)[平菇(鲜)除外]').base,'蘑菇类(鲜)');
- assert(d.pesticides.every(p=>p.residueEn&&!/[一-鿿]{3}/.test(p.residueEn.replace(/\([^)]*[一-鿿][^)]*\)/g,''))));
- assert.equal(d.pesticides.find(p=>p.id===29).residueEn,'Sum of benomyl and carbendazim, expressed as carbendazim');
- for(const p of d.pesticides){if(!p.method){assert(d.rows.filter(r=>r.pesticideId===p.id).every(r=>r.provisional),p.id+' has a non-provisional limit but no method');continue}assert(p.methods.length);for(const m of p.methods){assert(m.standards.length&&m.appliesTo.length,p.id+' '+JSON.stringify(m));assert(m.standards.every(s=>/^(GB|GB\/T|NY\/T|SN\/T|SN|YC\/T) \d/.test(s)),p.id+' '+m.standards)}}
+const { test } = require('node:test'),
+  assert = require('node:assert/strict'),
+  fs = require('fs'),
+  MRL = require('../dist/rules.js');
+const d = JSON.parse(fs.readFileSync('dist/database.json')),
+  crop = (id) => d.crops.find((x) => x.id === id),
+  find = (id, p) => MRL.resolve(d.rows, crop(id)).filter((x) => x.pesticideId === p);
+test('full numerical standard and Annex B reconciled', () => {
+  assert.equal(d.rows.length, 10749);
+  assert.equal(d.pesticides.length, 568);
+  assert.equal(d.exemptions.length, 44);
+  assert.equal(new Set(d.rows.map((x) => x.id)).size, 10749);
+  assert(d.pesticides.every((x) => x.residue));
+  assert(d.rows.every((x) => Number.isFinite(x.mrl) && x.mrl >= 0 && x.page >= 23 && x.page <= 412));
+  assert.equal(d.rows.filter((x) => ['水果', '蔬菜'].includes(x.category)).length, 6077);
+});
+test('durian direct entry and inherited paraquat group', () => {
+  const cy = find('榴莲', 312);
+  assert.equal(cy.length, 1);
+  assert.equal(cy[0].mrl, 1);
+  assert.equal(cy[0].match, 'direct');
+  assert.equal(cy[0].page, 252);
+  const ab = find('榴莲', 21);
+  assert.equal(ab.length, 1);
+  assert.equal(ab[0].mrl, 0.01);
+  assert.equal(ab[0].match, 'group');
+  assert(ab[0].food.includes('香蕉除外'));
+});
+test('banana exception does not inherit lower abamectin group limit', () => {
+  const rs = find('香蕉', 12);
+  assert.equal(rs.length, 1);
+  assert.equal(rs[0].mrl, 0.05);
+  assert.equal(rs[0].match, 'direct');
+});
+test('head-lettuce and tomato exact entries retained', () => {
+  assert.equal(find('结球莴苣', 12)[0].mrl, 0.15);
+  assert.equal(find('番茄', 12)[0].mrl, 0.02);
+});
+test('Annex classification and sampling basis retained', () => {
+  assert(crop('榴莲').part.includes('seed weight'));
+  assert(crop('榴莲').groups.includes('皮不可食的热带和亚热带类水果'));
+  assert.equal(crop('椰子').part, 'Coconut water and flesh.');
+  assert(crop('小白菜').groups.includes('普通白菜'));
+});
+test('nested exceptions do not drop a Chinese food qualifier', () => {
+  assert.deepEqual(MRL.parseFood('核果类水果[桃、杏、枣(鲜)、李子除外]').except, [
+    '桃',
+    '杏',
+    '枣(鲜)',
+    '李子'
+  ]);
+  const r = { food: '叶菜类蔬菜(普通白菜除外)', category: '蔬菜' };
+  assert.equal(MRL.matches(r, crop('小白菜')), null);
+});
+test('inapplicable missing numeric limit is never filled in', () => {
+  const fake = { ...crop('榴莲'), id: 'unknown', zh: 'unknown', groups: [], aliases: [] };
+  assert.equal(MRL.resolve(d.rows, fake).length, 0);
+});
+test('EMRL remains different from MRL and provisional differs from LOQ', () => {
+  assert(d.rows.filter((x) => x.table >= 559).every((x) => x.kind === 'EMRL'));
+  assert(d.rows.some((x) => x.provisional));
+  assert(!d.rows.some((x) => 'loq' in x));
+});
+test('comparison boundaries, invalid input and non-detect handling', () => {
+  assert.equal(MRL.compare(0.011, 0.01).status, 'above');
+  assert.equal(MRL.compare(0.01, 0.01).status, 'equal');
+  assert.equal(MRL.compare(0, 0.01).status, 'below');
+  assert.equal(MRL.compare(-1, 0.01).status, 'review');
+  assert.equal(MRL.compare(null, 0.01).status, 'review');
+  assert(MRL.compare(null, 0.01, 'nd', 0.02).text.includes('cannot establish'));
+  assert.equal(MRL.compare(null, 0.01, 'nd', null).status, 'review');
+});
+test('equal-specificity conflicts are flagged rather than chosen silently', () => {
+  const c = crop('榴莲'),
+    base = { id: 'a', category: '水果', pesticideId: 1, food: '热带和亚热带类水果', qualifier: '', mrl: 0.1 };
+  const rs = MRL.resolve([base, { ...base, id: 'b', mrl: 0.2 }], c);
+  assert.equal(rs.length, 2);
+  assert(rs.every((r) => r.conflict));
+});
+test('all mapped crop resolutions preserve actual source rows', () => {
+  const ids = new Set(d.rows.map((r) => r.id));
+  for (const c of d.crops)
+    for (const r of MRL.resolve(d.rows, c)) {
+      assert(ids.has(r.id));
+      assert([c.category, ...(c.extraCategories || [])].includes(r.category));
+      assert.equal(r.cropId, c.id);
+    }
+});
+test('Chinese exact commodity aliases outrank broad category limits', () => {
+  const c = crop('蚕豆'),
+    rows = [
+      { id: 'g', category: '蔬菜', food: '豆类蔬菜', pesticideId: 1, mrl: 1 },
+      { id: 'd', category: '蔬菜', food: '蚕豆(鲜)', pesticideId: 1, mrl: 0.1 }
+    ];
+  const out = MRL.resolve(rows, c);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].id, 'd');
+  assert.equal(out[0].match, 'direct');
+});
+test('source anomalies and fat-basis context remain visible', () => {
+  const notes = d.rows.filter((r) => r.sourceNote);
+  assert.equal(notes.length, 31);
+  assert.equal(notes.filter((r) => r.table === 226 && r.page === 185).length, 30);
+  const sugar = d.rows.find((r) => r.id === '152:3310');
+  assert.equal(sugar.food, '甘蔗');
+  assert.equal(sugar.category, '糖料');
+  assert(sugar.sourceNote.includes('糖类'));
+  const fat = d.rows.find((r) => r.table === 560 && r.food === '脂肪含量10%及以上');
+  assert.equal(fat.category, '哺乳动物肉类');
+  assert.equal(fat.qualifier, '(以脂肪计)');
+  assert(fat.categoryScope.includes('及其制品'));
+});
+test('wrapped category headings keep their full exclusion scope', () => {
+  for (const r of d.rows)
+    for (const s of [r.food, r.categoryScope]) {
+      assert.equal((s.match(/[([]/g) || []).length, (s.match(/[)\]]/g) || []).length, r.id + ' ' + s);
+      assert(!MRL.parseFood(s).unparsed, r.id + ' ' + s);
+    }
+  const az = find('榴莲', 23);
+  assert.equal(az.length, 1);
+  assert.equal(az[0].mrl, 1);
+  assert.equal(az[0].match, 'group');
+  assert.equal(find('苹果', 23)[0].mrl, 2);
+  assert.equal(find('苹果', 23)[0].match, 'direct');
+});
+test('fresh produce rows without an Annex A crop mapping are only the reviewed exceptions', () => {
+  const names = new Set(d.crops.flatMap((c) => [...MRL.membership(c)]));
+  const unmapped = d.rows
+    .filter((r) => ['水果', '蔬菜'].includes(r.category) && !names.has(MRL.parseFood(r.food).base))
+    .map((r) => r.id + ' ' + r.food)
+    .sort();
+  assert.deepEqual(unmapped, ['219:4518 甘蓝', '360:7567 白菜']);
+});
+test('foods Annex A does not define are surfaced for review on related crops, never applied', () => {
+  const known = new Set(d.crops.flatMap((c) => [...MRL.membership(c)]));
+  const u = (id) => MRL.unmapped(d.rows, crop(id), known).map((r) => r.id);
+  assert.deepEqual(u('结球甘蓝'), ['219:4518']);
+  assert.deepEqual(u('大白菜'), ['360:7567']);
+  assert.deepEqual(u('小白菜'), ['360:7567']);
+  assert.deepEqual(u('榴莲'), []);
+  assert.equal(find('结球甘蓝', 219).length, 0);
+  assert.equal(d.meta.printedPageOffset, 16);
+});
+test('English exclusion labels keep names that contain 和', () => {
+  const r = d.rows.find(
+    (r) => r.food === '浆果和其他小型类水果[黑莓、醋栗、露莓(包括波森莓和罗甘莓)、草莓除外]'
+  );
+  assert(r);
+  assert(!/[一-鿿]/.test(r.foodEn), r.foodEn);
+  const c = d.rows.find((r) => r.food === '柑橘类水果(柑、橘、橙、柠檬、柚和金橘除外)');
+  assert.equal(c.foodEn, 'Citrus fruit (except Mandarin, Tangerine, Orange, Lemon, Pomelo, Kumquat)');
+});
+test('English pesticide and exemption names are readable', () => {
+  const glued =
+    /(fop|raz|xyl|pyr|ate|carb|acid|methyl|ethyl|DB|zan)and[a-z0-9]|[a-z](acid|salt)\b|\b(Sodium|Aluminium|Hydrogen|Methyl|Allyl|Piperonyl|Mepiquat|Emamectin|Bacillus)[a-z]|\u{1001b0}/u;
+  for (const x of [...d.pesticides, ...d.exemptions]) assert(!glued.test(x.en), x.id + ' ' + x.en);
+  assert.equal(d.pesticides.find((p) => p.id === 226).en, 'Emamectin benzoate');
+});
+test('English labels, residue definitions and testing methods cover the standard', () => {
+  const zh = d.rows
+    .filter((r) => /[一-鿿]/.test(r.foodEn))
+    .map((r) => r.food)
+    .sort();
+  assert.deepEqual(zh, ['栗', '甘蓝', '白菜']);
+  assert.equal(
+    d.rows.find((r) => r.food === '蘑菇类(鲜)[平菇(鲜)除外]').foodEn,
+    'Mushrooms (fresh) (except Oyster mushroom (fresh))'
+  );
+  assert.deepEqual(MRL.parseFood('蘑菇类(鲜)[平菇(鲜)除外]').except, ['平菇(鲜)']);
+  assert.equal(MRL.parseFood('蘑菇类(鲜)[平菇(鲜)除外]').base, '蘑菇类(鲜)');
+  assert(
+    d.pesticides.every(
+      (p) => p.residueEn && !/[一-鿿]{3}/.test(p.residueEn.replace(/\([^)]*[一-鿿][^)]*\)/g, ''))
+    )
+  );
+  assert.equal(
+    d.pesticides.find((p) => p.id === 29).residueEn,
+    'Sum of benomyl and carbendazim, expressed as carbendazim'
+  );
+  for (const p of d.pesticides) {
+    if (!p.method) {
+      assert(
+        d.rows.filter((r) => r.pesticideId === p.id).every((r) => r.provisional),
+        p.id + ' has a non-provisional limit but no method'
+      );
+      continue;
+    }
+    assert(p.methods.length);
+    for (const m of p.methods) {
+      assert(m.standards.length && m.appliesTo.length, p.id + ' ' + JSON.stringify(m));
+      assert(
+        m.standards.every((s) => /^(GB|GB\/T|NY\/T|SN\/T|SN|YC\/T) \d/.test(s)),
+        p.id + ' ' + m.standards
+      );
+    }
+  }
 });

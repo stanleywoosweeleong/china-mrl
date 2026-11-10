@@ -2,6 +2,7 @@
    Standard terms follow GB 2763 (最大残留限量, 再残留限量, 临时限量, 残留物, 测定部位, 豁免). */
 (function (root) {
   const ZH = {
+    'China MRL': '中国农残限量',
     // Page head
     'China MRL — GB 2763-2026 Explorer': '中国农药残留限量查询 — GB 2763-2026',
     'Explore all 10,749 GB 2763-2026 residue limits, with a fresh fruit and vegetable view for exporters worldwide.':

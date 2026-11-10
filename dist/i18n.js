@@ -73,7 +73,7 @@
     const toggle = document.getElementById('langToggle');
     if (toggle) {
       // The button always names the other language in that language.
-      toggle.textContent = lang === 'zh' ? 'English' : '中文';
+      toggle.textContent = lang === 'zh' ? 'EN' : '中文';
       toggle.lang = lang === 'zh' ? 'en' : 'zh-Hans';
       toggle.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切换到中文');
       toggle.addEventListener('click', () => setLang(lang === 'zh' ? 'en' : 'zh'));

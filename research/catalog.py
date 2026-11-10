@@ -8,7 +8,7 @@ add('水果','柑橘类水果','柑:Mandarin|橘:Tangerine|橙:Orange|柠檬:Lem
 add('水果','仁果类水果','苹果:Apple|梨:Pear|山楂:Hawthorn|枇杷:Loquat|榅桲:Quince','Whole fruit, stalk removed; hawthorn and loquat follow the stone-fruit provision. Consult Annex A.',414)
 add('水果','核果类水果','桃:Peach|油桃:Nectarine|杏:Apricot|枣(鲜):Fresh jujube|李子:Plum|樱桃:Cherry|青梅:Green plum','Remove stalk and stone for testing; include stone weight in residue calculation.',414)
 add('水果','浆果和其他小型类水果','枸杞(鲜):Fresh goji berry|黑莓:Blackberry|蓝莓:Blueberry|覆盆子:Raspberry|越橘:Vaccinium berry|加仑子:Currant|悬钩子:Rubus berry|醋栗:Gooseberry|桑葚:Mulberry|唐棣:Juneberry|露莓(包括波森莓和罗甘莓):Dewberry|波森莓:Boysenberry|罗甘莓:Loganberry','Whole fruit, stalk removed.',414,['藤蔓和灌木类水果'])
-add('水果','浆果和其他小型类水果','葡萄:Grape|酿酒葡萄:Wine grape|树番茄:Tree tomato|五味子:Schisandra berry|猕猴桃:Kiwifruit:kiwi|西番莲:Passion fruit','Whole fruit, stalk removed.',414,['小型攀缘类水果'])
+add('水果','浆果和其他小型类水果','葡萄:Grape:table grape|酿酒葡萄:Wine grape|树番茄:Tree tomato|五味子:Schisandra berry|猕猴桃:Kiwifruit:kiwi|西番莲:Passion fruit','Whole fruit, stalk removed.',414,['小型攀缘类水果'])
 add('水果','浆果和其他小型类水果','草莓:Strawberry','Whole fruit, stalk removed.',414)
 add('水果','热带和亚热带类水果','柿子:Persimmon|杨梅:Chinese bayberry|橄榄:Olive|无花果:Fig|杨桃:Starfruit:carambola|莲雾:Wax apple:water apple|腰果梨:Cashew apple','Whole fruit, stalk removed; bayberry and olive: test flesh, including stone weight in the calculation.',414,['皮可食热带和亚热带类水果','皮可食的热带和亚热带类水果'])
 nonedible=['皮不可食热带和亚热带类水果','皮不可食的热带和亚热带类水果']
@@ -33,7 +33,7 @@ add('蔬菜','叶菜类蔬菜','芹菜:Celery|茴香:Fennel|球茎茴香:Bulb fe
 add('蔬菜','茄果类蔬菜','番茄:Tomato|樱桃番茄:Cherry tomato','Whole fruit, stalk removed.',414,['番茄类'])
 add('蔬菜','茄果类蔬菜','茄子:Eggplant:aubergine|辣椒:Chilli pepper:chili|甜椒:Sweet pepper:bell pepper,capsicum|黄秋葵:Okra:ladies fingers|酸浆:Ground cherry','Whole fruit, stalk removed.',414,['其他茄果类'])
 add('蔬菜','瓜类蔬菜','黄瓜:Cucumber|腌制用小黄瓜:Gherkin|西葫芦:Zucchini:courgette|节瓜:Hairy melon|苦瓜:Bitter melon|丝瓜:Loofah|线瓜:Angled loofah|瓠瓜:Bottle gourd|菜瓜:Oriental pickling melon|冬瓜:Winter melon|南瓜:Pumpkin|笋瓜:Winter squash','Whole fruit, stalk removed.',414)
-add('蔬菜','豆类蔬菜','豇豆:Yardlong bean:long bean|菜豆:Common bean:French bean,green bean|菜豆籽粒:Common bean seeds|食荚豌豆:Edible-pod pea:snow pea|四棱豆:Winged bean|扁豆:Hyacinth bean|刀豆:Sword bean','Whole bean, including pod.',414,['荚可食类豆类蔬菜'])
+add('蔬菜','豆类蔬菜','豇豆:Yardlong bean:long bean|菜豆:Common bean:French bean,green bean|菜豆籽粒:Common bean seeds|食荚豌豆:Edible-pod pea:snow pea,sugar snap pea,mangetout|四棱豆:Winged bean|扁豆:Hyacinth bean|刀豆:Sword bean','Whole bean, including pod.',414,['荚可食类豆类蔬菜'])
 add('蔬菜','豆类蔬菜','菜用大豆:Edamame|蚕豆:Broad bean:fava bean,蚕豆(鲜)|豌豆:Pea|利马豆:Lima bean','Whole bean, pod removed.',414,['荚不可食豆类蔬菜','荚不可食类豆类蔬菜'])
 add('蔬菜','茎类蔬菜','芦笋:Asparagus|朝鲜蓟:Artichoke|大黄:Rhubarb|茎用莴苣:Celtuce','Whole plant.',414)
 add('蔬菜','根茎类和薯芋类蔬菜','萝卜:Radish:daikon|胡萝卜:Carrot|根甜菜:Beetroot|根芹菜:Celeriac|根芥菜:Root mustard|姜:Ginger|辣根:Horseradish|芜菁:Turnip|桔梗:Balloon flower root','Remove top leaves and petioles.',414,['根茎类蔬菜'])

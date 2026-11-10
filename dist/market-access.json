@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "coverage": "Selected protocol documents only; not a complete or live worldwide access register.",
+  "coverage": "Selected official protocols and export-guide entries; not a complete or live worldwide access register.",
   "countries": [
     {
       "code": "AF",
@@ -1007,13 +1007,20 @@
       "status": "conditional",
       "title": "GACC 2024 No. 72",
       "announced": "2024-06-24",
-      "reviewed": "2026-11-09",
+      "reviewed": "2026-11-10",
       "url": "https://www.mofcom.gov.cn/zcfb/zgdwjjmywg/art/2024/art_32633a5a3a08421d9fe75b8c20f11787.html",
       "scope": "Fresh Durio zibethinus grown in Malaysia.",
       "conditions": [
         "Orchards and packing houses require Malaysian review and GACC registration.",
         "Apply orchard pest monitoring, integrated pest management and traceability.",
         "Clean and grade fruit; follow protocol packaging and destination markings."
+      ],
+      "additionalSources": [
+        {
+          "title": "DOA route restriction reported by Bernama · 2 July 2026",
+          "url": "https://www.bernama.com/en/general/news.php?id=2575755",
+          "note": "DOA stated that overland exports through transit countries were not authorized under the existing protocol. Confirm the current route approval before shipment."
+        }
       ]
     },
     {
@@ -1064,6 +1071,102 @@
         "Fresh chillies require fumigation followed by cold treatment under Lao supervision; consult the source for exact parameters.",
         "Retain pest monitoring and control records for at least two years.",
         "Provide the phytosanitary certificate, required declaration, treatment details and traceable packaging."
+      ]
+    },
+    {
+      "origin": "MY",
+      "crop": "菠萝蜜",
+      "form": "fresh",
+      "status": "conditional",
+      "title": "GACC 2023 No. 34",
+      "announced": "2023-04-11",
+      "reviewed": "2026-11-10",
+      "url": "https://www.mofcom.gov.cn/zcfb/zgdwjjmywg/art/2023/art_1e5c78e3e65d45f2812d3f9a1f49b21c.html",
+      "scope": "Fresh Artocarpus heterophyllus grown in Malaysia.",
+      "conditions": [
+        "Use registered orchards and packing houses approved under the protocol.",
+        "Bag fruit during growth and retain bags until removal at the packing house; follow the source annex.",
+        "Provide the phytosanitary certificate with required declaration, import quarantine permit and traceable packaging."
+      ]
+    },
+    {
+      "origin": "MY",
+      "crop": "山竹",
+      "form": "fresh",
+      "status": "conditional",
+      "evidenceType": "official-guide",
+      "title": "FAMA export guide 2025 · pp. 8–11",
+      "sourceLabel": "Federal Agricultural Marketing Authority, Malaysia",
+      "announced": "2025",
+      "reviewed": "2026-11-10",
+      "url": "https://www.fama.gov.my/documents/20143/0/Kit%2BEksport_Agromakanan_FINAL%2BDec%2B2025%2B%25281%2529%2B%25281%2529.pdf/6bb7d5f9-0038-5d39-d8ef-f1490a5b82d9#page=8",
+      "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
+      "conditions": [
+        "DOA-registered packing facility; pest-free fruit and protected ventilation openings."
+      ]
+    },
+    {
+      "origin": "MY",
+      "crop": "番木瓜",
+      "form": "fresh",
+      "status": "conditional",
+      "evidenceType": "official-guide",
+      "title": "FAMA export guide 2025 · pp. 8–11",
+      "sourceLabel": "Federal Agricultural Marketing Authority, Malaysia",
+      "announced": "2025",
+      "reviewed": "2026-11-10",
+      "url": "https://www.fama.gov.my/documents/20143/0/Kit%2BEksport_Agromakanan_FINAL%2BDec%2B2025%2B%25281%2529%2B%25281%2529.pdf/6bb7d5f9-0038-5d39-d8ef-f1490a5b82d9#page=8",
+      "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
+      "conditions": [
+        "Registered facilities and hot-water treatment; confirm full treatment and certification requirements."
+      ]
+    },
+    {
+      "origin": "MY",
+      "crop": "菠萝",
+      "form": "fresh",
+      "status": "conditional",
+      "evidenceType": "official-guide",
+      "title": "FAMA export guide 2025 · pp. 8–11",
+      "sourceLabel": "Federal Agricultural Marketing Authority, Malaysia",
+      "announced": "2025",
+      "reviewed": "2026-11-10",
+      "url": "https://www.fama.gov.my/documents/20143/0/Kit%2BEksport_Agromakanan_FINAL%2BDec%2B2025%2B%25281%2529%2B%25281%2529.pdf/6bb7d5f9-0038-5d39-d8ef-f1490a5b82d9#page=8",
+      "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
+      "conditions": [
+        "Registered facilities, prescribed fumigation and cold treatment, and pineapple export licence."
+      ]
+    },
+    {
+      "origin": "MY",
+      "crop": "红毛丹",
+      "form": "fresh",
+      "status": "conditional",
+      "evidenceType": "official-guide",
+      "title": "FAMA export guide 2025 · pp. 8–11",
+      "sourceLabel": "Federal Agricultural Marketing Authority, Malaysia",
+      "announced": "2025",
+      "reviewed": "2026-11-10",
+      "url": "https://www.fama.gov.my/documents/20143/0/Kit%2BEksport_Agromakanan_FINAL%2BDec%2B2025%2B%25281%2529%2B%25281%2529.pdf/6bb7d5f9-0038-5d39-d8ef-f1490a5b82d9#page=8",
+      "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
+      "conditions": [
+        "DOA-registered packing facility; pest-free fruit and protected ventilation openings."
+      ]
+    },
+    {
+      "origin": "MY",
+      "crop": "西瓜",
+      "form": "fresh",
+      "status": "conditional",
+      "evidenceType": "official-guide",
+      "title": "FAMA export guide 2025 · pp. 8–11",
+      "sourceLabel": "Federal Agricultural Marketing Authority, Malaysia",
+      "announced": "2025",
+      "reviewed": "2026-11-10",
+      "url": "https://www.fama.gov.my/documents/20143/0/Kit%2BEksport_Agromakanan_FINAL%2BDec%2B2025%2B%25281%2529%2B%25281%2529.pdf/6bb7d5f9-0038-5d39-d8ef-f1490a5b82d9#page=8",
+      "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
+      "conditions": [
+        "Pest-free fruit; obtain the required export and phytosanitary documents."
       ]
     }
   ]

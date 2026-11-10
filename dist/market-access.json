@@ -1020,10 +1020,20 @@
         {
           "title": "DOA route restriction reported by Bernama · 2 July 2026",
           "url": "https://www.bernama.com/en/general/news.php?id=2575755",
-          "note": "DOA stated that overland exports through transit countries were not authorized under the existing protocol. Confirm the current route approval before shipment."
+          "note": "DOA stated that overland exports through transit countries were not authorized under the existing protocol. Confirm the current route approval before shipment.",
+          "titleZh": "马来西亚农业局（DOA）关于运输路线限制的说明，马新社（Bernama）2026年7月2日报道",
+          "noteZh": "马来西亚农业局表示，现行议定书不允许经第三国陆路转运出口。发货前请确认当前获准的运输路线。"
         }
       ],
-      "marketAccess": "approved"
+      "marketAccess": "approved",
+      "titleZh": "海关总署公告2024年第72号",
+      "scopeZh": "根据海关总署公告2024年第72号，马来西亚种植的鲜食榴莲（Durio zibethinus）获准输华，须符合公告规定的要求。",
+      "conditionsZh": [
+        "果园和包装厂须经马来西亚主管部门审核，并在中国海关总署注册。",
+        "果园须实施有害生物监测、综合防治和溯源管理。",
+        "水果须经清洁、分级；包装和输华标识须符合议定书要求。",
+        "须提供植物检疫证书、规定的附加声明和进境动植物检疫许可证，并从指定口岸入境。"
+      ]
     },
     {
       "origin": "MY",
@@ -1039,6 +1049,13 @@
         "Orchards and packing houses require Malaysian review and GACC registration.",
         "Maintain pest monitoring, control records and traceability.",
         "Follow packing, container sealing and pre-export inspection requirements."
+      ],
+      "titleZh": "海关总署公告2025年第78号",
+      "scopeZh": "马来西亚种植的鲜食椰子（Cocos nucifera）。",
+      "conditionsZh": [
+        "果园和包装厂须经马来西亚主管部门审核，并在中国海关总署注册。",
+        "须保持有害生物监测、防治记录和溯源记录。",
+        "须符合包装、集装箱加封和出口前检查的要求。"
       ]
     },
     {
@@ -1056,6 +1073,14 @@
         "Methyl bromide fumigation is required under this protocol; consult the source for exact parameters.",
         "Obtain the phytosanitary certificate with required declarations and treatment details, and the Chinese import quarantine permit.",
         "Use an authorized fruit entry port and comply with arrival inspection."
+      ],
+      "titleZh": "海关总署公告2023年第107号",
+      "scopeZh": "南非种植的鲜食鳄梨（Persea americana）。",
+      "conditionsZh": [
+        "果园、包装厂和熏蒸处理设施须在中国海关总署注册。",
+        "该议定书要求进行溴甲烷熏蒸处理；具体技术指标请查阅公告原文。",
+        "须取得植物检疫证书（含规定的附加声明和处理信息）以及中国的进境动植物检疫许可证。",
+        "须从允许进口水果的指定口岸入境，并接受入境检验检疫。"
       ]
     },
     {
@@ -1073,6 +1098,14 @@
         "Fresh chillies require fumigation followed by cold treatment under Lao supervision; consult the source for exact parameters.",
         "Retain pest monitoring and control records for at least two years.",
         "Provide the phytosanitary certificate, required declaration, treatment details and traceable packaging."
+      ],
+      "titleZh": "海关总署公告2026年第103号",
+      "scopeZh": "在老挝种植和加工、供人类食用的鲜辣椒果实。本记录只涵盖鲜果。",
+      "conditionsZh": [
+        "种植基地和包装厂须在中国海关总署注册。",
+        "鲜辣椒须在老挝主管部门监管下先熏蒸、再冷处理；具体技术指标请查阅公告原文。",
+        "有害生物监测和防治记录至少保存两年。",
+        "须提供植物检疫证书、规定的附加声明和处理信息，包装须可追溯。"
       ]
     },
     {
@@ -1089,6 +1122,13 @@
         "Use registered orchards and packing houses approved under the protocol.",
         "Bag fruit during growth and retain bags until removal at the packing house; follow the source annex.",
         "Provide the phytosanitary certificate with required declaration, import quarantine permit and traceable packaging."
+      ],
+      "titleZh": "海关总署公告2023年第34号",
+      "scopeZh": "马来西亚种植的鲜食菠萝蜜（Artocarpus heterophyllus）。",
+      "conditionsZh": [
+        "须使用议定书批准的注册果园和包装厂。",
+        "果实生长期间须套袋，果袋保留至包装厂才可除去；详见公告附件。",
+        "须提供植物检疫证书（含规定的附加声明）、进境动植物检疫许可证，包装须可追溯。"
       ]
     },
     {
@@ -1105,6 +1145,12 @@
       "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
       "conditions": [
         "DOA-registered packing facility; pest-free fruit and protected ventilation openings."
+      ],
+      "titleZh": "马来西亚联邦农业销售局（FAMA）出口指南 2025 年版 · 第 8–11 页",
+      "sourceLabelZh": "马来西亚联邦农业销售局（FAMA）",
+      "scopeZh": "2025 年版指南列明该产品可从马来西亚以鲜果形式出口到中国。",
+      "conditionsZh": [
+        "包装设施须在马来西亚农业局（DOA）注册；水果不带有害生物，包装箱通风孔须有防虫措施。"
       ]
     },
     {
@@ -1121,6 +1167,12 @@
       "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
       "conditions": [
         "Registered facilities and hot-water treatment; confirm full treatment and certification requirements."
+      ],
+      "titleZh": "马来西亚联邦农业销售局（FAMA）出口指南 2025 年版 · 第 8–11 页",
+      "sourceLabelZh": "马来西亚联邦农业销售局（FAMA）",
+      "scopeZh": "2025 年版指南列明该产品可从马来西亚以鲜果形式出口到中国。",
+      "conditionsZh": [
+        "须使用注册设施并进行热水处理；请确认完整的处理和证书要求。"
       ]
     },
     {
@@ -1137,6 +1189,12 @@
       "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
       "conditions": [
         "Registered facilities, prescribed fumigation and cold treatment, and pineapple export licence."
+      ],
+      "titleZh": "马来西亚联邦农业销售局（FAMA）出口指南 2025 年版 · 第 8–11 页",
+      "sourceLabelZh": "马来西亚联邦农业销售局（FAMA）",
+      "scopeZh": "2025 年版指南列明该产品可从马来西亚以鲜果形式出口到中国。",
+      "conditionsZh": [
+        "须使用注册设施，按规定进行熏蒸和冷处理，并持有菠萝出口许可证。"
       ]
     },
     {
@@ -1153,6 +1211,12 @@
       "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
       "conditions": [
         "DOA-registered packing facility; pest-free fruit and protected ventilation openings."
+      ],
+      "titleZh": "马来西亚联邦农业销售局（FAMA）出口指南 2025 年版 · 第 8–11 页",
+      "sourceLabelZh": "马来西亚联邦农业销售局（FAMA）",
+      "scopeZh": "2025 年版指南列明该产品可从马来西亚以鲜果形式出口到中国。",
+      "conditionsZh": [
+        "包装设施须在马来西亚农业局（DOA）注册；水果不带有害生物，包装箱通风孔须有防虫措施。"
       ]
     },
     {
@@ -1169,6 +1233,12 @@
       "scope": "Listed for fresh export from Malaysia to China in the 2025 guide.",
       "conditions": [
         "Pest-free fruit; obtain the required export and phytosanitary documents."
+      ],
+      "titleZh": "马来西亚联邦农业销售局（FAMA）出口指南 2025 年版 · 第 8–11 页",
+      "sourceLabelZh": "马来西亚联邦农业销售局（FAMA）",
+      "scopeZh": "2025 年版指南列明该产品可从马来西亚以鲜果形式出口到中国。",
+      "conditionsZh": [
+        "水果不带有害生物；须取得所需的出口文件和植物检疫文件。"
       ]
     }
   ]

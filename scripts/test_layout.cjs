@@ -1,4 +1,4 @@
-// Layout check for every tab at phone and desktop widths: no horizontal page scroll, no console or page
+// Layout check for every tab at phone and desktop widths, in English and Chinese: no horizontal page scroll, no console or page
 // errors, and the detail dialog fits the viewport. Screenshots go to SCREENSHOT_DIR for review (CI artifact).
 const { chromium } = require('playwright'),
   assert = require('assert'),
@@ -14,35 +14,73 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
   });
   const problems = [];
   try {
-    for (const [width, height] of [
-      [390, 844],
-      [1440, 900]
-    ]) {
-      const page = await browser.newPage({ viewport: { width, height }, serviceWorkers: 'block' });
-      page.on('pageerror', (e) => problems.push(`${width}px page error: ${e.message}`));
-      page.on(
-        'console',
-        (m) => m.type() === 'error' && problems.push(`${width}px console error: ${m.text()}`)
-      );
-      await page.goto(url);
-      await page.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
-      for (const tab of tabs) {
-        await page.evaluate((t) => document.querySelector(`nav [data-tab="${t}"]`).click(), tab);
-        await page.waitForTimeout(200);
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-        if (overflow > 0) problems.push(`${width}px ${tab}: page scrolls sideways by ${overflow}px`);
-        await page.screenshot({ path: `${out}/${width}-${tab}.png`, fullPage: true });
+    for (const lang of ['en', 'zh'])
+      for (const [width, height] of [
+        [390, 844],
+        [1440, 900]
+      ]) {
+        const tag = `${lang} ${width}px`;
+        const page = await browser.newPage({ viewport: { width, height }, serviceWorkers: 'block' });
+        page.on('pageerror', (e) => problems.push(`${tag} page error: ${e.message}`));
+        page.on('console', (m) => m.type() === 'error' && problems.push(`${tag} console error: ${m.text()}`));
+        await page.goto(url + '?lang=' + lang);
+        await page.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
+        for (const tab of tabs) {
+          await page.evaluate((t) => document.querySelector(`nav [data-tab="${t}"]`).click(), tab);
+          await page.waitForTimeout(200);
+          const overflow = await page.evaluate(
+            () => document.documentElement.scrollWidth - window.innerWidth
+          );
+          if (overflow > 0) problems.push(`${tag} ${tab}: page scrolls sideways by ${overflow}px`);
+          if (lang === 'zh') {
+            // Visible text left in English, apart from names shown in both languages and the brand.
+            const english = await page.evaluate(() => {
+              const found = new Set(),
+                walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+              while (walker.nextNode()) {
+                const el = walker.currentNode.parentElement,
+                  text = walker.currentNode.nodeValue.replace(/\s+/g, ' ').trim();
+                if (!el.offsetParent || el.closest('script,style,pre,option,[lang="en"],[lang="zh"]'))
+                  continue;
+                if (
+                  /[A-Za-z]{3,}\s+[A-Za-z]{2,}/.test(text) &&
+                  !/[\u4e00-\u9fff]/.test(text) &&
+                  text !== 'China MRL'
+                )
+                  found.add(text.slice(0, 60));
+              }
+              return [...found];
+            });
+            if (english.length) problems.push(`${tag} ${tab}: untranslated text ${JSON.stringify(english)}`);
+          }
+          await page.screenshot({ path: `${out}/${lang}-${width}-${tab}.png`, fullPage: true });
+        }
+        await page.evaluate(() => document.querySelector('nav [data-tab="fresh"]').click());
+        await page.locator('[data-detail]').first().click();
+        const box = await page.locator('#detail').boundingBox();
+        if (!box || box.width > width) problems.push(`${tag} detail dialog wider than viewport`);
+        await page.screenshot({ path: `${out}/${lang}-${width}-detail.png` });
+        await page.close();
       }
-      await page.evaluate(() => document.querySelector('nav [data-tab="fresh"]').click());
-      await page.locator('[data-detail]').first().click();
-      const box = await page.locator('#detail').boundingBox();
-      if (!box || box.width > width) problems.push(`${width}px detail dialog wider than viewport`);
-      await page.screenshot({ path: `${out}/${width}-detail.png` });
-      await page.close();
-    }
+    // The switch reloads into the other language and remembers it.
+    const page = await browser.newPage({ serviceWorkers: 'block' });
+    await page.goto(url + '?lang=en');
+    await page.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
+    assert.equal(await page.locator('#langToggle').innerText(), '中文');
+    await page.locator('#langToggle').click();
+    await page.waitForFunction(
+      () =>
+        document.documentElement.dataset.lang === 'zh' &&
+        document.getElementById('resultCount').textContent === '89'
+    );
+    assert.equal(await page.locator('#title').innerText(), '查清限量，核对原文。');
+    assert(!page.url().includes('lang='));
+    await page.reload();
+    await page.waitForFunction(() => document.documentElement.dataset.lang === 'zh');
+    await page.close();
     assert.deepEqual(problems, []);
     console.log(
-      `Layout: ${tabs.length} tabs and the detail dialog at 390px and 1440px passed; screenshots in ${out}.`
+      `Layout: ${tabs.length} tabs and the detail dialog at 390px and 1440px in English and Chinese, plus the language switch, passed; screenshots in ${out}.`
     );
   } finally {
     await browser.close();

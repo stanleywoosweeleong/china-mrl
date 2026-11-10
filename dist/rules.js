@@ -105,6 +105,7 @@
     return value > limit
       ? {
           status: 'above',
+          amount: Number((value - limit).toPrecision(6)),
           text: 'Above the displayed limit by ' + Number((value - limit).toPrecision(6)) + ' mg/kg.'
         }
       : value === limit

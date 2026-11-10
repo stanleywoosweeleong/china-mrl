@@ -3,7 +3,7 @@ import hashlib,json
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
 dist=root/'dist'
-assets=['index.html','style.css','app.js','rules.js','market-access.js','pwa.js','database.json','market-access.json','data.json','standard.pdf','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/apple-touch-icon.png','icons/favicon.png']
+assets=['index.html','style.css','app.js','zh.js','i18n.js','rules.js','market-access.js','pwa.js','database.json','market-access.json','data.json','standard.pdf','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png','icons/apple-touch-icon.png','icons/favicon.png']
 assets += [str(p.relative_to(dist)) for folder in ['fonts','screenshots'] for p in sorted((dist/folder).glob('*'))]
 for target,prefix in [(dist,''),(root,'dist/')]:
  manifest=dict(id='/china-mrl/'+('dist/' if target==dist else ''),name='China MRL — Export Reference',short_name='China MRL',description='China residue limits and source-linked market-access references for produce exporters.',lang='en',start_url='./',scope='./',display='standalone',background_color='#f7f8f4',theme_color='#29654e',icons=[dict(src=prefix+'icons/'+f,sizes=size,type='image/png',purpose=purpose) for f,size,purpose in [('icon-192.png','192x192','any'),('icon-512.png','512x512','any'),('maskable-512.png','512x512','maskable')]])

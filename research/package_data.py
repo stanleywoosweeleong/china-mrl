@@ -1,7 +1,7 @@
 import json,re,fitz,hashlib,unicodedata
 from pathlib import Path
 from catalog import CATALOG
-from english_names import PESTICIDES as EN_PESTICIDES,EXEMPTIONS as EN_EXEMPTIONS,RESIDUES as EN_RESIDUES,FOODS as EN_FOODS
+from english_names import PESTICIDES as EN_PESTICIDES,EXEMPTIONS as EN_EXEMPTIONS,RESIDUES as EN_RESIDUES,FOODS as EN_FOODS,PARTS_ZH
 rows=json.load(open('research/all-rows.json'));ps=json.load(open('research/pesticides.json'));doc=fitz.open('research/usda-standard.pdf')
 catEn={'谷物':'Grains','油料和油脂':'Oilseeds & oils','蔬菜':'Fresh vegetables','干制蔬菜':'Dried vegetables','水果':'Fresh fruit','干制水果':'Dried fruit','坚果':'Nuts','糖料':'Sugar crops','饮料类':'Beverage crops & products','食用菌':'Edible fungi','调味料':'Spices & herbs','药用植物':'Medicinal plants','哺乳动物肉类':'Mammalian meat','哺乳动物内脏':'Mammalian offal','哺乳动物脂肪':'Mammalian fat','禽肉类':'Poultry meat','禽类内脏':'Poultry offal','禽类脂肪':'Poultry fat','蛋类':'Eggs','生乳':'Raw milk','乳脂肪':'Milk fat','水产品':'Aquatic products'}
 labels={x['zh']:x['en'] for x in CATALOG};labels.update(catEn);labels.update(EN_FOODS)
@@ -104,6 +104,11 @@ for c in CATALOG:
  if c['zh'] in ['酿酒葡萄']:c['groups'].append('葡萄')
  if c['zh'] in ['波森莓','罗甘莓']:c['groups'].append('露莓(包括波森莓和罗甘莓)')
  if c['zh'] in ['哈密瓜','香瓜']:c['groups'].append('甜瓜')
+# Chinese testing-part wording from Annex A; two groups word a shared English part differently.
+for c in CATALOG:
+ c['partZh']=PARTS_ZH[c['part']]
+ if '瓜类蔬菜' in c['groups'] and c['partZh']=='全果（去柄）':c['partZh']='全瓜（去柄）'
+ if '绿叶葱类' in c['groups']:c['partZh']='整株'
 assert len({c['id'] for c in CATALOG})==len(CATALOG)
 data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
 Path('dist/database.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')))

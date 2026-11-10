@@ -1,6 +1,7 @@
 import json,re,fitz,hashlib,unicodedata
 from pathlib import Path
 from catalog import CATALOG
+from english_names import PESTICIDES as EN_PESTICIDES,EXEMPTIONS as EN_EXEMPTIONS
 rows=json.load(open('research/all-rows.json'));ps=json.load(open('research/pesticides.json'));doc=fitz.open('research/usda-standard.pdf')
 catEn={'谷物':'Grains','油料和油脂':'Oilseeds & oils','蔬菜':'Fresh vegetables','干制蔬菜':'Dried vegetables','水果':'Fresh fruit','干制水果':'Dried fruit','坚果':'Nuts','糖料':'Sugar crops','饮料类':'Beverage crops & products','食用菌':'Edible fungi','调味料':'Spices & herbs','药用植物':'Medicinal plants','哺乳动物肉类':'Mammalian meat','哺乳动物内脏':'Mammalian offal','哺乳动物脂肪':'Mammalian fat','禽肉类':'Poultry meat','禽类内脏':'Poultry offal','禽类脂肪':'Poultry fat','蛋类':'Eggs','生乳':'Raw milk','乳脂肪':'Milk fat','水产品':'Aquatic products'}
 labels={x['zh']:x['en'] for x in CATALOG};labels.update(catEn)
@@ -28,6 +29,9 @@ for r in rows:
 for p in ps:
  p['en']=p['en'][0].upper()+p['en'][1:]
  p['en']=p['en'].replace('andbeta-',' + beta-').replace('andlambda-',' + lambda-').replace('andS-',' + S-')
+ p['enSource']=p['en'] if p['id'] in EN_PESTICIDES else None
+ if p['id'] in EN_PESTICIDES:p['en']=EN_PESTICIDES[p['id']]
+ if p['enSource'] is None:del p['enSource']
 exempt=[]
 for i in [416,417]:
  text=unicodedata.normalize('NFKC',doc[i].get_text().replace('Ｇ','-'));ls=[v.strip() for v in text.splitlines()]
@@ -35,6 +39,7 @@ for i in [416,417]:
   if v.isdigit() and 1<=int(v)<=44 and j+2<len(ls) and re.search('[\u4e00-\u9fff]',ls[j+1]) and re.search('[A-Za-z]',ls[j+2]):
    exempt.append(dict(id=int(v),zh=ls[j+1],en=ls[j+2],page=i+1))
 assert len(exempt)==44
+for x in exempt:x['enSource']=x['en'];x['en']=EN_EXEMPTIONS[x['id']]
 # Aliases used for standard-specific food subgroups, never marketing varieties.
 for c in CATALOG:
  if c['zh'] in ['酿酒葡萄']:c['groups'].append('葡萄')

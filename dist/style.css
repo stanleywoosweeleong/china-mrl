@@ -2511,3 +2511,27 @@ dialog details.section[open] {
     min-width: 0;
   }
 }
+@media screen and (max-width: 760px) {
+  /* Standalone links, disclosure rows and remaining buttons get finger-sized targets. */
+  .content-panel article > a,
+  .content-panel > a,
+  .exempt-row a,
+  .content-panel p > a,
+  #accessResult button,
+  main summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  main summary {
+    display: flex;
+  }
+  .searchbox input {
+    align-self: stretch;
+    height: auto;
+    min-height: 44px;
+  }
+  th button.sort {
+    min-height: 44px;
+  }
+}

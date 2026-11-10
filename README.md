@@ -76,6 +76,15 @@ Mapping choices, exclusions (including entries the list marks as suspended) and 
 
 To maintain coverage, review official GACC notices and the origin authority, preserve geographic/species/form restrictions and treatment conditions, and add exact records with source and review date. Review current suspensions and establishment registers before shipment. Duplicate matches fail closed to Not verified. Run `node --test tests/*.test.cjs`, then `python scripts/prepare_pages.py` before publishing.
 
+## Interface
+
+- **Crop picker:** type a crop in Chinese, English, pinyin (`liulian`) or initials (`ll`); matches show whether the selected origin has a market-access record. It drives a hidden `#crop` select, which remains the source of truth.
+- **Phones (up to 760px):** search first, compact result cards that open details on tap, a bottom tab bar (Fresh produce, Market access, Saved, More), and touch targets of at least 44px. Nothing scrolls sideways.
+- **Wide screens (1400px and up):** details open as a side panel beside the table; narrower screens use a dialog. Column headings sort the table; phones get a sort menu.
+- **Detail view:** the limit, Save and the laboratory comparison come first; applicability, source and testing methods are collapsible.
+- **Print limit sheet:** prints every limit in the current view (up to 600) with testing methods, in the interface language.
+- **Accessibility:** `scripts/test_accessibility.cjs` runs axe-core (WCAG 2.1 A and AA, including colour contrast) on every tab, the crop picker and the detail view in both languages. It cannot measure icon-only glyphs, and it is not a substitute for testing with a screen reader.
+
 ## Languages
 
 The interface is available in English and Simplified Chinese. The header switch (中文 / English) remembers the choice; Chinese-language browsers start in Chinese; `?lang=zh` or `?lang=en` in a link forces a language. In Chinese mode crop, pesticide, food and category names show Chinese first, lists sort by pinyin, and market-access records use their Chinese text (`scopeZh`, `conditionsZh`, `titleZh`). Taiwan is shown as 台湾 in Chinese mode.
@@ -84,7 +93,7 @@ The interface is available in English and Simplified Chinese. The header switch 
 
 ## Automated checks
 
-`npm test` runs the unit tests; `npm run check` verifies generated files and formatting; `npm run test:browser` runs all browser checks (search, market access, layout in both languages, offline/PWA, auto-update). `.github/workflows/test.yml` runs all three on every push and pull request and uploads screenshots. Run `npm install` first; set `CHROMIUM_PATH` to use an existing Chromium.
+`npm test` runs the unit tests; `npm run check` verifies generated files and formatting; `npm run test:browser` runs all browser checks (search, crop picker and sorting, market access, layout and touch targets in both languages, accessibility, offline/PWA, auto-update). `.github/workflows/test.yml` runs all three on every push and pull request and uploads screenshots. Run `npm install` first; set `CHROMIUM_PATH` to use an existing Chromium.
 
 ## Installable PWA and offline use
 

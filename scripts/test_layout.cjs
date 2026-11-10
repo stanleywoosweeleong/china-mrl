@@ -47,6 +47,25 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
                 .map((e) => e.id || e.className || e.tagName)
             );
             if (sliding.length) problems.push(`${tag} ${tab}: scrolls sideways inside ${sliding.join(', ')}`);
+            // Finger-sized targets: every visible control is at least 44px tall.
+            const small = await page.evaluate(() =>
+              [
+                ...document.querySelectorAll(
+                  'main button, main select, main input, main summary, nav button, header button, header select'
+                )
+              ]
+                .filter((e) => e.offsetParent && !e.closest('.row-actions .view'))
+                .filter((e) => e.getBoundingClientRect().height < 43.5 && e.getBoundingClientRect().width > 2)
+                .map(
+                  (e) =>
+                    (e.id || e.className || e.textContent.trim().slice(0, 20)) +
+                    ' ' +
+                    Math.round(e.getBoundingClientRect().height) +
+                    'px'
+                )
+            );
+            if (small.length)
+              problems.push(`${tag} ${tab}: touch targets under 44px: ${[...new Set(small)].join(', ')}`);
           }
           if (lang === 'zh') {
             // Visible text left in English, apart from names shown in both languages and the brand.

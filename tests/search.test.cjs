@@ -121,3 +121,34 @@ test('ambiguous crop names offer suggestions that select the crop', async () => 
   assert.equal(search('<img src=x>'), null);
   assert(!nodes.fullSearchNote.innerHTML.includes('<img'));
 });
+test('sorting, the crop picker ranking and the print sheet', async () => {
+  const { nodes, ctx } = await app();
+  vm.runInContext("setTab('fresh')", ctx);
+  nodes.crop.value = '榴莲';
+  vm.runInContext("sortBy = { col: 'limit', dir: 'desc' }; filter()", ctx);
+  const limits = vm.runInContext('filtered.map((r) => r.mrl)', ctx);
+  assert.equal(limits.length, 89);
+  assert.deepEqual(
+    limits,
+    [...limits].sort((a, b) => b - a)
+  );
+  assert.equal(nodes.rows.className, 'crop-context');
+  const ids = (q) => vm.runInContext(`cropMatches(normalized(${JSON.stringify(q)})).map((c) => c.id)`, ctx);
+  assert.equal(ids('liulian')[0], '榴莲');
+  assert.equal(ids('ll')[0], '榴莲');
+  assert.equal(ids('blm')[0], '菠萝蜜');
+  assert.equal(ids('Durian')[0], '榴莲');
+  assert.equal(ids('musang king')[0], '榴莲');
+  assert(ids('pepper').includes('甜椒'));
+  assert.deepEqual(ids('zzzz'), []);
+  assert.equal(ids('').length, 184);
+  let printed = 0;
+  ctx.window.print = () => printed++;
+  ctx.document.getElementById('originSelector').selectedOptions = [{ textContent: 'Malaysia' }];
+  vm.runInContext('printSheet()', ctx);
+  assert.equal(printed, 1);
+  assert.equal((nodes.printSheet.innerHTML.match(/class="sheet-row"/g) || []).length, 89);
+  assert.match(nodes.printSheet.innerHTML, /<h1>Durian · 榴莲<\/h1>/);
+  assert.match(nodes.printSheet.innerHTML, /GB 23200\.\d+/);
+  assert.match(nodes.printSheet.innerHTML, /89 of 89 limits in this view/);
+});

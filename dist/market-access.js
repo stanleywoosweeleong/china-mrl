@@ -29,7 +29,7 @@ async function init(crops,onHeaderChange=()=>{}){
  html+=`<h3>${r.status==='restricted'?'Restriction documented':'Protocol documented · conditions apply'}</h3><p>${escape(r.scope)}</p><p><strong>Current operational clearance: not verified.</strong> An opening announcement does not establish that access remains open today.</p><p>Announcement: ${escape(r.announced)} · Document reviewed: ${escape(r.reviewed)}${stale?' · Review due (over 90 days)':''}</p><h4>Key protocol conditions (summary)</h4><ul>${r.conditions.map(c=>`<li>${escape(c)}</li>`).join('')}</ul>`;
  if(/^https:\/\//.test(r.url))html+=`<p><a href="${escape(r.url)}" target="_blank" rel="noopener">${escape(r.title)} · GACC announcement, MOFCOM republication ↗</a></p>`;
  }
- html+=form==='fresh'?`<button data-crop="${escape(crop)}">View ${escape(name)} residue limits ↗</button>`:'<p>Fresh-product MRLs are not automatically applicable to this form.</p><button data-tab="full">Explore the entire MRL standard ↗</button>';
+ html+=form==='fresh'?`<button data-crop="${escape(crop)}">View ${escape(name)} residue limits ↗</button>`:'<p>Fresh-product MRLs are not automatically applicable to this form.</p>';
  el('accessResult').innerHTML=html;
  }
  ids.forEach(id=>{el(id).disabled=false;el(id).addEventListener('change',()=>{el('originSelector').value=el(ids[0]).value;render()})});

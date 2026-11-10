@@ -87,3 +87,7 @@ Run `AUDIT_URL=http://localhost:8089/china-mrl/ node scripts/test_access_catalog
 New users default to Malaysia; an explicitly saved country or Global choice is retained. Malaysian fresh durian is labelled approved market access under GACC 2024 No. 72, separately from shipment-specific compliance checks.
 
 `node scripts/test_auto_update.cjs` exercises HTML-only updates, worker replacement, incomplete-download recovery, state retention and offline use with a local mutable server. `scripts/service-worker.js` is the worker template; `prepare_pages.py` includes its contents in each generated worker version.
+
+## Readability
+
+Screen typography uses charcoal primary text and dark slate supporting text, 16px body copy and form controls, 14px supporting copy, and a 13px minimum for compact metadata. Navigation and controls use stronger weights; buttons have a minimum 44px height. Green remains an accent. `scripts/audit_typography.cjs` checks text contrast, minimum font size and document overflow across eight views at 320px, 390px and 1440px widths. The recorded audit in `research/typography-audit.json` found a minimum sampled contrast of 7.73:1; this is a focused typography check, not a complete accessibility certification.

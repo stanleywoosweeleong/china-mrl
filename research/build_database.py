@@ -28,6 +28,8 @@ for idx,h in enumerate(heads):
  offset=h.start()+table.end();pending=[];category='';categoryScope='';last=None
  categories=['谷物','油料和油脂','蔬菜','干制蔬菜','水果','干制水果','坚果','糖料','饮料类','食用菌','调味料','药用植物','哺乳动物肉类','哺乳动物内脏','哺乳动物脂肪','禽肉类','禽类内脏','禽类脂肪','蛋类','生乳','乳脂肪','水产品']
  def cat(t):
+  # Section 4.152 (PDF p.136) prints the sugar-crop heading as 糖类 instead of 糖料.
+  if t=='糖类':return '糖料'
   return next((c for c in categories if t==c or t.startswith(c+'(') or t.startswith(c+',') or t.startswith(c+'及')),None)
  for line in body.splitlines(True):
   t=line.strip();page=s[:offset].count('\f')+1;offset+=len(line)

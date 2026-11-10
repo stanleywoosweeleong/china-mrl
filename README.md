@@ -14,6 +14,7 @@ Open http://localhost:8080. Run checks with `node --test tests/*.test.cjs`. This
 
 - All 10,749 numeric source rows across 568 pesticide sections (the standard describes 585 pesticides, including combined sections).
 - 6,077 original fresh-fruit/vegetable rows; 184 fresh commodities mapped to Annex A for direct and group lookups.
+- 109 further Annex A commodities (dried fruit/vegetables, nuts, sugar crops, beverages, edible fungi including fresh mushrooms, spices, medicinal plants) resolved in the Entire standard search. Grains, oilseeds/oils and animal products are not mapped: grains reuse vegetable names such as 豌豆 for dry pulses. The source's misprinted 糖类 heading in section 4.152 is read as 糖料 and flagged on the row.
 - All 44 Annex B exemptions; original 442-page Chinese PDF bundled with page-specific links.
 - Residue definitions, available testing-method paragraphs, provisional flags, EMRL distinctions, food qualifiers, and source location preserved.
 - Full-standard food categories, search, CSV export, saved references with crop context, and quantified/non-detect arithmetic comparison.

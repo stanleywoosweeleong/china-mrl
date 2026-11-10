@@ -43032,9 +43032,9 @@
   {
     "id": "152:3310",
     "pesticideId": 152,
-    "food": "糖类甘蔗",
-    "category": "饮料类",
-    "categoryScope": "饮料类",
+    "food": "甘蔗",
+    "category": "糖料",
+    "categoryScope": "糖类",
     "mrl": 0.05,
     "qualifier": "",
     "provisional": false,

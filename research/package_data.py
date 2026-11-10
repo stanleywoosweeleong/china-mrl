@@ -25,6 +25,7 @@ def label(t):
  return t
 for r in rows:
  r['foodEn']=label(r['food']);r['categoryEn']=catEn[r['category']]
+ if r['table']==152 and r['categoryScope']=='糖类':r['sourceNote']='Source heading printed as 糖类; read as the sugar-crop category 糖料 (Annex A). Check the original page.'
  if r['table']==226 and r['page']==185:r['sourceNote']='Source numbering discrepancy: the continuation heading is printed Table 227, but these rows are within section 4.226 (emamectin benzoate). Check the original section and page.'
 for p in ps:
  p['en']=p['en'][0].upper()+p['en'][1:]

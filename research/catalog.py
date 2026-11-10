@@ -44,3 +44,31 @@ add('蔬菜','水生类蔬菜','菱角:Water caltrop|芡实:Fox nut|莲子(鲜):
 add('蔬菜','水生类蔬菜','莲藕:Lotus root|荸荠:Water chestnut|慈姑:Arrowhead','Whole plant.',414)
 add('蔬菜','芽菜类蔬菜','绿豆芽:Mung bean sprouts|黄豆芽:Soybean sprouts|萝卜芽:Radish sprouts|苜蓿芽:Alfalfa sprouts|花椒芽:Sichuan pepper shoots|香椿芽:Chinese toon shoots','All parts.',414)
 add('蔬菜','其他类蔬菜','黄花菜(鲜):Fresh daylily|竹笋:Bamboo shoot|仙人掌:Cactus|玉米笋:Baby corn','All parts.',414)
+
+# Plant-origin categories beyond fresh produce (Annex A, PDF pp.414–415). Grains, oilseeds/oils and
+# animal products are not mapped: grains reuse fresh-vegetable names (豌豆, 蚕豆) as dry pulses.
+NON_FRESH=len(CATALOG)
+add('干制蔬菜','干制蔬菜','番茄干:Dried tomato|马铃薯干:Dried potato|萝卜干:Dried radish|黄花菜(干):Dried daylily|葱(干):Dried scallion','Whole product.',414)
+add('干制水果','干制水果','柑橘脯:Candied citrus|柑橘肉(干):Dried citrus pulp|李子干:Prune:dried plum|葡萄干:Raisin:sultana|干制无花果:Dried fig|无花果蜜饯:Candied fig|枣(干):Dried jujube:dried red date|苹果干:Dried apple','Whole fruit; test the flesh and include stone weight in the residue calculation.',415)
+add('坚果','小粒坚果','杏仁:Almond|榛子:Hazelnut|腰果:Cashew nut|松仁:Pine nut|开心果:Pistachio','Whole nut, shell removed.',415)
+add('坚果','大粒坚果','核桃:Walnut|板栗:Chestnut|山核桃:Pecan|澳洲坚果:Macadamia','Whole nut, shell removed.',415)
+add('糖料','糖料','甘蔗:Sugar cane','Whole cane, top leaves and petioles removed.',415)
+add('糖料','糖料','甜菜:Sugar beet','Whole beet, top leaves and petioles removed.',415)
+add('饮料类','饮料类','茶叶:Tea:tea leaves|咖啡豆:Coffee beans:green coffee|咖啡豆(烘焙):Roasted coffee beans|可可豆:Cocoa beans:cacao|啤酒花:Hops','Not specified in Annex A.',415)
+add('饮料类','饮料类','菊花(鲜):Fresh chrysanthemum flower|菊花(干):Dried chrysanthemum flower|玫瑰花:Rose flower|茉莉花(鲜):Fresh jasmine flower|茉莉花(干):Dried jasmine flower','Not specified in Annex A.',415)
+add('饮料类','果汁','番茄汁:Tomato juice','Not specified in Annex A.',415,['蔬菜汁'])
+add('饮料类','果汁','橙汁:Orange juice|苹果汁:Apple juice|葡萄汁:Grape juice','Not specified in Annex A.',415,['水果汁'])
+add('食用菌','蘑菇类','香菇:Shiitake mushroom:香菇(鲜)|金针菇:Enoki mushroom:金针菇(鲜)|平菇:Oyster mushroom:平菇(鲜)|茶树菇:Tea tree mushroom:茶树菇(鲜)|竹荪:Bamboo fungus:竹荪(鲜)|草菇:Straw mushroom:草菇(鲜)|羊肚菌:Morel:羊肚菌(鲜)|牛肝菌:Bolete (porcini):牛肝菌(鲜)|口蘑:Mongolian mushroom:口蘑(鲜)|松茸:Matsutake:松茸(鲜)|双孢蘑菇:Button mushroom:双孢蘑菇(鲜),champignon,white mushroom|猴头菇:Lion\'s mane mushroom:猴头菇(鲜)|白灵菇:Bailing mushroom:白灵菇(鲜)|杏鲍菇:King oyster mushroom:杏鲍菇(鲜)','Whole mushroom.',415,['蘑菇类(鲜)'])
+add('食用菌','木耳类','木耳:Wood ear fungus|银耳:Snow fungus|金耳:Golden ear fungus|毛木耳:Hairy wood ear fungus|石耳:Rock tripe','Whole fungus.',415)
+add('调味料','叶类调味料','芫荽:Coriander leaf:cilantro|薄荷:Mint|罗勒:Basil|艾蒿:Mugwort|紫苏:Perilla|留兰香:Spearmint|月桂:Bay leaf|欧芹:Parsley|迷迭香:Rosemary|香茅:Lemongrass|蒌叶:Betel leaf|马郁兰:Marjoram|夏香草:Summer savory','Whole plant, roots removed.',415)
+add('调味料','干辣椒','干辣椒:Dried chilli:dried chili','Whole fruit, stalk removed.',415)
+add('调味料','果类调味料','花椒:Sichuan pepper|胡椒:Black pepper:white pepper|豆蔻:Cardamom|孜然:Cumin|番茄酱:Tomato paste','Whole fruit.',415)
+add('调味料','种子类调味料','芥末:Mustard|八角茴香:Star anise|小茴香籽:Fennel seed|芫荽籽:Coriander seed','Whole seed.',415)
+add('调味料','根茎类调味料','桂皮:Cassia bark:cinnamon|山葵:Wasabi','Whole plant.',415)
+add('药用植物','根茎类药用植物','人参(鲜):Fresh ginseng|人参(干):Dried ginseng|三七(鲜):Fresh notoginseng|三七块根(干):Dried notoginseng root tuber|三七须根(干):Dried notoginseng fibrous root|贝母(鲜):Fresh fritillaria bulb|贝母(干):Dried fritillaria bulb|天麻:Gastrodia tuber|甘草:Liquorice root:licorice|半夏:Pinellia tuber|当归:Angelica root|白术(鲜):Fresh atractylodes rhizome|白术(干):Dried atractylodes rhizome|百合(干):Dried lily bulb|元胡(鲜):Fresh corydalis tuber|元胡(干):Dried corydalis tuber','Root and stem parts.',415)
+add('药用植物','叶及茎秆类药用植物','车前草:Plantain herb|鱼腥草:Houttuynia|艾:Argy wormwood leaf|蒿:Artemisia herb|石斛(鲜):Fresh dendrobium|石斛(干):Dried dendrobium','Stem and leaf parts.',415)
+add('药用植物','花及果实类药用植物','枸杞(干):Dried goji berry:dried wolfberry|银杏:Ginkgo|三七花(干):Dried notoginseng flower','Flower and fruit parts.',415)
+add('药用植物','花及果实类药用植物','金银花(鲜):Fresh honeysuckle flower|金银花(干):Dried honeysuckle flower','Flower and fruit parts.',415,['金银花'])
+# 枸杞(干) is listed under medicinal plants, but one section names it under dried fruit; direct names apply there too.
+for c in CATALOG:
+ if c['zh']=='枸杞(干)':c['extraCategories']=['干制水果']

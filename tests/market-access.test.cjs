@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const access=require('../dist/market-access.js'),data=require('../dist/market-access.json'),db=require('../dist/database.json');
+const access=require('../dist/market-access.js'),data=require('../dist/market-access.json'),db0=require('../dist/database.json'),db={...db0,crops:db0.crops.filter(c=>['水果','蔬菜'].includes(c.category))};
 test('access matches origin, crop and form without inference',()=>{
  assert.equal(access.lookup(data.records,'MY','榴莲','fresh').status,'conditional');
  for(const args of [['MY','榴莲','frozen'],['TH','榴莲','fresh'],['MY','番茄','fresh'],['LA','辣椒','dried']])assert.equal(access.lookup(data.records,...args).status,'unverified');

@@ -435,6 +435,9 @@
 
     // Redesign: crop picker, sorting, navigation, detail and print sheet
     More: '更多',
+    Produce: '果蔬',
+    Access: '准入',
+    Saved: '已保存',
     'Crops with a record': '有记录的作物',
     Sort: '排序',
     'Default order': '默认顺序',

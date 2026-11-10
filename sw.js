@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'china-mrl-' + self.registration.scope + '|';
-const CACHE = CACHE_PREFIX + '82dc4b29c5703ea0';
+const CACHE = CACHE_PREFIX + '5a04568e47a2a8e0';
 const META = CACHE_PREFIX + 'active';
 const POINTER = new URL('__active_snapshot__', self.registration.scope).href;
 const FILES = ["./", "index.html", "manifest.webmanifest", "dist/index.html", "dist/style.css", "dist/app.js", "dist/zh.js", "dist/i18n.js", "dist/rules.js", "dist/market-access.js", "dist/pwa.js", "dist/database.json", "dist/market-access.json", "dist/data.json", "dist/standard.pdf", "dist/icons/icon-192.png", "dist/icons/icon-512.png", "dist/icons/maskable-512.png", "dist/icons/apple-touch-icon.png", "dist/icons/favicon.png", "dist/fonts/dmsans-OFL.txt", "dist/fonts/font-0.ttf", "dist/fonts/font-1.ttf", "dist/fonts/font-2.ttf", "dist/fonts/font-3.ttf", "dist/fonts/font-4.ttf", "dist/fonts/font-5.ttf", "dist/fonts/font-6.ttf", "dist/fonts/font-7.ttf", "dist/fonts/font-8.ttf", "dist/fonts/manrope-OFL.txt", "dist/screenshots/desktop.png", "dist/screenshots/mobile.png"];

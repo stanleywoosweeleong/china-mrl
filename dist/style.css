@@ -2535,3 +2535,27 @@ dialog details.section[open] {
     min-height: 44px;
   }
 }
+/* Bottom bar on phones uses one-word labels. */
+nav .short {
+  display: none;
+}
+@media screen and (max-width: 760px) {
+  nav > button .long {
+    display: none;
+  }
+  nav > button .short {
+    display: inline;
+  }
+  nav button span {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+@media screen and (max-width: 760px) {
+  nav b {
+    display: block;
+  }
+  nav b[hidden] {
+    display: none;
+  }
+}

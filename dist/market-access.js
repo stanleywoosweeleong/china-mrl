@@ -16,11 +16,19 @@ async function init(crops,onHeaderChange=()=>{}){
  function option(id,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;el(id).append(o)}
  option(ids[0],'','Global · select an origin');
  data.countries.forEach(c=>{option(ids[0],c.code,c.name);option('originSelector',c.code,c.name)});crops.slice().sort((a,b)=>a.en.localeCompare(b.en)).forEach(c=>option(ids[1],c.id,c.en+' · '+c.zh));
- el(ids[0]).value='';el('originSelector').value='';el(ids[1]).value='榴莲';
+ let storedOrigin='';try{storedOrigin=localStorage.getItem('china-mrl-origin')||''}catch{}
+ const initialOrigin=data.countries.some(c=>c.code===storedOrigin)?storedOrigin:'';
+ el(ids[0]).value=initialOrigin;el('originSelector').value=initialOrigin;el(ids[1]).value='榴莲';
  el('accessCoverage').textContent=`Coverage: ${data.records.length} documented combinations across ${new Set(data.records.map(r=>r.origin)).size} origins. All ${crops.length} crops can be checked; other combinations return “Not verified”. ${data.coverage}`;
  function render(){
  const origin=el(ids[0]).value,crop=el(ids[1]).value,form=el(ids[2]).value;
  const r=lookup(data.records,origin,crop,form),name=crops.find(c=>c.id===crop)?.en||crop,country=data.countries.find(c=>c.code===origin)?.name||'Global';
+ el('originSelector').value=origin;
+ el('originBrand').textContent=origin?country.toUpperCase()+' EXPORT REFERENCE':'GLOBAL EXPORT REFERENCE';
+ el('originRoute').textContent=(origin?country:'All origins')+' → Mainland China';
+ el('originEyebrow').textContent=origin?'ONE STANDARD. EXPORTING FROM '+country.toUpperCase()+'.':'ONE STANDARD. A GLOBAL REFERENCE.';
+ el('originFooter').textContent=(origin?country:'All origins')+'. Source-linked limits. Clear scope.';
+ try{localStorage.setItem('china-mrl-origin',origin)}catch{}
  let html=`<p class="tag">${escape(country)} → CHINA · ${escape(form)}</p><h2>${escape(name)}</h2>`;
  if(!origin)html+='<h3>Select an origin to check market access</h3><p>Global is an overview without a selected country. China’s MRL reference remains available for all origins. Market-access permission must be checked for a specific country, commodity and product form.</p>';
  else if(r.status==='unverified')html+='<h3>Not verified</h3><p>No reviewed record for this exact combination is included here. This does not mean prohibited or permitted. Confirm with the authorities linked below before shipment.</p>';

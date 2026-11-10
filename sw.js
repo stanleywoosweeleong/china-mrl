@@ -1,5 +1,5 @@
 const CACHE_PREFIX='china-mrl-'+self.registration.scope+'|';
-const CACHE=CACHE_PREFIX+'b8e0d23e4e0b881f';
+const CACHE=CACHE_PREFIX+'4654e7b217c63a3c';
 const FILES=["./", "index.html", "manifest.webmanifest", "dist/index.html", "dist/style.css", "dist/app.js", "dist/rules.js", "dist/market-access.js", "dist/pwa.js", "dist/database.json", "dist/market-access.json", "dist/data.json", "dist/standard.pdf", "dist/icons/icon-192.png", "dist/icons/icon-512.png", "dist/icons/maskable-512.png", "dist/icons/apple-touch-icon.png", "dist/icons/favicon.png", "dist/fonts/dmsans-OFL.txt", "dist/fonts/font-0.ttf", "dist/fonts/font-1.ttf", "dist/fonts/font-2.ttf", "dist/fonts/font-3.ttf", "dist/fonts/font-4.ttf", "dist/fonts/font-5.ttf", "dist/fonts/font-6.ttf", "dist/fonts/font-7.ttf", "dist/fonts/font-8.ttf", "dist/fonts/manrope-OFL.txt", "dist/screenshots/desktop.png", "dist/screenshots/mobile.png"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith(CACHE_PREFIX)&&key!==CACHE)await caches.delete(key);await self.clients.claim()})()));

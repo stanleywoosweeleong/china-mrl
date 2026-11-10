@@ -72,7 +72,7 @@ To maintain coverage, review official GACC notices and the origin authority, pre
 
 The app includes a web manifest, 192/512px icons, a separate maskable icon, Apple touch icon, favicon and scoped service workers. Use the in-app Install button where supported, or Safari → Share → Add to Home Screen on iOS. Installation controls depend on the browser.
 
-After **Offline reference ready** appears, the app, both reference datasets and the source PDF are cached (approximately 7 MB). Offline mode displays a notice; regulatory snapshots do not become current by being cached. First use requires connectivity, and device/browser storage eviction can remove offline data. A new deployment installs a versioned cache atomically and offers **Update available · reload** when ready. Saved references remain in browser local storage.
+After **Offline reference ready** appears, the app, both reference datasets and the source PDF are cached (approximately 7 MB). Offline mode displays a notice; regulatory snapshots do not become current by being cached. First use requires connectivity, and device/browser storage eviction can remove offline data. Updates download a complete snapshot before automatically activating and reloading open app windows. The app checks when opened, resumed, reconnected and every five minutes while visible. Changes to index.html are also detected even when the service-worker file is unchanged. Failed downloads retain the previous complete snapshot. Saved references and the origin preference remain in browser local storage. Unsaved form inputs may reset on an automatic reload. Automatic app delivery does not imply automatic regulatory research.
 
 Run `python scripts/prepare_pages.py` after changes: it also generates manifests and content-versioned service workers for both `/china-mrl/` and standalone `dist/` hosting. Commit the generated files together. HTTPS is required for installation/service workers in production; localhost works for development.
 
@@ -83,3 +83,7 @@ Run `node scripts/audit_chrome.cjs` with Playwright installed and Chromium avail
 The manifest includes wide and narrow screenshots for richer installation, an explicit project-specific app ID, and separate regular/maskable icons. Fonts are bundled locally with their SIL Open Font License files for offline use.
 
 Run `AUDIT_URL=http://localhost:8089/china-mrl/ node scripts/test_access_catalogue.cjs` against a local server to verify country lists, status/category/search filters, MRL handoff, origin persistence and form isolation.
+
+New users default to Malaysia; an explicitly saved country or Global choice is retained. Malaysian fresh durian is labelled approved market access under GACC 2024 No. 72, separately from shipment-specific compliance checks.
+
+`node scripts/test_auto_update.cjs` exercises HTML-only updates, worker replacement, incomplete-download recovery, state retention and offline use with a local mutable server. `scripts/service-worker.js` is the worker template; `prepare_pages.py` includes its contents in each generated worker version.

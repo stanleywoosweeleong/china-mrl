@@ -11,26 +11,7 @@ for target,prefix in [(dist,''),(root,'dist/')]:
  (target/'manifest.webmanifest').write_text(json.dumps(manifest,indent=2)+'\n')
  paths=['./','index.html','manifest.webmanifest']+[prefix+a for a in assets if prefix or a!='index.html']
  paths=list(dict.fromkeys(paths))
- digest=hashlib.sha256(b''.join((target/p).read_bytes() for p in paths if p!='./')).hexdigest()[:16]
- worker='''const CACHE_PREFIX='china-mrl-'+self.registration.scope+'|';
-const CACHE=CACHE_PREFIX+'VERSION';
-const FILES=FILES_JSON;
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
-self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const key of await caches.keys())if(key.startsWith(CACHE_PREFIX)&&key!==CACHE)await caches.delete(key);await self.clients.claim()})()));
-self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting()});
-self.addEventListener('fetch',event=>{
- const url=new URL(event.request.url);
- if(event.request.method!=='GET'||url.origin!==self.location.origin||!url.href.startsWith(self.registration.scope))return;
- event.respondWith((async()=>{
-  const cache=await caches.open(CACHE);
-  const cached=await cache.match(event.request,{ignoreSearch:true});
-  if(cached)return cached;
-  try{return await fetch(event.request)}catch(error){
-   if(event.request.mode==='navigate')return await cache.match(new URL('index.html',self.registration.scope));
-   return Response.error();
-  }
- })());
-});
-'''.replace('VERSION',digest).replace('FILES_JSON',json.dumps(paths))
+ digest=hashlib.sha256((root/'scripts/service-worker.js').read_bytes()+b''.join((target/p).read_bytes() for p in paths if p!='./')).hexdigest()[:16]
+ worker=(root/'scripts/service-worker.js').read_text().replace('VERSION',digest).replace('FILES_JSON',json.dumps(paths))
  (target/'sw.js').write_text(worker)
 print('Generated root and standalone PWA manifests/workers.')

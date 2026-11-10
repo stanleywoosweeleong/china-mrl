@@ -8,7 +8,7 @@ const {chromium}=require('playwright'),assert=require('assert');
  await page.locator('[data-access-crop="菠萝蜜"]').click();assert((await page.locator('#accessResult').innerText()).includes('GACC 2023 No. 34'));
  await page.locator('#accessCropList [data-crop="菠萝蜜"]').click();assert.equal(await page.locator('#crop').inputValue(),'菠萝蜜');assert((await page.locator('#cropCard').innerText()).includes('access documented'));
  await page.selectOption('#crop','番茄');assert((await page.locator('#cropCard').innerText()).includes('not verified'));
- await page.reload();await page.waitForFunction(()=>document.getElementById('cropCard').textContent.includes('access documented'));assert.equal(await page.locator('#originSelector').inputValue(),'MY');
+ await page.reload();await page.waitForFunction(()=>document.getElementById('cropCard').textContent.includes('approved market access'));assert.equal(await page.locator('#originSelector').inputValue(),'MY');
  await page.locator('nav [data-tab="access"]').click();await page.selectOption('#accessForm','frozen');assert.equal(await page.locator('#accessCropList article').count(),184);assert((await page.locator('#accessCropList article').first().innerText()).includes('Not verified'));await page.selectOption('#accessStatus','conditional');assert.equal(await page.locator('#accessCropList article').count(),0);
  await page.selectOption('#accessForm','fresh');await page.selectOption('#originSelector','LA');assert.equal(await page.locator('#accessCropList article').count(),1);assert((await page.locator('#accessCropList').innerText()).includes('Chilli'));
  await page.selectOption('#originSelector','');assert(!(await page.locator('#accessCatalogue').isVisible()));

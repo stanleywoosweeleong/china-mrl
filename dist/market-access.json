@@ -1009,11 +1009,12 @@
       "announced": "2024-06-24",
       "reviewed": "2026-11-10",
       "url": "https://www.mofcom.gov.cn/zcfb/zgdwjjmywg/art/2024/art_32633a5a3a08421d9fe75b8c20f11787.html",
-      "scope": "Fresh Durio zibethinus grown in Malaysia.",
+      "scope": "Malaysia-grown fresh durian (Durio zibethinus) is approved for import into China under GACC Announcement 2024 No. 72, subject to its requirements.",
       "conditions": [
         "Orchards and packing houses require Malaysian review and GACC registration.",
         "Apply orchard pest monitoring, integrated pest management and traceability.",
-        "Clean and grade fruit; follow protocol packaging and destination markings."
+        "Clean and grade fruit; follow protocol packaging and destination markings.",
+        "Provide the phytosanitary certificate, required declarations and import quarantine permit; use an authorized entry port."
       ],
       "additionalSources": [
         {
@@ -1021,7 +1022,8 @@
           "url": "https://www.bernama.com/en/general/news.php?id=2575755",
           "note": "DOA stated that overland exports through transit countries were not authorized under the existing protocol. Confirm the current route approval before shipment."
         }
-      ]
+      ],
+      "marketAccess": "approved"
     },
     {
       "origin": "MY",

@@ -17,10 +17,10 @@ async function init(crops,onHeaderChange=()=>{},onOriginChange=()=>{}){
  const response=await fetch('market-access.json');if(!response.ok)throw Error('Protocol data unavailable');const data=await response.json();
  if(!Array.isArray(data.records)||!Array.isArray(data.countries))throw Error('Invalid protocol data');
  function option(id,value,label){const o=document.createElement('option');o.value=value;o.textContent=label;el(id).append(o)}
- option(ids[0],'','Global · select an origin');
+ option(ids[0],'','Global · select an origin');el('originSelector').innerHTML='';option('originSelector','','Global');
  data.countries.forEach(c=>{option(ids[0],c.code,c.name);option('originSelector',c.code,c.name)});crops.slice().sort((a,b)=>a.en.localeCompare(b.en)).forEach(c=>option(ids[1],c.id,c.en+' · '+c.zh));
- let storedOrigin='';try{storedOrigin=localStorage.getItem('china-mrl-origin')||''}catch{}
- const initialOrigin=data.countries.some(c=>c.code===storedOrigin)?storedOrigin:'';
+ let storedOrigin=null;try{storedOrigin=localStorage.getItem('china-mrl-origin')}catch{}
+ const initialOrigin=storedOrigin==null?'MY':data.countries.some(c=>c.code===storedOrigin)?storedOrigin:'';
  el(ids[0]).value=initialOrigin;el('originSelector').value=initialOrigin;el(ids[1]).value='榴莲';
  el('accessCoverage').textContent=`Coverage: ${data.records.length} documented combinations across ${new Set(data.records.map(r=>r.origin)).size} origins. All ${crops.length} crops can be checked; other combinations return “Not verified”. ${data.coverage}`;
  const labels={conditional:'Documented access · conditions apply',restricted:'Restriction documented',unverified:'Not verified'};
@@ -34,11 +34,11 @@ async function init(crops,onHeaderChange=()=>{},onOriginChange=()=>{}){
   const q=el('accessCropSearch').value.trim().toLowerCase(),status=el('accessStatus').value||'all',category=el('accessCategory').value;
   const rows=entries.filter(c=>(status==='all'||c.access.status===status)&&(!category||category===c.category)&&(!q||[c.en,c.zh,...c.aliases||[]].join(' ').toLowerCase().includes(q))).sort((a,b)=>({conditional:0,restricted:1,unverified:2}[a.access.status]-{conditional:0,restricted:1,unverified:2}[b.access.status])||a.en.localeCompare(b.en));
   el('accessListCount').textContent=`${rows.length} crops shown`;
-  el('accessCropList').innerHTML=rows.length?rows.map(c=>`<article><div><strong>${escape(c.en)} · ${escape(c.zh)}</strong><small>${escape(labels[c.access.status])}</small>${c.access.reviewed?`<small>${c.access.evidenceType==='official-guide'?'Official guide':'Protocol'} · reviewed ${escape(c.access.reviewed)}</small>`:''}</div><div><button data-access-crop="${escape(c.id)}">${c.access.status==='unverified'?'Review status':'Conditions & sources'}</button>${form==='fresh'?`<button data-crop="${escape(c.id)}">MRL limits</button>`:''}</div></article>`).join(''):'<p>No crops match this view. Try “All crops” or another produce type. An empty list is not a prohibition or permission.</p>';
+  el('accessCropList').innerHTML=rows.length?rows.map(c=>`<article><div><strong>${escape(c.en)} · ${escape(c.zh)}</strong><small>${escape(c.access.marketAccess==='approved'?'Approved market access · conditions apply':labels[c.access.status])}</small>${c.access.reviewed?`<small>${c.access.evidenceType==='official-guide'?'Official guide':'Protocol'} · reviewed ${escape(c.access.reviewed)}</small>`:''}</div><div><button data-access-crop="${escape(c.id)}">${c.access.status==='unverified'?'Review status':'Conditions & sources'}</button>${form==='fresh'?`<button data-crop="${escape(c.id)}">MRL limits</button>`:''}</div></article>`).join(''):'<p>No crops match this view. Try “All crops” or another produce type. An empty list is not a prohibition or permission.</p>';
  }
  function syncFreshOptions(){
   const select=el('crop');if(!select?.options)return;
-  for(const option of select.options){const c=crops.find(c=>c.id===option.value);if(c)option.textContent=c.en+' · '+c.zh+(currentOrigin?' — '+labels[lookup(data.records,currentOrigin,c.id,'fresh').status]:'')}
+  for(const option of select.options){const c=crops.find(c=>c.id===option.value);if(c)option.textContent=c.en+' · '+c.zh+(currentOrigin?' — '+(lookup(data.records,currentOrigin,c.id,'fresh').marketAccess==='approved'?'Approved market access · conditions apply':labels[lookup(data.records,currentOrigin,c.id,'fresh').status]):'')}
  }
  function render(){
  const origin=el(ids[0]).value,crop=el(ids[1]).value,form=el(ids[2]).value;
@@ -55,7 +55,7 @@ async function init(crops,onHeaderChange=()=>{},onOriginChange=()=>{}){
  else if(r.status==='unverified')html+='<h3>Not verified</h3><p>No reviewed record for this exact combination is included here. This does not mean prohibited or permitted. Confirm with the authorities linked below before shipment.</p>';
  else{
  const stale=Date.now()-Date.parse(r.reviewed+'T00:00:00Z')>90*86400000;
- html+=`<h3>${r.status==='restricted'?'Restriction documented':(r.evidenceType==='official-guide'?'Access listed in official guide · conditions apply':'Protocol documented · conditions apply')}</h3><p>${escape(r.scope)}</p><p><strong>Current operational clearance: not verified.</strong> A source document does not establish that access remains open today.</p><p>${r.evidenceType==='official-guide'?'Guide edition':'Announcement'}: ${escape(r.announced)} · Document reviewed: ${escape(r.reviewed)}${stale?' · Review due (over 90 days)':''}</p><h4>Key source conditions (summary)</h4><ul>${r.conditions.map(c=>`<li>${escape(c)}</li>`).join('')}</ul>`;
+ html+=`<h3>${r.status==='restricted'?'Restriction documented':(r.marketAccess==='approved'?'Approved market access · conditions apply':r.evidenceType==='official-guide'?'Access listed in official guide · conditions apply':'Protocol documented · conditions apply')}</h3><p>${escape(r.scope)}</p><p><strong>Shipment checks:</strong> Confirm the required facility registrations, certificates, treatments and route before dispatch. This app does not assess or clear an individual shipment.</p><p>${r.evidenceType==='official-guide'?'Guide edition':'Announcement'}: ${escape(r.announced)} · Document reviewed: ${escape(r.reviewed)}${stale?' · Review due (over 90 days)':''}</p><h4>Key source conditions (summary)</h4><ul>${r.conditions.map(c=>`<li>${escape(c)}</li>`).join('')}</ul>`;
  if(/^https:\/\//.test(r.url))html+=`<p><a href="${escape(r.url)}" target="_blank" rel="noopener">${escape(r.title)} · ${escape(r.sourceLabel||'GACC announcement, MOFCOM republication')} ↗</a></p>`;
  }
  if(r.additionalSources)html+=r.additionalSources.map(s=>`<p>${escape(s.note)} <a href="${escape(s.url)}" target="_blank" rel="noopener">${escape(s.title)} ↗</a></p>`).join('');

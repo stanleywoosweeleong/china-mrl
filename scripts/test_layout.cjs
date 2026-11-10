@@ -101,7 +101,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
     const page = await browser.newPage({ serviceWorkers: 'block' });
     await page.goto(url + '?lang=en');
     await page.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
-    assert.equal(await page.locator('#langToggle').innerText(), '中文');
+    assert.equal(await page.locator('#langToggle .on').innerText(), 'EN');
     await page.locator('#langToggle').click();
     await page.waitForFunction(
       () =>
@@ -109,6 +109,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
         document.getElementById('resultCount').textContent === '89'
     );
     assert.equal(await page.locator('#title').innerText(), '查清限量，核对原文。');
+    assert.equal(await page.locator('#langToggle .on').innerText(), '中文');
     assert(!page.url().includes('lang='));
     await page.reload();
     await page.waitForFunction(() => document.documentElement.dataset.lang === 'zh');

@@ -55,6 +55,38 @@ const { chromium } = require('playwright'),
       await pickCrop(p, typed);
       assert.equal(await p.locator('#crop').inputValue(), id, typed);
     }
+    // Touch order (iOS): the box loses focus before the tap on an option arrives. The choice must still land.
+    await p.locator('#cropSearch').fill('mangguo');
+    await p.evaluate(() => {
+      const option = document.querySelector('#cropOptions li[data-crop-option]');
+      option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      document.getElementById('cropSearch').blur();
+    });
+    // The list must still be on screen for the tap to land on it.
+    assert(await p.locator('#cropOptions li[data-crop-option]').first().isVisible());
+    await p.evaluate(() =>
+      document
+        .querySelector('#cropOptions li[data-crop-option]')
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    );
+    assert.equal(await p.locator('#crop').inputValue(), '杧果');
+    assert.equal(await p.locator('#cropSearch').inputValue(), 'Mango');
+    // Scrolling the list (no choice) leaves it open; a press elsewhere closes it and keeps the crop.
+    await p.locator('#cropSearch').click();
+    await p.evaluate(() => {
+      document
+        .querySelector('#cropOptions')
+        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      document.getElementById('cropSearch').blur();
+    });
+    assert(await p.locator('#cropOptions').isVisible());
+    await p.locator('h1').click();
+    assert(!(await p.locator('#cropOptions').isVisible()));
+    assert.equal(await p.locator('#crop').inputValue(), '杧果');
+    // Typing one clear answer and leaving the box (keyboard "Done") selects it.
+    await p.locator('#cropSearch').fill('huolongguo');
+    await p.locator('h1').click();
+    assert.equal(await p.locator('#crop').inputValue(), '火龙果');
     await p.locator('#cropClear').click();
     assert.equal(await p.locator('#crop').inputValue(), '');
     await pickCrop(p, 'durian');

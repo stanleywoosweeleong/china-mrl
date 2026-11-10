@@ -2559,3 +2559,41 @@ nav .short {
     display: none;
   }
 }
+/* Language switch: both languages, the active one filled. */
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: #fff;
+}
+.lang-toggle span {
+  min-width: 34px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+.lang-toggle span.on {
+  background: var(--green);
+  color: #fff;
+}
+@media screen and (max-width: 760px) {
+  /* Top-right corner of the page, beside the app title. */
+  .lang-toggle {
+    position: absolute;
+    top: 14px;
+    right: 15px;
+    z-index: 5;
+    min-height: 44px;
+  }
+  .lang-toggle span {
+    padding: 7px 10px;
+  }
+  .brand {
+    padding-right: 120px;
+  }
+}

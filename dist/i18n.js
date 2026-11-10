@@ -72,10 +72,21 @@
     }
     const toggle = document.getElementById('langToggle');
     if (toggle) {
-      // The button always names the other language in that language.
-      toggle.textContent = lang === 'zh' ? 'EN' : '中文';
-      toggle.lang = lang === 'zh' ? 'en' : 'zh-Hans';
-      toggle.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切换到中文');
+      // Both languages are shown; the active one is marked. Pressing switches to the other.
+      toggle.innerHTML = [
+        ['zh', '中文'],
+        ['en', 'EN']
+      ]
+        .map(
+          ([code, label]) =>
+            `<span class="${code === lang ? 'on' : ''}" lang="${code === 'zh' ? 'zh-Hans' : 'en'}">${label}</span>`
+        )
+        .join('');
+      toggle.removeAttribute('lang');
+      toggle.setAttribute(
+        'aria-label',
+        lang === 'zh' ? '当前语言：中文。切换到 English' : 'Language: English. Switch to 中文 (Chinese)'
+      );
       toggle.addEventListener('click', () => setLang(lang === 'zh' ? 'en' : 'zh'));
     }
   }

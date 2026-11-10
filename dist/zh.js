@@ -448,7 +448,7 @@
     'Print limit sheet': '打印限量表',
     'Residue limits': '残留限量',
     Sections: '栏目',
-    'Type a crop name, e.g. durian': '输入作物名称或拼音，例如：榴莲、liulian',
+    'Type a crop name': '输入作物名称或拼音',
     'Show all fresh-produce entries': '显示全部新鲜果蔬条目',
     'Matching crops': '符合的作物',
     'Search pesticide or food…': '搜索农药或食品名称…',

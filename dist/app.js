@@ -701,6 +701,7 @@ function openCropList() {
   } else combo.input.removeAttribute?.('aria-activedescendant');
 }
 function chooseCrop(id) {
+  combo.pressing = false;
   $('crop').value = id;
   closeCropList();
   combo.input.blur?.();
@@ -714,7 +715,20 @@ combo.input.addEventListener('focus', () => {
   combo.input.select?.();
   openCropList();
 });
+// On touch devices the box loses focus before the tap on an option is delivered, so the list must not
+// close on blur while an option is being pressed. It closes on a choice, Escape, or a press elsewhere.
 combo.input.addEventListener('blur', () => {
+  if (combo.pressing) return;
+  // Leaving the box with one clear answer typed (keyboard "Done") selects it.
+  const typed = normalized(combo.input.value),
+    selected = cropMap.get($('crop').value);
+  if (typed && !(selected && typed === normalized(cropName(selected)))) {
+    const matches = cropMatches(typed),
+      exact = matches.filter((c) =>
+        [c.zh, c.en, c.py, ...(c.aliases || [])].some((n) => normalized(n) === typed)
+      );
+    if (matches.length === 1 || exact.length === 1) return chooseCrop((exact[0] || matches[0]).id);
+  }
   closeCropList();
   syncCropInput();
 });
@@ -736,12 +750,29 @@ combo.input.addEventListener('keydown', (e) => {
     combo.input.select?.();
   }
 });
-// Keep focus in the box while an option is pressed, so the tap is not lost to the blur.
+for (const type of ['pointerdown', 'touchstart'])
+  combo.list.addEventListener(type, () => (combo.pressing = true), { passive: true });
+// With a mouse, keep focus in the box while an option is pressed.
 combo.list.addEventListener('mousedown', (e) => e.preventDefault());
 combo.list.addEventListener('click', (e) => {
+  combo.pressing = false;
   const option = e.target.closest('[data-crop-option]');
   if (option) chooseCrop(option.dataset.cropOption);
 });
+// A press anywhere outside the picker ends it (the list may be open without focus after scrolling it).
+for (const type of ['pointerdown', 'touchstart'])
+  document.addEventListener(
+    type,
+    (e) => {
+      if (e.target.closest?.('.combo')) return;
+      combo.pressing = false;
+      if (!combo.list.hidden) {
+        closeCropList();
+        syncCropInput();
+      }
+    },
+    { passive: true }
+  );
 combo.clear.addEventListener('click', () => {
   chooseCrop('');
 });

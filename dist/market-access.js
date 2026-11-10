@@ -58,7 +58,7 @@ async function init(crops,onHeaderChange=()=>{},onOriginChange=()=>{}){
  html+=`<h3>${r.status==='restricted'?'Restriction documented':(r.marketAccess==='approved'?'Approved market access · conditions apply':r.evidenceType==='official-guide'?'Access listed in official guide · conditions apply':'Protocol documented · conditions apply')}</h3><p>${escape(r.scope)}</p><p><strong>Shipment checks:</strong> Confirm the required facility registrations, certificates, treatments and route before dispatch. This app does not assess or clear an individual shipment.</p><p>${r.evidenceType==='official-guide'?'Guide edition':'Announcement'}: ${escape(r.announced)} · Document reviewed: ${escape(r.reviewed)}${stale?' · Review due (over 90 days)':''}</p><h4>Key source conditions (summary)</h4><ul>${r.conditions.map(c=>`<li>${escape(c)}</li>`).join('')}</ul>`;
  if(/^https:\/\//.test(r.url))html+=`<p><a href="${escape(r.url)}" target="_blank" rel="noopener">${escape(r.title)} · ${escape(r.sourceLabel||'GACC announcement, MOFCOM republication')} ↗</a></p>`;
  }
- if(r.additionalSources)html+=r.additionalSources.map(s=>`<p>${escape(s.note)} <a href="${escape(s.url)}" target="_blank" rel="noopener">${escape(s.title)} ↗</a></p>`).join('');
+ if(r.additionalSources)html+=r.additionalSources.filter(s=>/^https:\/\//.test(s.url)).map(s=>`<p>${escape(s.note)} <a href="${escape(s.url)}" target="_blank" rel="noopener">${escape(s.title)} ↗</a></p>`).join('');
  html+=form==='fresh'?`<button data-crop="${escape(crop)}">View ${escape(name)} residue limits ↗</button>`:'<p>Fresh-product MRLs are not automatically applicable to this form.</p>';
  el('accessResult').innerHTML=html;onOriginChange();
  }

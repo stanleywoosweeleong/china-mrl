@@ -20,8 +20,8 @@ const {chromium}=require('playwright'),fs=require('fs'),os=require('os'),path=re
  const manifest=await cdp.send('Page.getAppManifest');report.manifestErrors=manifest.errors;report.appId=manifest.manifest?.id;
  report.installability=(await cdp.send('Page.getInstallabilityErrors')).installabilityErrors;
  const data=JSON.parse(manifest.data);assert(data.screenshots.some(s=>s.form_factor==='wide'));assert(data.screenshots.some(s=>s.form_factor==='narrow'));
- await page.setViewportSize({width:390,height:844});await page.reload();await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='88');
- await ctx.setOffline(true);await page.reload();await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='88');
+ await page.setViewportSize({width:390,height:844});await page.reload();await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='89');
+ await ctx.setOffline(true);await page.reload();await page.waitForFunction(()=>document.getElementById('resultCount').textContent==='89');
  assert.equal(await page.locator('#originSelector').inputValue(),'MY');assert.equal(await page.locator('#originRoute').innerText(),'Malaysia → Mainland China');
  await page.locator('nav [data-tab="access"]').click();await page.selectOption('#accessOrigin','');assert.equal(await page.locator('#originSelector').inputValue(),'');assert.equal(await page.locator('#originRoute').innerText(),'All origins → Mainland China');
  report.offlinePassed=true;assert.equal(report.findings.length,0);assert.equal(report.manifestErrors.length,0);assert.equal(report.installability.length,0);

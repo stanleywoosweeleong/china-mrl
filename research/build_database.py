@@ -46,7 +46,10 @@ for idx,h in enumerate(heads):
   elif cat(t):
    category=cat(t);categoryScope=t;pending=[t];last=None
   else:
-   if pending and cat(pending[-1]):pending=[]
+   # A category heading with unclosed brackets wraps onto this line; keep both halves.
+   head=''.join(pending)
+   if pending and cat(pending[0]) and len(re.findall(r'[([]',head))>len(re.findall(r'[)\]]',head)):categoryScope+=t
+   elif pending and cat(pending[-1]):pending=[]
    pending.append(t)
 Path('research/all-rows.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2));Path('research/pesticides.json').write_text(json.dumps(pesticides,ensure_ascii=False,indent=2));Path('research/extraction-issues.json').write_text(json.dumps(issues,ensure_ascii=False,indent=2))
 print('Pesticide sections',len(pesticides),'numeric rows',len(rows),'issues',len(issues));print(issues[:20]);print('Fruit/veg',len([r for r in rows if r['category'] in ['蔬菜','水果']]))

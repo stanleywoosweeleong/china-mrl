@@ -37,3 +37,4 @@ test('country catalogue distinguishes missing evidence, categories and product f
  const restriction={...data.records[0],origin:'ZZ',status:'restricted'};
  assert.equal(access.catalogue([restriction],db.crops,'ZZ','fresh').find(c=>c.id===restriction.crop).access.status,'restricted');
 });
+test('every additional source link is https',()=>{for(const r of data.records)for(const s of r.additionalSources||[])assert.match(s.url,/^https:\/\//)});

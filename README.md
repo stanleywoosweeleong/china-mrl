@@ -91,3 +91,7 @@ New users default to Malaysia; an explicitly saved country or Global choice is r
 ## Readability
 
 Screen typography uses charcoal primary text and dark slate supporting text, 16px body copy and form controls, 14px supporting copy, and a 13px minimum for compact metadata. Navigation and controls use stronger weights; buttons have a minimum 44px height. Green remains an accent. `scripts/audit_typography.cjs` checks text contrast, minimum font size and document overflow across eight views at 320px, 390px and 1440px widths. The recorded audit in `research/typography-audit.json` found a minimum sampled contrast of 7.73:1; this is a focused typography check, not a complete accessibility certification.
+
+## Entire-standard search
+
+The default **Applicable crop limits** mode recognizes a complete English/Chinese crop name or a unique known alias. It uses the same Annex A resolver as Fresh produce, preserving commodity precedence, group exclusions, conflict flags and original source scopes. Durian/榴莲 resolves to 88 entries (1 direct and 87 group-based) before other filters. The displayed breakdown follows active filters. Non-crop queries continue to search original food/pesticide wording; ambiguous crop aliases are not automatically expanded. **Exact source text** remains available for original-row searches and explains that it does not expand food groups. Saved/exported crop matches retain their crop context. `scripts/test_standard_search.cjs` checks these paths in a mobile browser.

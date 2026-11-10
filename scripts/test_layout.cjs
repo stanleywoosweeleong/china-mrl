@@ -16,6 +16,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
   try {
     for (const lang of ['en', 'zh'])
       for (const [width, height] of [
+        [320, 640],
         [390, 844],
         [1440, 900]
       ]) {
@@ -32,6 +33,20 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
             () => document.documentElement.scrollWidth - window.innerWidth
           );
           if (overflow > 0) problems.push(`${tag} ${tab}: page scrolls sideways by ${overflow}px`);
+          if (width < 760) {
+            // On phones nothing may slide sideways inside the page either (wide tables, tab strips).
+            const sliding = await page.evaluate(() =>
+              [...document.querySelectorAll('body *')]
+                .filter(
+                  (e) =>
+                    e.offsetParent &&
+                    e.scrollWidth > e.clientWidth + 1 &&
+                    !['visible', 'hidden'].includes(getComputedStyle(e).overflowX)
+                )
+                .map((e) => e.id || e.className || e.tagName)
+            );
+            if (sliding.length) problems.push(`${tag} ${tab}: scrolls sideways inside ${sliding.join(', ')}`);
+          }
           if (lang === 'zh') {
             // Visible text left in English, apart from names shown in both languages and the brand.
             const english = await page.evaluate(() => {
@@ -80,7 +95,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
     await page.close();
     assert.deepEqual(problems, []);
     console.log(
-      `Layout: ${tabs.length} tabs and the detail dialog at 390px and 1440px in English and Chinese, plus the language switch, passed; screenshots in ${out}.`
+      `Layout: ${tabs.length} tabs and the detail dialog at 320px, 390px and 1440px in English and Chinese, plus the language switch, passed; screenshots in ${out}.`
     );
   } finally {
     await browser.close();

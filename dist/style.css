@@ -1768,3 +1768,100 @@ html[data-lang='zh'] * {
 .edition label {
   white-space: nowrap;
 }
+/* Phones: each limit is a card instead of a table row, so nothing extends past the screen. */
+@media screen and (max-width: 760px) {
+  .table-wrap {
+    overflow-x: visible;
+    border: 0;
+    background: none;
+  }
+  .table-wrap table,
+  .table-wrap tbody {
+    display: block;
+    white-space: normal;
+  }
+  .table-wrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .table-wrap tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'food limit'
+      'pest limit'
+      'basis actions';
+    gap: 10px 14px;
+    margin-bottom: 10px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fff;
+  }
+  .table-wrap td,
+  .table-wrap td:first-child,
+  .table-wrap td:nth-child(2) {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+  .table-wrap td:nth-child(1) {
+    grid-area: food;
+  }
+  .table-wrap td:nth-child(2) {
+    grid-area: pest;
+  }
+  .table-wrap td:nth-child(3) {
+    grid-area: limit;
+    text-align: right;
+    min-width: 84px;
+  }
+  .table-wrap td:nth-child(4) {
+    grid-area: basis;
+    align-self: center;
+  }
+  .table-wrap td:nth-child(5) {
+    grid-area: actions;
+    align-self: center;
+  }
+  .table-wrap td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .table-wrap td:nth-child(4) small {
+    display: inline;
+    margin-left: 6px;
+  }
+  .table-wrap .row-actions {
+    justify-content: flex-end;
+  }
+  .table-wrap #empty {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fff;
+  }
+}
+/* Phones: tabs wrap onto rows instead of sliding sideways. */
+@media screen and (max-width: 760px) {
+  nav {
+    flex-wrap: wrap;
+    overflow: visible;
+    gap: 4px;
+  }
+  nav button {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 9px 10px;
+    justify-content: center;
+    text-align: center;
+  }
+}

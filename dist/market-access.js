@@ -121,6 +121,9 @@
         ) +
         ' ' +
         t(data.coverage);
+      // The catalogue opens on documented crops when the origin has any; the visitor's own choice then sticks.
+      let statusChosen = false,
+        statusOrigin = null;
       function renderCatalogue() {
         const origin = el(ids[0]).value,
           form = el(ids[2]).value;
@@ -130,6 +133,10 @@
         const entries = catalogue(data.records, crops, origin, form),
           counts = { conditional: 0, restricted: 0, unverified: 0 };
         entries.forEach((c) => counts[c.access.status]++);
+        if (!statusChosen && statusOrigin !== origin + form) {
+          statusOrigin = origin + form;
+          el('accessStatus').value = counts.conditional + counts.restricted ? 'documented' : 'all';
+        }
         el('accessCatalogueTitle').textContent = t('{country} → China · {form} produce', {
           country,
           form: t(form)
@@ -144,7 +151,9 @@
         const rows = entries
           .filter(
             (c) =>
-              (status === 'all' || c.access.status === status) &&
+              (status === 'all' ||
+                c.access.status === status ||
+                (status === 'documented' && c.access.status !== 'unverified')) &&
               (!category || category === c.category) &&
               (!q || [c.en, c.zh, ...(c.aliases || [])].join(' ').toLowerCase().includes(q))
           )
@@ -251,7 +260,11 @@
         el('accessResult').innerHTML = html;
         onOriginChange();
       }
-      ['accessStatus', 'accessCategory'].forEach((id) => el(id).addEventListener('change', renderCatalogue));
+      el('accessStatus').addEventListener('change', () => {
+        statusChosen = true;
+        renderCatalogue();
+      });
+      el('accessCategory').addEventListener('change', renderCatalogue);
       el('accessCropSearch').addEventListener('input', renderCatalogue);
       el('accessCropList').addEventListener('click', (event) => {
         const button = event.target.closest('button[data-access-crop]');
@@ -260,6 +273,14 @@
         render();
         el('accessResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
+      // Opens the checker on one crop (used by the crop card's access banner).
+      api.show = (cropId) => {
+        if (!crops.some((c) => c.id === cropId)) return;
+        el(ids[1]).value = cropId;
+        el(ids[2]).value = 'fresh';
+        render();
+        el('accessResult').scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      };
       ids.forEach((id) => {
         el(id).disabled = false;
         el(id).addEventListener('change', () => {
@@ -286,7 +307,7 @@
       );
     }
   }
-  const api = { lookup, catalogue, cropStatus, init };
+  const api = { lookup, catalogue, cropStatus, init, show() {} };
   if (typeof module !== 'undefined') module.exports = api;
   else root.MarketAccess = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

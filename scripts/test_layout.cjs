@@ -2,7 +2,8 @@
 // errors, and the detail dialog fits the viewport. Screenshots go to SCREENSHOT_DIR for review (CI artifact).
 const { chromium } = require('playwright'),
   assert = require('assert'),
-  fs = require('fs');
+  fs = require('fs'),
+  { openDetails } = require('./ui_helpers.cjs');
 const url = process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/';
 const out = process.env.SCREENSHOT_DIR || 'test-results/screenshots';
 const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
@@ -71,7 +72,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
           await page.screenshot({ path: `${out}/${lang}-${width}-${tab}.png`, fullPage: true });
         }
         await page.evaluate(() => document.querySelector('nav [data-tab="fresh"]').click());
-        await page.locator('[data-detail]').first().click();
+        await openDetails(page, page.locator('#rows tr').first());
         const box = await page.locator('#detail').boundingBox();
         if (!box || box.width > width) problems.push(`${tag} detail dialog wider than viewport`);
         await page.screenshot({ path: `${out}/${lang}-${width}-detail.png` });

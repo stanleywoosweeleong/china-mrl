@@ -25,14 +25,19 @@
         <div>China MRL<small id="originBrand">GLOBAL EXPORT REFERENCE</small></div></a
       >
       <div class="navlabel">REFERENCE WORKSPACE</div>
-      <nav>
+      <nav aria-label="Sections">
         <button data-tab="fresh" class="active">⌕ <span>Fresh produce</span></button
-        ><button data-tab="full">▤ <span>Entire standard</span></button
-        ><button data-tab="saved">☆ <span>Saved references</span><b id="savedCount">0</b></button
-        ><button data-tab="exempt">◎ <span>Exempt pesticides</span></button
-        ><button data-tab="sources">↗ <span>Sources & coverage</span></button
         ><button data-tab="access">◇ <span>Market access</span></button
-        ><button data-tab="guide">ⓘ <span>Export essentials</span></button>
+        ><button data-tab="saved">☆ <span>Saved references</span><b id="savedCount">0</b></button
+        ><button id="navMore" type="button" aria-expanded="false" aria-controls="navMoreItems">
+          ⋯ <span>More</span>
+        </button>
+        <div id="navMoreItems" class="nav-more-items">
+          <button data-tab="full">▤ <span>Entire standard</span></button
+          ><button data-tab="exempt">◎ <span>Exempt pesticides</span></button
+          ><button data-tab="sources">↗ <span>Sources & coverage</span></button
+          ><button data-tab="guide">ⓘ <span>Export essentials</span></button>
+        </div>
       </nav>
       <div class="sidebar-bottom">
         <span class="dot"></span> <span id="originRoute">All origins → Mainland China</span
@@ -64,30 +69,36 @@
         </div>
         <div id="loadError" class="coverage" hidden></div>
         <section id="explorer">
-          <div class="stats">
-            <div>
-              <small>STANDARD LIMIT ROWS</small><strong>10,749</strong
-              ><span>All food categories, including MRLs & EMRLs</span>
-            </div>
-            <div>
-              <small>FRESH PRODUCE ROWS</small><strong>6,077</strong
-              ><span>Original fruit & vegetable source entries</span>
-            </div>
-            <div>
-              <small>MAPPED FRESH CROPS</small><strong>184</strong><span>Commodity & food-group lookup</span>
-            </div>
-          </div>
           <div class="search-panel">
             <div class="section-heading">
               <h2 id="searchTitle">Find the limits for your crop</h2>
               <span>English & Chinese names</span>
             </div>
             <div id="primaryFilters" class="filters primary-filters">
-              <label id="cropLabel"
-                >Fresh commodity<select id="crop">
+              <div id="cropLabel" class="field">
+                <label for="cropSearch">Fresh commodity</label>
+                <div class="combo">
+                  <input
+                    id="cropSearch"
+                    type="text"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="cropOptions"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    placeholder="Type a crop name, e.g. durian"
+                  /><button type="button" id="cropClear" aria-label="Show all fresh-produce entries" hidden>
+                    ×
+                  </button>
+                  <ul id="cropOptions" role="listbox" aria-label="Matching crops" hidden></ul>
+                </div>
+                <select id="crop" hidden tabindex="-1" aria-hidden="true">
                   <option value="">All original fresh-produce entries</option>
-                </select></label
-              ><label id="categoryLabel" hidden
+                </select>
+              </div>
+              <label id="categoryLabel" hidden
                 >Food category<select id="category">
                   <option value="">All food categories</option>
                 </select></label
@@ -113,7 +124,7 @@
               ><span>⌕</span
               ><input
                 id="search"
-                placeholder="Search a pesticide, Chinese food entry or English crop name…"
+                placeholder="Search pesticide or food…"
                 autocomplete="off"
               /><kbd>/</kbd></label
             >
@@ -136,15 +147,31 @@
           </div>
           <div class="results-heading">
             <h2><span id="resultCount">…</span> <span id="resultLabel">matching limits</span></h2>
-            <div><button id="print">Print page</button> <button id="export">↓ Export CSV</button></div>
+            <div>
+              <label class="sort-select"
+                >Sort<select id="sortSelect">
+                  <option value="">Default order</option>
+                  <option value="limit:asc">Limit: low to high</option>
+                  <option value="limit:desc">Limit: high to low</option>
+                  <option value="pest:asc">Pesticide name</option>
+                  <option value="food:asc">Food name</option>
+                </select></label
+              >
+              <button id="print">Print limit sheet</button> <button id="export">↓ Export CSV</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
+              <caption class="sr">
+                Residue limits
+              </caption>
               <thead>
                 <tr>
-                  <th>COMMODITY / SCOPE</th>
-                  <th>PESTICIDE</th>
-                  <th>LIMIT <span>mg/kg</span></th>
+                  <th><button type="button" class="sort" data-sort="food">COMMODITY / SCOPE</button></th>
+                  <th><button type="button" class="sort" data-sort="pest">PESTICIDE</button></th>
+                  <th>
+                    <button type="button" class="sort" data-sort="limit">LIMIT <span>mg/kg</span></button>
+                  </th>
                   <th>BASIS</th>
                   <th><span class="sr">Actions</span></th>
                 </tr>
@@ -347,6 +374,7 @@
             <div class="filters">
               <label
                 >Access evidence<select id="accessStatus">
+                  <option value="documented">Crops with a record</option>
                   <option value="all">All crops</option>
                   <option value="conditional">Documented access · conditions apply</option>
                   <option value="restricted">Restrictions documented</option>
@@ -420,11 +448,12 @@
         </footer>
       </main>
     </div>
-    <dialog id="detail">
+    <dialog id="detail" aria-labelledby="detailTitle">
       <form method="dialog"><button class="close" aria-label="Close details">×</button></form>
       <div id="detailContent"></div>
     </dialog>
     <div id="toast" role="status"></div>
+    <div id="printSheet" hidden></div>
     <script src="zh.js"></script>
     <script src="i18n.js"></script>
     <script src="rules.js"></script>

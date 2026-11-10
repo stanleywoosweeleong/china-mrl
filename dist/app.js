@@ -37,6 +37,8 @@ let fullCrop = null,
   fullSuggestions = [],
   freshCrops = [];
 const isFresh = (c) => ['水果', '蔬菜'].includes(c.category);
+// User-chosen sort; empty col keeps the default order (pesticide name, or food then pesticide).
+let sortBy = { col: '', dir: 'asc' };
 try {
   const a = JSON.parse(localStorage.getItem('china-mrl-v2-saved') || '[]');
   if (Array.isArray(a)) saved = new Set(a.filter((x) => typeof x === 'string'));
@@ -203,6 +205,18 @@ function filter() {
     if (fullCrop || (crop && tab === 'fresh')) return pest;
     return byName(foodName)(a, b) || pest;
   });
+  if (sortBy.col) {
+    const dir = sortBy.dir === 'desc' ? -1 : 1,
+      rowFood = (r) => (cropMap.get(r.cropId) ? cropName(cropMap.get(r.cropId)) : foodName(r)),
+      compare = {
+        limit: (a, b) => a.mrl - b.mrl,
+        pest: (a, b) => byName(pestName)(pestMap.get(a.pesticideId), pestMap.get(b.pesticideId)),
+        food: byName(rowFood)
+      }[sortBy.col];
+    filtered.sort((a, b) => dir * compare(a, b));
+  }
+  syncSort();
+  syncCropInput();
   page = 1;
   renderSearchNote();
   renderCrop();
@@ -287,13 +301,15 @@ function renderCrop() {
           }[access.status]
     );
   $('cropCard').innerHTML =
-    `<div><span class="tag">${t(c.category === '水果' ? 'SELECTED CROP · FRESH FRUIT' : 'SELECTED CROP · FRESH VEGETABLE')}</span><h2>${esc(cropName(c))} <span lang="${altLang}">${esc(cropAlt(c))}</span></h2><p>${t('{direct} direct entries · {group} group-based entries', { direct, group: all.length - direct })}</p>${unmappedNote(c)}${access ? `<p class="crop-access-status">${t('Selected origin: {status}. MRLs alone do not establish permission.', { status: accessText })}</p>` : ''}</div><div><small>${t('PART TO BE TESTED · ANNEX A')}</small><p>${esc(partText(c))}</p><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Read Annex A, PDF p. {n} ↗', { n: c.annexPage })}</a></div>`;
+    `${access ? `<div class="access-banner ${access.status}"><p class="crop-access-status">${t('Selected origin: {status}. MRLs alone do not establish permission.', { status: accessText })}</p><button type="button" data-access-view="${esc(c.id)}">${t(access.status === 'unverified' ? 'Check market access' : 'View conditions')}</button></div>` : ''}<div><span class="tag">${t(c.category === '水果' ? 'SELECTED CROP · FRESH FRUIT' : 'SELECTED CROP · FRESH VEGETABLE')}</span><h2>${esc(cropName(c))} <span lang="${altLang}">${esc(cropAlt(c))}</span></h2><p>${t('{direct} direct entries · {group} group-based entries', { direct, group: all.length - direct })}</p>${unmappedNote(c)}</div><div><small>${t('PART TO BE TESTED · ANNEX A')}</small><p>${esc(partText(c))}</p><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Read Annex A, PDF p. {n} ↗', { n: c.annexPage })}</a></div>`;
 }
 const partText = (c) => (isZh && c.partZh) || c.part;
 function render() {
   page = Math.min(page, Math.max(1, Math.ceil(filtered.length / size)));
   $('resultCount').textContent = filtered.length.toLocaleString();
-  $('savedCount').textContent = [...saved].filter((k) => fromKey(k)).length;
+  const savedTotal = [...saved].filter((k) => fromKey(k)).length;
+  $('savedCount').textContent = savedTotal;
+  $('savedCount').hidden = !savedTotal;
   $('resultLabel').textContent = t(
     tab === 'full'
       ? fullCrop
@@ -305,6 +321,8 @@ function render() {
         ? 'saved references'
         : 'matching limits'
   );
+  // With a crop selected every row is that crop, so phones can drop the repeated name. Saved items keep theirs.
+  $('rows').className = fullCrop || (tab === 'fresh' && cropMap.get($('crop').value)) ? 'crop-context' : '';
   $('rows').innerHTML = filtered
     .slice((page - 1) * size, page * size)
     .map((r) => {
@@ -314,7 +332,7 @@ function render() {
         name = c ? cropName(c) : foodName(r),
         alt = c ? cropAlt(c) : foodAlt(r),
         isSaved = saved.has(key(r));
-      return `<tr><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small></td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
+      return `<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small></td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
     })
     .join('');
   $('empty').hidden = filtered.length > 0;
@@ -334,6 +352,7 @@ function render() {
 function reset() {
   ['search', 'pesticide', 'kind', 'category'].forEach((id) => ($(id).value = ''));
   $('crop').value = '';
+  sortBy = { col: '', dir: 'asc' };
   filter();
 }
 function setTab(name) {
@@ -353,6 +372,8 @@ function setTab(name) {
   $('primaryFilters').classList.toggle('full-filters', name === 'full');
   $('fullSearchNote').hidden = name !== 'full';
   $('quick').hidden = name !== 'fresh';
+  $('navMore').classList.toggle('active', ['full', 'exempt', 'sources', 'guide'].includes(name));
+  $('navMoreItems').classList.toggle('open', false);
   $('searchTitle').textContent = t(
     name === 'full'
       ? 'Search crops or all 10,749 source entries'
@@ -384,8 +405,18 @@ function details(k) {
         : 'The source table names this commodity.'
       : 'Original source-table row; select a fresh crop to see group applicability.'
   );
+  const isSaved = saved.has(k);
+  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : ''}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
+  const compare = `<div class="compare-box"><h3>${t('Compare a laboratory result')}</h3><label for="labMode">${t('Report type')}</label><select id="labMode"><option value="number">${t('Quantified result')}</option><option value="nd">${t('Non-detect / below reporting limit')}</option></select><label for="lab" id="labLabel">${t('Result in mg/kg (ppm by mass)')}</label><input id="lab" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('e.g. 0.015')}"><div id="comparison" role="status">${t('Enter a result to compare.')}</div><p>${t('Arithmetic only. The analyte definition, sample preparation, uncertainty, product form and market access must be assessed separately.')}</p></div>`;
+  const source = `<details class="section" open><summary>${t('Applicability and source')}</summary><dl><dt>${t('Original food scope')}</dt><dd>${esc(r.food)}${isZh ? '' : '<br>' + esc(r.foodEn)}</dd><dt>${t('Source category')}</dt><dd>${esc(r.categoryScope || r.category)}</dd><dt>${t('Application')}</dt><dd>${application}</dd><dt>${t('Residue definition')}</dt><dd>${residue}</dd><dt>${t('Effective from')}</dt><dd>${esc(longDate(db.meta.effective))}</dd><dt>${t('Source location')}</dt><dd>${t('Table {table} · PDF page {page} · printed page {printed}', { table: r.table, page: r.page, printed: r.page - (db.meta.printedPageOffset ?? 16) })}</dd>${c ? `<dt>${t('Sampling portion')}</dt><dd>${esc(partText(c))}<br><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Annex A · PDF p. {n} ↗', { n: c.annexPage })}</a></dd>` : ''}</dl><a href="standard.pdf#page=${r.page}" target="_blank" rel="noopener">${t('Open the exact source page ↗')}</a></details>`;
+  const methods = `<details class="section"><summary>${t('Testing methods')}</summary>${methodsHtml(p, r, c)}${p.method ? `<details><summary>${t('Source testing-method text (Chinese)')}</summary><p lang="zh" class="technical">${esc(p.method)}</p></details>` : ''}</details>`;
+  // The limit and the comparison come first; source detail and methods fold away below.
   $('detailContent').innerHTML =
-    `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2>${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p>${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}<dl><dt>${t('Original food scope')}</dt><dd>${esc(r.food)}${isZh ? '' : '<br>' + esc(r.foodEn)}</dd><dt>${t('Source category')}</dt><dd>${esc(r.categoryScope || r.category)}</dd><dt>${t('Application')}</dt><dd>${application}</dd><dt>${t('Residue definition')}</dt><dd>${residue}</dd><dt>${t('Effective from')}</dt><dd>${esc(longDate(db.meta.effective))}</dd><dt>${t('Source location')}</dt><dd>${t('Table {table} · PDF page {page} · printed page {printed}', { table: r.table, page: r.page, printed: r.page - (db.meta.printedPageOffset ?? 16) })}</dd>${c ? `<dt>${t('Sampling portion')}</dt><dd>${esc(partText(c))}<br><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Annex A · PDF p. {n} ↗', { n: c.annexPage })}</a></dd>` : ''}</dl><a href="standard.pdf#page=${r.page}" target="_blank" rel="noopener">${t('Open the exact source page ↗')}</a>${methodsHtml(p, r, c)}${p.method ? `<details><summary>${t('Source testing-method text (Chinese)')}</summary><p lang="zh" class="technical">${esc(p.method)}</p></details>` : ''}<p>${t('Chinese source wording controls. Combined residue definitions may include metabolites or multiple active substances.')}</p><div class="compare-box"><h3>${t('Compare a laboratory result')}</h3><label for="labMode">${t('Report type')}</label><select id="labMode"><option value="number">${t('Quantified result')}</option><option value="nd">${t('Non-detect / below reporting limit')}</option></select><label for="lab" id="labLabel">${t('Result in mg/kg (ppm by mass)')}</label><input id="lab" type="number" min="0" step="any" placeholder="${t('e.g. 0.015')}"><div id="comparison" role="status">${t('Enter a result to compare.')}</div><p>${t('Arithmetic only. The analyte definition, sample preparation, uncertainty, product form and market access must be assessed separately.')}</p></div>`;
+    head +
+    compare +
+    source +
+    methods +
+    `<p>${t('Chinese source wording controls. Combined residue definitions may include metabolites or multiple active substances.')}</p>`;
   const update = () => {
     const input = $('lab'),
       nd = $('labMode').value === 'nd';
@@ -407,8 +438,24 @@ function details(k) {
     $('lab').value = '';
     update();
   });
-  $('detail').showModal();
+  showDetail(k);
 }
+// Wide screens: a side panel that leaves the table usable. Otherwise a modal dialog.
+function showDetail(k) {
+  const d = $('detail');
+  document.querySelectorAll('#rows tr.selected').forEach((tr) => tr.classList.remove('selected'));
+  document.querySelectorAll('#rows tr').forEach((tr) => tr.dataset.key === k && tr.classList.add('selected'));
+  if (d.open) return;
+  const wide = typeof matchMedia === 'function' && matchMedia('(min-width: 1100px)').matches;
+  if (wide && d.show) {
+    d.show();
+    document.body?.classList.add('panel-open');
+  } else d.showModal();
+}
+$('detail').addEventListener('close', () => {
+  document.body?.classList.remove('panel-open');
+  document.querySelectorAll('#rows tr.selected').forEach((tr) => tr.classList.remove('selected'));
+});
 function methodMatches(p, r, c) {
   const names = c ? MRL.membership(c) : new Set([MRL.parseFood(r.food).base]),
     broad = (x) => Boolean(db.categories[x]) || ['植物源性食品', '动物源性食品'].includes(x);
@@ -434,9 +481,9 @@ function methodText(p, r, c) {
 // Testing methods by clause; the clause naming this row's commodity, else its category, is marked.
 function methodsHtml(p, r, c) {
   if (!p.methods?.length)
-    return `<h4>${t('Testing method')}</h4><p class="technical">${t('The standard designates no testing method for this section: all of its limits are provisional (临时限量). Agree the method with your laboratory, for example an applicable GB 23200 multi-residue method.')}</p>`;
+    return `<p class="technical">${t('The standard designates no testing method for this section: all of its limits are provisional (临时限量). Agree the method with your laboratory, for example an applicable GB 23200 multi-residue method.')}</p>`;
   const { rows, best } = methodMatches(p, r, c);
-  return `<h4>${t('Testing methods')}</h4><ul class="methods">${rows.map(({ m, l }) => `<li class="${l === best ? 'match' : ''}"><strong>${esc(isZh ? m.categories.join('、') : m.categoriesEn.join(', '))}</strong> — ${m.standards.map(esc).join(', ')} <small>${t(m.basis === 'reference' ? 'method by reference (参照)' : 'specified method (按照)')}${l === best ? t(' · applies to this entry') : ''}</small></li>`).join('')}</ul>`;
+  return `<ul class="methods">${rows.map(({ m, l }) => `<li class="${l === best ? 'match' : ''}"><strong>${esc(isZh ? m.categories.join('、') : m.categoriesEn.join(', '))}</strong> — ${m.standards.map(esc).join(', ')} <small>${t(m.basis === 'reference' ? 'method by reference (参照)' : 'specified method (按照)')}${l === best ? t(' · applies to this entry') : ''}</small></li>`).join('')}</ul>`;
 }
 function renderExempt() {
   if (!db) return;
@@ -542,10 +589,190 @@ $('next').onclick = () => {
   render();
 };
 $('export').onclick = downloadCsv;
-$('print').onclick = () => window.print();
+$('print').onclick = printSheet;
+// A compact sheet of every limit in the current view (not just the visible page), for a lab or packhouse.
+function printSheet() {
+  const crop = fullCrop || (tab === 'fresh' ? cropMap.get($('crop').value) : null),
+    limit = 600,
+    rows = filtered.slice(0, limit),
+    origin = $('originSelector').selectedOptions?.[0]?.textContent || '',
+    access =
+      crop && isFresh(crop) && typeof MarketAccess !== 'undefined' ? MarketAccess.cropStatus(crop.id) : null;
+  const items = rows
+    .map((r) => {
+      const p = pestMap.get(r.pesticideId),
+        c = cropMap.get(r.cropId);
+      return `<div class="sheet-row"><div><strong>${esc(pestName(p))}</strong> <span lang="${altLang}">${esc(pestAlt(p))}</span>${crop ? '' : `<br><em>${esc(c ? cropName(c) : foodName(r))}</em>`}<small>${esc(methodText(p, r, c))}${r.match === 'group' ? ' · ' + esc(r.food) : ''}</small></div><b>${r.mrl}${r.provisional ? '*' : ''}${r.kind === 'EMRL' ? ' <i>EMRL</i>' : ''}</b></div>`;
+    })
+    .join('');
+  $('printSheet').innerHTML =
+    `<h1>${esc(crop ? cropPair(crop) : t(titles[tab][1]))}</h1><p class="sheet-meta">${t('Pesticide residue limits for China · {standard} · effective {date}', { standard: esc(db.meta.standard), date: esc(longDate(db.meta.effective)) })}${crop ? ' · ' + t('Part to be tested: {part}', { part: esc(partText(crop)) }) : ''}</p>${access && origin ? `<p class="sheet-meta">${esc(origin)}: ${t(access.marketAccess === 'approved' ? 'approved market access · conditions apply' : { conditional: 'access documented · conditions apply', restricted: 'restriction documented', unverified: 'market access not verified' }[access.status])}</p>` : ''}<p class="sheet-head"><span>${t('Pesticide · testing method')}</span><span>${t('Limit mg/kg')}</span></p><div class="sheet-rows">${items}</div><p class="sheet-note">${t('{shown} of {total} limits in this view.', { shown: rows.length, total: filtered.length })} ${t('* Provisional limit. Reference only: check the Chinese standard, the residue definition and market access before shipment. Data reviewed {date}.', { date: esc(db.meta.checked) })}</p>`;
+  $('printSheet').hidden = false;
+  window.print();
+}
+function syncSort() {
+  document.querySelectorAll('th button.sort').forEach((b) => {
+    const on = b.dataset.sort === sortBy.col;
+    b.dataset.dir = on ? sortBy.dir : '';
+    b.parentElement.setAttribute(
+      'aria-sort',
+      on ? (sortBy.dir === 'desc' ? 'descending' : 'ascending') : 'none'
+    );
+  });
+  $('sortSelect').value = sortBy.col ? sortBy.col + ':' + sortBy.dir : '';
+}
+$('sortSelect').addEventListener('change', () => {
+  const [col, dir] = $('sortSelect').value.split(':');
+  sortBy = { col: col || '', dir: dir || 'asc' };
+  filter();
+});
+
+// Crop picker: a text box over the hidden #crop select. Matches Chinese, English, aliases, pinyin and initials.
+const combo = {
+  input: $('cropSearch'),
+  list: $('cropOptions'),
+  clear: $('cropClear'),
+  items: [],
+  active: -1
+};
+function cropMatches(q) {
+  const crops = freshCrops.slice().sort(byName(cropName));
+  if (!q) return crops;
+  const rank = (c) => {
+    const names = [c.zh, c.en, ...(c.aliases || [])].map(normalized);
+    if (names.some((n) => n === q) || c.py === q) return 0;
+    if (names.some((n) => n.startsWith(q)) || (c.py || '').startsWith(q) || c.pyi === q) return 1;
+    if (
+      [c.en, ...(c.aliases || [])].some((n) =>
+        n
+          .toLowerCase()
+          .split(/[\s-]+/)
+          .some((w) => w.startsWith(q))
+      )
+    )
+      return 2;
+    if ((c.pyi || '').startsWith(q)) return 3;
+    // Loose 'contains' matches only once the query is long enough to mean something.
+    if (
+      (q.length >= 3 || /[一-鿿]/.test(q)) &&
+      (names.some((n) => n.includes(q)) || (c.py || '').includes(q))
+    )
+      return 4;
+    return -1;
+  };
+  return crops
+    .map((c) => [rank(c), c])
+    .filter(([r]) => r >= 0)
+    .sort((a, b) => a[0] - b[0])
+    .map(([, c]) => c);
+}
+function syncCropInput() {
+  const c = cropMap.get($('crop').value);
+  if (document.activeElement !== combo.input) combo.input.value = c ? cropName(c) : '';
+  combo.clear.hidden = !c;
+}
+function closeCropList() {
+  combo.list.hidden = true;
+  combo.active = -1;
+  combo.input.setAttribute?.('aria-expanded', 'false');
+  combo.input.removeAttribute?.('aria-activedescendant');
+}
+function openCropList() {
+  if (!db) return;
+  const selected = cropMap.get($('crop').value),
+    typed = normalized(combo.input.value),
+    q = selected && typed === normalized(cropName(selected)) ? '' : typed;
+  combo.items = cropMatches(q);
+  if (q && combo.active < 0) combo.active = 0;
+  combo.active = Math.min(combo.active, combo.items.length - 1);
+  combo.list.innerHTML = combo.items.length
+    ? combo.items
+        .map((c, i) => {
+          const access = typeof MarketAccess !== 'undefined' ? MarketAccess.cropStatus(c.id) : null;
+          return `<li role="option" id="cropOption${i}" data-crop-option="${esc(c.id)}" aria-selected="${i === combo.active}"><span>${esc(cropName(c))} <small lang="${altLang}">${esc(cropAlt(c))}</small></span>${access && access.status !== 'unverified' ? `<em>${t(access.status === 'restricted' ? 'Restriction documented' : 'Access documented')}</em>` : ''}</li>`;
+        })
+        .join('')
+    : `<li class="none" role="option" aria-disabled="true">${t('No fresh crop matches. Try another name, or search the Entire standard.')}</li>`;
+  combo.list.hidden = false;
+  combo.input.setAttribute?.('aria-expanded', 'true');
+  if (combo.active >= 0) {
+    combo.input.setAttribute?.('aria-activedescendant', 'cropOption' + combo.active);
+    document.getElementById('cropOption' + combo.active)?.scrollIntoView?.({ block: 'nearest' });
+  } else combo.input.removeAttribute?.('aria-activedescendant');
+}
+function chooseCrop(id) {
+  $('crop').value = id;
+  closeCropList();
+  combo.input.blur?.();
+  filter();
+}
+combo.input.addEventListener('input', () => {
+  combo.active = -1;
+  openCropList();
+});
+combo.input.addEventListener('focus', () => {
+  combo.input.select?.();
+  openCropList();
+});
+combo.input.addEventListener('blur', () => {
+  closeCropList();
+  syncCropInput();
+});
+combo.input.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (combo.list.hidden) openCropList();
+    const n = combo.items.length;
+    if (n) combo.active = (combo.active + (e.key === 'ArrowDown' ? 1 : -1) + n) % n;
+    openCropList();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const c = combo.items[Math.max(combo.active, 0)];
+    if (!combo.list.hidden && c) chooseCrop(c.id);
+  } else if (e.key === 'Escape' && !combo.list.hidden) {
+    e.stopPropagation();
+    closeCropList();
+    syncCropInput();
+    combo.input.select?.();
+  }
+});
+// Keep focus in the box while an option is pressed, so the tap is not lost to the blur.
+combo.list.addEventListener('mousedown', (e) => e.preventDefault());
+combo.list.addEventListener('click', (e) => {
+  const option = e.target.closest('[data-crop-option]');
+  if (option) chooseCrop(option.dataset.cropOption);
+});
+combo.clear.addEventListener('click', () => {
+  chooseCrop('');
+});
 document.addEventListener('click', (e) => {
   const b = e.target.closest('button');
-  if (!b) return;
+  if (!b || b.id !== 'navMore') $('navMoreItems').classList.toggle('open', false);
+  if (!b) {
+    // Tapping anywhere on a result opens its details, unless text is being selected.
+    const row = e.target.closest('tr[data-key]');
+    if (row && !e.target.closest('a,input,select') && !String(globalThis.getSelection?.() ?? ''))
+      details(row.dataset.key);
+    return;
+  }
+  if (b.id === 'navMore') {
+    b.setAttribute('aria-expanded', String($('navMoreItems').classList.toggle('open')));
+    return;
+  }
+  if (b.dataset.sort) {
+    const same = sortBy.col === b.dataset.sort;
+    sortBy =
+      same && sortBy.dir === 'desc'
+        ? { col: '', dir: 'asc' }
+        : { col: b.dataset.sort, dir: same ? 'desc' : 'asc' };
+    filter();
+    return;
+  }
+  if (b.dataset.accessView && typeof MarketAccess !== 'undefined') {
+    setTab('access');
+    MarketAccess.show(b.dataset.accessView);
+    return;
+  }
   if (b.dataset.tab) setTab(b.dataset.tab);
   if (b.dataset.crop) {
     if (tab !== 'fresh') setTab('fresh');
@@ -572,9 +799,16 @@ document.addEventListener('click', (e) => {
       toast(t('Browser storage unavailable; saved for this session only'));
     }
     tab === 'saved' ? filter() : render();
+    if (b.closest?.('#detail')) {
+      const on = saved.has(k);
+      b.textContent = t(on ? '★ Saved' : '☆ Save this limit');
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('saved', on);
+    }
   }
 });
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('detail').open) $('detail').close();
   if (
     e.key === '/' &&
     !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName) &&

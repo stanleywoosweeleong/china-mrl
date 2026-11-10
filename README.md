@@ -34,7 +34,7 @@ All 442 pages of extracted text match the original third-party copy. Full-table 
 
 ## Rebuilding the data
 
-Place the source PDF at `research/usda-standard.pdf`. Run `python research/build_database.py`, then `python research/package_data.py`; copy the verified PDF to `dist/standard.pdf`. PyMuPDF is required for extraction. `research/catalog.py` contains the Annex A crop mappings. Review source changes, classification mappings, qualifiers, residue definitions and exceptions before publication. Preserve source numbering anomalies (sections 173 and 223) in the document while parsing their content correctly.
+Place the source PDF at `research/usda-standard.pdf`. Run `python research/build_database.py`, then `python research/package_data.py`; copy the verified PDF to `dist/standard.pdf`. PyMuPDF is required for extraction and pypinyin for packaging. `research/catalog.py` contains the Annex A crop mappings. Review source changes, classification mappings, qualifiers, residue definitions and exceptions before publication. Preserve source numbering anomalies (sections 173 and 223) in the document while parsing their content correctly.
 
 `research/verify_tables.py` keeps the reviewed notes already in `research/grid-audit.json` (raw count, source numbering corrections) and independently checks numerical values by table using pdfplumber's ruled table geometry. Category/commodity interpretation is separately checked through regression cases. Do not represent automated matching as an official legal interpretation.
 

@@ -109,6 +109,11 @@ for c in CATALOG:
  c['partZh']=PARTS_ZH[c['part']]
  if '瓜类蔬菜' in c['groups'] and c['partZh']=='全果（去柄）':c['partZh']='全瓜（去柄）'
  if '绿叶葱类' in c['groups']:c['partZh']='整株'
+# Pinyin (toneless) and initials for the crop picker; brackets and qualifiers are dropped.
+from pypinyin import lazy_pinyin
+for c in CATALOG:
+ syllables=lazy_pinyin(re.sub(r'[^\u4e00-\u9fff]','',c['zh']))
+ c['py']=''.join(syllables);c['pyi']=''.join(x[0] for x in syllables)
 assert len({c['id'] for c in CATALOG})==len(CATALOG)
 # Context for source rows whose food name Annex A does not define; shown beside the review note, never applied.
 review_notes={

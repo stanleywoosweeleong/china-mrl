@@ -432,6 +432,38 @@
     'Document summaries are navigation aids. The official Chinese text controls. This checker does not confirm operational clearance, current facility registration or absence of later suspensions.':
       '文件摘要仅供参考，一律以官方中文文本为准。本查询不能确认货物能否实际通关、企业注册是否仍然有效，也不能确认其后没有被暂停。',
 
+    // Redesign: crop picker, sorting, navigation, detail and print sheet
+    More: '更多',
+    'Crops with a record': '有记录的作物',
+    Sort: '排序',
+    'Default order': '默认顺序',
+    'Limit: low to high': '限量从低到高',
+    'Limit: high to low': '限量从高到低',
+    'Pesticide name': '按农药名称',
+    'Food name': '按食品名称',
+    'Print limit sheet': '打印限量表',
+    'Residue limits': '残留限量',
+    Sections: '栏目',
+    'Type a crop name, e.g. durian': '输入作物名称或拼音，例如：榴莲、liulian',
+    'Show all fresh-produce entries': '显示全部新鲜果蔬条目',
+    'Matching crops': '符合的作物',
+    'Search pesticide or food…': '搜索农药或食品名称…',
+    'Check market access': '查询市场准入',
+    'View conditions': '查看准入条件',
+    '★ Saved': '★ 已保存',
+    '☆ Save this limit': '☆ 保存这项限量',
+    'Applicability and source': '适用范围与出处',
+    'Pesticide residue limits for China · {standard} · effective {date}':
+      '中国农药残留限量 · {standard} · {date}起实施',
+    'Part to be tested: {part}': '测定部位：{part}',
+    'Pesticide · testing method': '农药 · 检测方法',
+    '{shown} of {total} limits in this view.': '本表列出 {total} 项限量中的 {shown} 项。',
+    '* Provisional limit. Reference only: check the Chinese standard, the residue definition and market access before shipment. Data reviewed {date}.':
+      '* 表示临时限量。本表仅供参考：发货前请核对标准中文原文、残留物定义和市场准入。数据核对日期：{date}。',
+    'Access documented': '有准入记录',
+    'No fresh crop matches. Try another name, or search the Entire standard.':
+      '没有符合的新鲜作物。请换一个名称，或到“完整标准”中搜索。',
+
     // Offline / install
     'Preparing offline reference…': '正在准备离线数据…',
     'Install app': '安装应用',

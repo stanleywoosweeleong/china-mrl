@@ -1,5 +1,6 @@
 const { chromium } = require('playwright'),
-  assert = require('assert');
+  assert = require('assert'),
+  { openTab, pickCrop } = require('./ui_helpers.cjs');
 (async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || undefined,
@@ -11,8 +12,11 @@ const { chromium } = require('playwright'),
     await page.waitForFunction(() => !document.getElementById('originSelector').disabled);
     await page.selectOption('#originSelector', 'MY');
     assert((await page.locator('#accessCatalogueSummary').innerText()).startsWith('10 documented'));
+    // The catalogue opens on crops that have a record; "All crops" shows the rest.
+    assert.equal(await page.locator('#accessStatus').inputValue(), 'documented');
+    assert.equal(await page.locator('#accessCropList article').count(), 10);
+    await page.selectOption('#accessStatus', 'all');
     assert.equal(await page.locator('#accessCropList article').count(), 184);
-    assert.equal(await page.locator('#accessStatus').inputValue(), 'all');
     assert((await page.locator('#accessCropList article').nth(0).innerText()).includes('Documented access'));
     assert((await page.locator('#accessCropList article').nth(10).innerText()).includes('Not verified'));
     await page.selectOption('#accessCategory', '蔬菜');
@@ -31,14 +35,15 @@ const { chromium } = require('playwright'),
     await page.locator('#accessCropList [data-crop="菠萝蜜"]').click();
     assert.equal(await page.locator('#crop').inputValue(), '菠萝蜜');
     assert((await page.locator('#cropCard').innerText()).includes('access documented'));
-    await page.selectOption('#crop', '番茄');
+    await pickCrop(page, 'tomato');
+    assert.equal(await page.locator('#crop').inputValue(), '番茄');
     assert((await page.locator('#cropCard').innerText()).includes('not verified'));
     await page.reload();
     await page.waitForFunction(() =>
       document.getElementById('cropCard').textContent.includes('approved market access')
     );
     assert.equal(await page.locator('#originSelector').inputValue(), 'MY');
-    await page.locator('nav [data-tab="access"]').click();
+    await openTab(page, 'access');
     await page.selectOption('#accessForm', 'frozen');
     assert.equal(await page.locator('#accessCropList article').count(), 184);
     assert((await page.locator('#accessCropList article').first().innerText()).includes('Not verified'));

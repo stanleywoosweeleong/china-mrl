@@ -1865,3 +1865,649 @@ html[data-lang='zh'] * {
     text-align: center;
   }
 }
+
+/* ===== Redesign: crop picker, sorting, navigation, detail panel, phone layout, print sheet ===== */
+.nav-more-items {
+  display: contents;
+}
+#navMore {
+  display: none;
+}
+nav {
+  display: flex;
+  flex-direction: column;
+}
+nav [data-tab='fresh'] {
+  order: 1;
+}
+nav [data-tab='full'] {
+  order: 2;
+}
+nav [data-tab='saved'] {
+  order: 3;
+}
+nav [data-tab='exempt'] {
+  order: 4;
+}
+nav [data-tab='sources'] {
+  order: 5;
+}
+nav [data-tab='access'] {
+  order: 6;
+}
+nav [data-tab='guide'] {
+  order: 7;
+}
+
+/* Crop picker */
+.field {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.field > label {
+  display: block;
+  font-weight: 600;
+}
+.combo {
+  position: relative;
+  margin-top: 8px;
+}
+.combo input {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 44px 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+.combo input:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+#cropClear {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+#cropOptions {
+  position: absolute;
+  z-index: 25;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: min(340px, 50vh);
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 12px 40px #17362926;
+}
+#cropOptions li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 15px;
+  cursor: pointer;
+}
+#cropOptions li small {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+#cropOptions li em {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e6f1e7;
+  color: var(--green);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+}
+#cropOptions li[aria-selected='true'],
+#cropOptions li:hover {
+  background: #eef4ee;
+}
+#cropOptions li.none {
+  color: var(--muted);
+  cursor: default;
+  background: none;
+}
+
+/* Sorting */
+th button.sort {
+  all: unset;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+}
+th button.sort::after {
+  content: ' ↕';
+  opacity: 0.45;
+}
+th button.sort[data-dir='asc']::after {
+  content: ' ↑';
+  opacity: 1;
+}
+th button.sort[data-dir='desc']::after {
+  content: ' ↓';
+  opacity: 1;
+}
+th button.sort:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.sort-select {
+  display: none;
+}
+.results-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+tbody tr {
+  cursor: pointer;
+}
+tbody tr.selected {
+  background: #eef4ee;
+}
+
+/* Market access on the crop card */
+.access-banner {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #ecd9a8;
+  border-radius: 8px;
+  background: #fdf6e7;
+}
+.access-banner.conditional {
+  border-color: #b9d4bb;
+  background: #eef6ee;
+}
+.access-banner.restricted {
+  border-color: #e6b3b3;
+  background: #fdecec;
+}
+.access-banner p {
+  font-weight: 600;
+  color: var(--ink);
+}
+.access-banner button {
+  flex: none;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--green);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Market-access catalogue: a denser grid */
+.access-crop-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+}
+.access-crop-list article {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.access-crop-list > p {
+  grid-column: 1 / -1;
+}
+
+/* Detail view */
+.detail-save {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 14px 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--green);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.detail-save.saved {
+  background: #eef4ee;
+  border-color: var(--green);
+}
+dialog details.section {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+}
+dialog details.section > summary {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+}
+dialog details.section > summary::after {
+  content: '＋';
+  margin-left: auto;
+  color: var(--muted);
+}
+dialog details.section[open] > summary::after {
+  content: '－';
+}
+dialog details.section > summary::-webkit-details-marker {
+  display: none;
+}
+dialog details.section[open] {
+  padding-bottom: 14px;
+}
+.close {
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+}
+/* Wide screens: the detail opens as a side panel beside the table. */
+@media screen and (min-width: 1400px) {
+  dialog#detail[open]:not(:modal) {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 20;
+    width: 420px;
+    max-width: none;
+    height: 100vh;
+    max-height: none;
+    margin: 0;
+    overflow-y: auto;
+    border-width: 0 0 0 1px;
+    border-radius: 0;
+    box-shadow: -12px 0 40px #1736291a;
+  }
+  body.panel-open .workspace {
+    margin-right: 420px;
+  }
+  body.panel-open table {
+    white-space: normal;
+  }
+}
+
+#printSheet {
+  display: none;
+}
+
+/* Phones */
+@media screen and (max-width: 760px) {
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+  aside {
+    padding: 10px 15px;
+  }
+  nav {
+    position: fixed;
+    z-index: 30;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+    margin: 0;
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+    overflow: visible;
+    background: #fff;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 16px #1736290f;
+  }
+  nav button {
+    position: relative;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 54px;
+    margin: 0;
+    padding: 6px 2px;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+  nav button span {
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  nav b {
+    position: absolute;
+    top: 3px;
+    left: calc(50% + 8px);
+    min-width: 17px;
+    margin: 0;
+    padding: 1px 4px;
+    border-radius: 999px;
+    background: var(--green);
+    color: #fff;
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: center;
+  }
+  #navMore {
+    display: flex;
+    order: 9;
+  }
+  .nav-more-items {
+    display: none;
+    position: absolute;
+    right: 8px;
+    bottom: calc(100% + 8px);
+    width: min(270px, calc(100vw - 16px));
+    padding: 6px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px #17362933;
+  }
+  .nav-more-items.open {
+    display: block;
+  }
+  .nav-more-items button {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+  }
+  .nav-more-items button span {
+    font-size: 15px;
+  }
+  #toast {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  /* The search comes first: compact heading, no decoration. */
+  .eyebrow,
+  .seal,
+  .heading p {
+    display: none;
+  }
+  main {
+    padding-top: 14px;
+  }
+  .heading {
+    margin: 0 0 12px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 21px;
+    letter-spacing: -0.5px;
+  }
+  .search-panel {
+    padding: 16px;
+  }
+  .search-panel .section-heading > span {
+    display: none;
+  }
+  .edition select {
+    width: auto;
+    max-width: 42vw;
+    min-height: 44px;
+  }
+  .lang-toggle {
+    min-height: 44px;
+  }
+  .sort-select {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .sort-select select {
+    width: auto;
+    min-height: 44px;
+    margin: 0;
+  }
+  .results-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .results-heading button,
+  .pagination button,
+  .quick button,
+  .crop-card a,
+  dialog a {
+    min-height: 44px;
+  }
+  .crop-card a,
+  dialog a {
+    display: inline-flex;
+    align-items: center;
+  }
+  .access-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .access-banner button {
+    min-height: 44px;
+  }
+  .access-crop-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Compact result cards: pesticide and limit; tap for everything else. */
+  .table-wrap tr {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'pest limit'
+      'food actions'
+      'basis actions';
+    gap: 2px 12px;
+    padding: 12px 8px 10px 14px;
+  }
+  .table-wrap td[data-label]::before {
+    display: none;
+  }
+  .table-wrap td:nth-child(2) strong {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+  .table-wrap td small {
+    margin-top: 1px;
+    line-height: 1.4;
+  }
+  .table-wrap td:nth-child(1) strong {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  #rows.crop-context td:nth-child(1) strong,
+  #rows.crop-context td:nth-child(1) small:not(.source-scope) {
+    display: none;
+  }
+  .table-wrap td:nth-child(3) {
+    min-width: 0;
+    padding-right: 6px;
+    white-space: nowrap;
+  }
+  .table-wrap td:nth-child(3) small {
+    white-space: normal;
+  }
+  .table-wrap td:nth-child(4) small {
+    display: none;
+  }
+  .table-wrap td:nth-child(5) {
+    align-self: end;
+  }
+  .table-wrap .row-actions button[data-save] {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  /* Whole card opens details; the button stays for keyboards and screen readers. */
+  .table-wrap .row-actions .view {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  dialog {
+    padding: 20px 18px;
+    max-height: 92vh;
+  }
+}
+
+/* Print: only the limit sheet. */
+@media print {
+  body > *:not(#printSheet) {
+    display: none !important;
+  }
+  body {
+    padding: 0;
+    background: #fff;
+  }
+  #printSheet {
+    display: block !important;
+    color: #000;
+    font-size: 9pt;
+    line-height: 1.3;
+  }
+  #printSheet h1 {
+    margin: 0 0 2pt;
+    font-size: 16pt;
+    letter-spacing: 0;
+  }
+  .sheet-meta,
+  .sheet-note {
+    margin: 0 0 3pt;
+    color: #000;
+    font-size: 8.5pt;
+    line-height: 1.35;
+  }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    margin: 6pt 0 2pt;
+    padding-bottom: 2pt;
+    border-bottom: 1pt solid #000;
+    color: #000;
+    font-weight: 700;
+  }
+  .sheet-rows {
+    columns: 2;
+    column-gap: 18pt;
+  }
+  .sheet-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8pt;
+    padding: 2.5pt 0;
+    border-bottom: 0.5pt solid #bbb;
+    break-inside: avoid;
+  }
+  .sheet-row small {
+    display: block;
+    color: #333;
+    font-size: 7.5pt;
+  }
+  .sheet-row b {
+    white-space: nowrap;
+    font-size: 10pt;
+  }
+  .sheet-row i {
+    font-size: 7pt;
+    font-style: normal;
+  }
+  .sheet-note {
+    margin-top: 6pt;
+  }
+}
+@media screen and (max-width: 760px) {
+  /* Crop picker full width; the two secondary filters share a row. */
+  .primary-filters,
+  .primary-filters.full-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .primary-filters .field {
+    grid-column: 1 / -1;
+  }
+  .primary-filters label {
+    min-width: 0;
+    font-size: 13px;
+  }
+  /* The picker replaces the shortcut buttons on phones; Reset stays. */
+  .quick {
+    font-size: 0;
+    margin-top: 10px;
+  }
+  .quick button[data-crop] {
+    display: none;
+  }
+  .quick #reset {
+    margin-left: auto;
+    font-size: 14px;
+  }
+}
+@media screen and (max-width: 760px) {
+  nav [data-tab='access'] {
+    order: 2;
+  }
+  .edition > span {
+    display: none;
+  }
+  .edition {
+    flex: 1;
+    justify-content: space-between;
+  }
+  .edition label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .edition select {
+    flex: 1;
+    max-width: none;
+    min-width: 0;
+  }
+}

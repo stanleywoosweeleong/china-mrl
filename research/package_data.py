@@ -110,6 +110,11 @@ for c in CATALOG:
  if '瓜类蔬菜' in c['groups'] and c['partZh']=='全果（去柄）':c['partZh']='全瓜（去柄）'
  if '绿叶葱类' in c['groups']:c['partZh']='整株'
 assert len({c['id'] for c in CATALOG})==len(CATALOG)
-data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
+# Context for source rows whose food name Annex A does not define; shown beside the review note, never applied.
+review_notes={
+ '白菜':dict(en='GB 2763-2021 carried the same 6 mg/kg entry, which the USDA translation of that edition rendered as “Ordinary cabbage/Chinese cabbage”.',zh='GB 2763-2021 中已有相同的 6 mg/kg 条目；美国农业部对该版本的译文把它译作“普通白菜/大白菜”。'),
+ '甘蓝':dict(en='This entry is new in the 2026 edition; the 2021 edition listed only rice for this pesticide.',zh='该条目是 2026 年版新增的；2021 年版中这种农药只列有稻谷和糙米。'),
+}
+data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,reviewNotes=review_notes,annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
 Path('dist/database.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')))
 print('Packaged',len(rows),'rows,',len(CATALOG),'crops,',len(exempt),'exemptions')

@@ -381,6 +381,12 @@
     '{evidence} · reviewed {date}': '{evidence} · 核对日期 {date}',
     'Official guide': '官方指南',
     'Official list': '官方名录',
+    'GACC list via translation': '海关总署名录（据译本）',
+    'On GACC’s permitted list, per a translation · conditions apply':
+      '据译本，已列入海关总署准入名录 · 须符合相关条件',
+    'Translation updated': '译本更新日期',
+    'Official protocols and export-guide entries, plus fresh fruit from GACC’s permitted list as given in a trade-press translation; not a complete or live access register. Fresh vegetables are barely covered.':
+      '收录官方议定书和出口指南条目，以及一份行业媒体译本所载的海关总署获准输华水果名录；不是完整的、实时更新的准入名单。新鲜蔬菜的记录很少。',
     Protocol: '议定书',
     'Review status': '查看情况',
     'Conditions & sources': '条件与出处',

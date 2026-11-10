@@ -256,12 +256,17 @@ function unmappedNote(c) {
         `${esc(r.food)} · ${esc(pestName(pestMap.get(r.pesticideId)))} ${r.mrl} mg/kg (<a href="standard.pdf#page=${r.page}" target="_blank" rel="noopener">${t('PDF p. {n}', { n: r.page })}</a>)`
     )
     .join('; ');
+  const context = [...new Set(u.map((r) => r.food))]
+    .map((food) => db.reviewNotes?.[food]?.[isZh ? 'zh' : 'en'])
+    .filter(Boolean)
+    .map((note) => ' ' + esc(note))
+    .join('');
   return `<p class="warn unmapped-note">${t(
     u.length === 1
       ? 'Review: 1 source row names a food that Annex A does not define, so it is not applied here: {items}. Confirm with the source whether it applies to {crop}.'
       : 'Review: {n} source rows name a food that Annex A does not define, so they are not applied here: {items}. Confirm with the source whether they apply to {crop}.',
     { n: u.length, items, crop: esc(cropName(c)) }
-  )}</p>`;
+  )}${context}</p>`;
 }
 function renderCrop() {
   const c = cropMap.get($('crop').value);

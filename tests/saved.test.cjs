@@ -150,10 +150,17 @@ test('crop card flags undefined source foods; detail uses database dates', async
   assert(nodes.cropCard.innerHTML.includes('Annex A does not define'));
   assert(nodes.cropCard.innerHTML.includes('甘蓝 · '));
   assert(nodes.cropCard.innerHTML.includes('page=181'));
+  assert(nodes.cropCard.innerHTML.includes('new in the 2026 edition'));
   nodes.crop.value = '榴莲';
   vm.runInContext('filter()', ctx);
   assert(!nodes.cropCard.innerHTML.includes('Annex A does not define'));
   vm.runInContext("details('312:6580|')", ctx);
   assert(nodes.detailContent.innerHTML.includes('1 March 2026'));
   assert(nodes.detailContent.innerHTML.includes('printed page 236'));
+});
+test('unmapped cabbage rows show the earlier-edition context in both languages', () => {
+  const d = JSON.parse(fs.readFileSync('dist/database.json'));
+  assert.match(d.reviewNotes['白菜'].en, /GB 2763-2021 carried the same 6 mg\/kg entry/);
+  assert.match(d.reviewNotes['白菜'].zh, /普通白菜\/大白菜/);
+  assert.match(d.reviewNotes['甘蓝'].en, /new in the 2026 edition/);
 });

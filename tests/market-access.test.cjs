@@ -8,7 +8,7 @@ test('access matches origin, crop and form without inference', () => {
   assert.equal(access.lookup(data.records, 'MY', '榴莲', 'fresh').status, 'conditional');
   for (const args of [
     ['MY', '榴莲', 'frozen'],
-    ['TH', '榴莲', 'fresh'],
+    ['GB', '榴莲', 'fresh'],
     ['MY', '番茄', 'fresh'],
     ['LA', '辣椒', 'dried']
   ])
@@ -28,7 +28,15 @@ test('every documented record has a valid crop, source, dates and conditions', (
     keys.add(key);
     assert(db.crops.some((c) => c.id === r.crop));
     assert(data.countries.some((c) => c.code === r.origin));
-    assert(['www.mofcom.gov.cn', 'www.fama.gov.my'].includes(new URL(r.url).hostname));
+    assert(
+      [
+        'www.mofcom.gov.cn',
+        'policy.mofcom.gov.cn',
+        'swt.fujian.gov.cn',
+        'www.fama.gov.my',
+        'www.producereport.com'
+      ].includes(new URL(r.url).hostname)
+    );
     assert(Number.isFinite(Date.parse(r.reviewed)));
     assert(Date.parse(r.announced) <= Date.parse(r.reviewed));
     assert(r.conditions.length > 0);
@@ -62,7 +70,7 @@ test('checker renders documented, unknown, changed-form and load-failure results
   assert.match(nodes.accessResult.innerHTML, /Approved market access/);
   nodes.originSelector.value = 'MY';
   nodes.originSelector.change();
-  assert.match(nodes.accessCatalogueSummary.textContent, /8 documented/);
+  assert.match(nodes.accessCatalogueSummary.textContent, /10 documented/);
   assert.match(nodes.accessCropList.innerHTML, /Jackfruit/);
   assert.match(nodes.accessCropList.innerHTML, /Papaya/);
   assert.equal(opened, 1);
@@ -108,7 +116,7 @@ test('country catalogue distinguishes missing evidence, categories and product f
   const rows = access.catalogue(data.records, db.crops, 'MY', 'fresh');
   assert.equal(rows.length, 184);
   const documented = rows.filter((c) => c.access.status === 'conditional');
-  assert.equal(documented.length, 8);
+  assert.equal(documented.length, 10);
   assert(documented.every((c) => c.category === '水果'));
   assert(rows.filter((c) => c.category === '蔬菜').every((c) => c.access.status === 'unverified'));
   assert(
@@ -169,4 +177,18 @@ test('unreadable review dates show as review due; non-https extra sources are dr
   delete global.localStorage;
   delete global.document;
   delete global.fetch;
+});
+test('translation-based list records are labelled as such and carry Chinese text', () => {
+  const translated = data.records.filter((r) => new URL(r.url).hostname === 'www.producereport.com');
+  assert.equal(translated.length, 290);
+  for (const r of translated) {
+    assert.equal(r.evidenceType, 'list-translation');
+    assert.match(r.conditions[0], /according to this translation; the official list was not read directly/);
+    assert.match(r.sourceLabel, /translation/);
+  }
+  for (const r of data.records) {
+    assert.equal(r.form, 'fresh');
+    assert(/[一-鿿]/.test(r.scopeZh) && /[一-鿿]/.test(r.titleZh), r.origin + r.crop);
+    for (const s of r.additionalSources || []) assert(/[一-鿿]/.test(s.noteZh), r.origin + r.crop);
+  }
 });

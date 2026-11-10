@@ -42,6 +42,8 @@
     const countryName = (c) => {
         try {
           const n = regionNames && regionNames.of(c.code);
+          // The GACC list this data comes from names the territory 中国台湾.
+          if (c.code === 'TW' && isZh) return '中国台湾';
           if (n && n !== c.code) return n;
         } catch {}
         return c.name;
@@ -62,7 +64,9 @@
         ? 'Official guide'
         : a.evidenceType === 'official-list'
           ? 'Official list'
-          : 'Protocol';
+          : a.evidenceType === 'list-translation'
+            ? 'GACC list via translation'
+            : 'Protocol';
     const labels = {
       conditional: 'Documented access · conditions apply',
       restricted: 'Restriction documented',
@@ -213,7 +217,9 @@
                   ? 'Access listed in official guide · conditions apply'
                   : r.evidenceType === 'official-list'
                     ? 'Listed in an official access list · conditions apply'
-                    : 'Protocol documented · conditions apply';
+                    : r.evidenceType === 'list-translation'
+                      ? 'On GACC’s permitted list, per a translation · conditions apply'
+                      : 'Protocol documented · conditions apply';
           const due = !stale
             ? ''
             : ' · ' +
@@ -222,7 +228,7 @@
                   ? 'Review due (over 90 days)'
                   : 'Review due (review date unreadable)'
               );
-          html += `<h3>${t(heading)}</h3><p>${escape(local(r, 'scope'))}</p><p><strong>${t('Shipment checks:')}</strong> ${t('Confirm the required facility registrations, certificates, treatments and route before dispatch. This app does not assess or clear an individual shipment.')}</p><p>${t(r.evidenceType === 'official-guide' ? 'Guide edition' : r.evidenceType === 'official-list' ? 'List edition' : 'Announcement')}: ${escape(r.announced)} · ${t('Document reviewed')}: ${escape(r.reviewed)}${due}</p><h4>${t('Key source conditions (summary)')}</h4><ul>${local(
+          html += `<h3>${t(heading)}</h3><p>${escape(local(r, 'scope'))}</p><p><strong>${t('Shipment checks:')}</strong> ${t('Confirm the required facility registrations, certificates, treatments and route before dispatch. This app does not assess or clear an individual shipment.')}</p><p>${t(r.evidenceType === 'official-guide' ? 'Guide edition' : r.evidenceType === 'official-list' ? 'List edition' : r.evidenceType === 'list-translation' ? 'Translation updated' : 'Announcement')}: ${escape(r.announced)} · ${t('Document reviewed')}: ${escape(r.reviewed)}${due}</p><h4>${t('Key source conditions (summary)')}</h4><ul>${local(
             r,
             'conditions'
           )

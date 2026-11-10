@@ -10,11 +10,11 @@ const { chromium } = require('playwright'),
     await page.goto(process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/');
     await page.waitForFunction(() => !document.getElementById('originSelector').disabled);
     await page.selectOption('#originSelector', 'MY');
-    assert((await page.locator('#accessCatalogueSummary').innerText()).startsWith('8 documented'));
+    assert((await page.locator('#accessCatalogueSummary').innerText()).startsWith('10 documented'));
     assert.equal(await page.locator('#accessCropList article').count(), 184);
     assert.equal(await page.locator('#accessStatus').inputValue(), 'all');
     assert((await page.locator('#accessCropList article').nth(0).innerText()).includes('Documented access'));
-    assert((await page.locator('#accessCropList article').nth(8).innerText()).includes('Not verified'));
+    assert((await page.locator('#accessCropList article').nth(10).innerText()).includes('Not verified'));
     await page.selectOption('#accessCategory', '蔬菜');
     assert((await page.locator('#accessCropList article').count()) > 0);
     await page.selectOption('#accessStatus', 'conditional');
@@ -46,7 +46,8 @@ const { chromium } = require('playwright'),
     assert.equal(await page.locator('#accessCropList article').count(), 0);
     await page.selectOption('#accessForm', 'fresh');
     await page.selectOption('#originSelector', 'LA');
-    assert.equal(await page.locator('#accessCropList article').count(), 1);
+    assert.equal(await page.locator('#accessCropList article').count(), 11);
+    assert((await page.locator('#accessCropList').innerText()).includes('GACC list via translation'));
     assert((await page.locator('#accessCropList').innerText()).includes('Chilli'));
     await page.selectOption('#originSelector', '');
     assert(!(await page.locator('#accessCatalogue').isVisible()));

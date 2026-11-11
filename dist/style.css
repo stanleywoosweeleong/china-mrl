@@ -2910,3 +2910,8 @@ tr.group-head small {
   margin: 0 0 12px;
   font-size: 14px;
 }
+/* The crop being checked, pinned first in the market-access list. */
+.access-crop-list article.selected {
+  border-color: var(--green);
+  background: #eef6ee;
+}

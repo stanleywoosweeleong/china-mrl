@@ -18,13 +18,33 @@ const { chromium } = require('playwright'),
     await page.selectOption('#originSelector', 'MY');
     assert((await page.locator('#cropCard').innerText()).includes('approved market access'));
     await openTab(page, 'access');
+    // The crop chosen on Produce (durian by default) leads here: its result comes before the list, and it
+    // is the first, highlighted entry in the list.
+    assert((await page.locator('#accessResult h2').innerText()).includes('Durian'));
+    assert(
+      (await page.locator('#accessResult').boundingBox()).y <
+        (await page.locator('#accessCatalogue').boundingBox()).y
+    );
+    assert((await page.locator('#accessCropList article').first().innerText()).includes('Durian'));
+    assert.equal(await page.locator('#accessCropList article.selected').count(), 1);
+    await openTab(page, 'fresh');
+    await pickCrop(page, 'pineapple');
+    await openTab(page, 'access');
+    assert((await page.locator('#accessResult h2').innerText()).includes('Pineapple'));
+    assert((await page.locator('#accessCropList article').first().innerText()).includes('Pineapple'));
+    await openTab(page, 'fresh');
+    await pickCrop(page, 'durian');
+    await openTab(page, 'access');
     assert((await page.locator('#accessCatalogueSummary').innerText()).startsWith('10 documented'));
     // The catalogue opens on crops that have a record; "All crops" shows the rest.
     assert.equal(await page.locator('#accessStatus').inputValue(), 'documented');
     assert.equal(await page.locator('#accessCropList article').count(), 10);
     await page.selectOption('#accessStatus', 'all');
     assert.equal(await page.locator('#accessCropList article').count(), 184);
-    assert((await page.locator('#accessCropList article').nth(0).innerText()).includes('Documented access'));
+    assert(
+      (await page.locator('#accessCropList article').nth(0).innerText()).includes('Approved market access')
+    );
+    assert((await page.locator('#accessCropList article').nth(1).innerText()).includes('Documented access'));
     assert((await page.locator('#accessCropList article').nth(10).innerText()).includes('Not verified'));
     await page.selectOption('#accessCategory', '蔬菜');
     assert((await page.locator('#accessCropList article').count()) > 0);

@@ -157,7 +157,8 @@
           { documented: counts.conditional, restricted: counts.restricted, unverified: counts.unverified }
         );
         // Traditional input is converted to Simplified; regional names and pinyin also find a crop.
-        const q = api.simplified(el('accessCropSearch').value).trim().toLowerCase(),
+        const selected = el(ids[1]).value,
+          q = api.simplified(el('accessCropSearch').value).trim().toLowerCase(),
           status = el('accessStatus').value || 'all',
           category = el('accessCategory').value;
         const rows = entries
@@ -175,15 +176,18 @@
           )
           .sort(
             (a, b) =>
-              ({ conditional: 0, restricted: 1, unverified: 2 })[a.access.status] -
-                { conditional: 0, restricted: 1, unverified: 2 }[b.access.status] || byCrop(a, b)
+              // The crop being checked leads the list, so the list and the result above stay in step.
+              (b.id === selected) - (a.id === selected) ||
+              { conditional: 0, restricted: 1, unverified: 2 }[a.access.status] -
+                { conditional: 0, restricted: 1, unverified: 2 }[b.access.status] ||
+              byCrop(a, b)
           );
         el('accessListCount').textContent = t('{n} crops shown', { n: rows.length });
         el('accessCropList').innerHTML = rows.length
           ? rows
               .map(
                 (c) =>
-                  `<article><div><strong>${escape(cropPair(c))}</strong><small>${escape(statusLabel(c.access))}</small>${c.access.reviewed ? `<small>${t('{evidence} · reviewed {date}', { evidence: t(evidenceLabel(c.access)), date: escape(c.access.reviewed) })}</small>` : ''}</div><div><button data-access-crop="${escape(c.id)}">${t(c.access.status === 'unverified' ? 'Review status' : 'Conditions & sources')}</button>${form === 'fresh' ? `<button data-crop="${escape(c.id)}">${t('MRL limits')}</button>` : ''}</div></article>`
+                  `<article${c.id === selected ? ' class="selected" aria-current="true"' : ''}><div><strong>${escape(cropPair(c))}</strong><small>${escape(statusLabel(c.access))}</small>${c.access.reviewed ? `<small>${t('{evidence} · reviewed {date}', { evidence: t(evidenceLabel(c.access)), date: escape(c.access.reviewed) })}</small>` : ''}</div><div><button data-access-crop="${escape(c.id)}">${t(c.access.status === 'unverified' ? 'Review status' : 'Conditions & sources')}</button>${form === 'fresh' ? `<button data-crop="${escape(c.id)}">${t('MRL limits')}</button>` : ''}</div></article>`
               )
               .join('')
           : `<p>${t('No crops match this view. Try “All crops” or another produce type. An empty list is not a prohibition or permission.')}</p>`;
@@ -289,6 +293,13 @@
         render();
         el('accessResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
+      // Follows the crop chosen on the Produce tab, without changing tab or scrolling.
+      api.sync = (cropId) => {
+        if (el(ids[1]).value === cropId || !crops.some((c) => c.id === cropId)) return;
+        el(ids[1]).value = cropId;
+        el(ids[2]).value = 'fresh';
+        render();
+      };
       // Opens the checker on one crop (used by the crop card's access banner).
       api.show = (cropId) => {
         if (!crops.some((c) => c.id === cropId)) return;
@@ -328,7 +339,7 @@
       );
     }
   }
-  const api = { lookup, catalogue, cropStatus, init, show() {}, simplified: (s) => String(s) };
+  const api = { lookup, catalogue, cropStatus, init, show() {}, sync() {}, simplified: (s) => String(s) };
   if (typeof module !== 'undefined') module.exports = api;
   else root.MarketAccess = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

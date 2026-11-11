@@ -242,6 +242,8 @@ function filter() {
     bannedFrom = others.length;
     filtered = [...others, ...filtered.filter(isBanned)];
   }
+  // The market-access checker follows the crop chosen here.
+  if (tab === 'fresh' && crop && typeof MarketAccess !== 'undefined') MarketAccess.sync(crop.id);
   syncSort();
   syncCropInput();
   page = 1;
@@ -1079,7 +1081,7 @@ fetch('database.json')
         () => {
           if (tab === 'fresh') renderCrop();
         }
-      );
+      ).then(() => MarketAccess.sync($('crop').value));
   })
   .catch((e) => {
     $('loadError').hidden = false;

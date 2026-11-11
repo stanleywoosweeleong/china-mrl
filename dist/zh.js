@@ -437,6 +437,7 @@
 
     // Redesign: crop picker, sorting, navigation, detail and print sheet
     More: '更多',
+    Language: '语言',
     'Limit sheet': '限量表',
     Print: '打印',
     Close: '关闭',

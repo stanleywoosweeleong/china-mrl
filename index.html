@@ -18,11 +18,14 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="style.css" />
     <script>
-      // Chinese visitors: keep the page hidden until i18n.js has swapped the text, so English never flashes.
+      // Chinese and Malay visitors: keep the page hidden until i18n.js has swapped the text, so English never flashes.
       try {
         var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('china-mrl-lang');
-        if (l !== 'zh' && l !== 'en') l = /^zh\b/i.test((navigator.languages || [navigator.language])[0] || '') ? 'zh' : 'en';
-        if (l === 'zh') {
+        if (l !== 'zh' && l !== 'ms' && l !== 'en') {
+          var first = (navigator.languages || [navigator.language])[0] || '';
+          l = /^zh\b/i.test(first) ? 'zh' : /^ms\b/i.test(first) ? 'ms' : 'en';
+        }
+        if (l !== 'en') {
           document.documentElement.classList.add('i18n-pending');
           setTimeout(function () {
             document.documentElement.classList.remove('i18n-pending');
@@ -66,7 +69,11 @@
               <option value="MY">Malaysia</option>
             </select></label
           ><span>China destination</span>
-          <button id="langToggle" class="lang-toggle" type="button"><span class="on" lang="en">EN</span></button>
+          <select id="langSelect" class="lang-toggle" aria-label="Language">
+            <option value="en" lang="en">EN</option>
+            <option value="zh" lang="zh-Hans">中文</option>
+            <option value="ms" lang="ms">BM</option>
+          </select>
         </div>
       </header>
       <main>
@@ -520,6 +527,7 @@
     <div id="toast" role="status"></div>
     <div id="printSheet" hidden></div>
     <script src="zh.js"></script>
+    <script src="ms.js"></script>
     <script src="i18n.js"></script>
     <script src="rules.js"></script>
     <script src="market-access.js"></script>

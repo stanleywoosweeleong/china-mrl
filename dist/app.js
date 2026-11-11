@@ -12,17 +12,19 @@ const I =
   t = I.t;
 // The interface language can change while the app is open; relabel() redraws for the new one.
 let isZh = I.lang === 'zh',
+  isMs = I.lang === 'ms',
   altLang = isZh ? 'en' : 'zh';
 // Primary name follows the interface language; the other language is shown as the secondary line.
-const cropName = (c) => (isZh ? c.zh : c.en),
+// Malay names exist for fresh crops; anything without one falls back to English.
+const cropName = (c) => (isZh ? c.zh : (isMs && c.ms) || c.en),
   cropAlt = (c) => (isZh ? c.en : c.zh),
   cropPair = (c) => cropName(c) + ' · ' + cropAlt(c),
   pestName = (p) => (isZh ? p.zh : p.en),
   pestAlt = (p) => (isZh ? p.en : p.zh),
   foodName = (r) => (isZh ? r.food : r.foodEn),
   foodAlt = (r) => (isZh ? r.foodEn : r.food),
-  catName = (zh) => (isZh ? zh : db.categories[zh] || zh),
-  byName = (name) => (a, b) => name(a).localeCompare(name(b), isZh ? 'zh-Hans-CN' : 'en');
+  catName = (zh) => (isZh ? zh : (isMs && db.categoriesMs?.[zh]) || db.categories[zh] || zh),
+  byName = (name) => (a, b) => name(a).localeCompare(name(b), isZh ? 'zh-Hans-CN' : isMs ? 'ms' : 'en');
 let db = null,
   filtered = [],
   page = 1,
@@ -112,7 +114,7 @@ function toast(m) {
 function longDate(d) {
   const ms = Date.parse(d + 'T00:00:00Z');
   return Number.isFinite(ms)
-    ? new Date(ms).toLocaleDateString(isZh ? 'zh-CN' : 'en-GB', {
+    ? new Date(ms).toLocaleDateString(isZh ? 'zh-CN' : isMs ? 'ms-MY' : 'en-GB', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -128,7 +130,7 @@ let t2s = new Map();
 const simplified = (s) => (t2s.size ? [...String(s)].map((ch) => t2s.get(ch) || ch).join('') : String(s));
 const typed = (s) => normalized(simplified(s));
 // Every name a crop can be found by; `search` holds everyday and regional names (search only).
-const cropNames = (c) => [c.en, c.zh, ...(c.aliases || []), ...(c.search || [])];
+const cropNames = (c) => [c.en, c.zh, ...(c.ms ? [c.ms] : []), ...(c.aliases || []), ...(c.search || [])];
 // Crop recognition for the full-standard search: exact names first, then whole words of crop names. Plurals are accepted; several matches become suggestions.
 function singulars(q) {
   const v = new Set([q]);
@@ -210,6 +212,7 @@ function filter() {
             p.residue,
             c?.en,
             c?.zh,
+            c?.ms,
             ...(c?.aliases || []),
             ...(c?.search || [])
           ].join(' ')
@@ -332,7 +335,7 @@ function renderCrop() {
   $('cropCard').innerHTML =
     `${access ? `<div class="access-banner ${access.status}"><p class="crop-access-status">${t('Selected origin: {status}. MRLs alone do not establish permission.', { status: accessText })}</p><button type="button" data-access-view="${esc(c.id)}">${t(access.status === 'unverified' ? 'Check market access' : 'View conditions')}</button></div>` : ''}<div><span class="tag">${t(c.category === '水果' ? 'SELECTED CROP · FRESH FRUIT' : 'SELECTED CROP · FRESH VEGETABLE')}</span><h2>${esc(cropName(c))} <span lang="${altLang}">${esc(cropAlt(c))}</span></h2><p>${t('{direct} direct entries · {group} group-based entries', { direct, group: all.length - direct })}</p>${unmappedNote(c)}</div><div><small>${t('PART TO BE TESTED · ANNEX A')}</small><p>${esc(partText(c))}</p><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Read Annex A, PDF p. {n} ↗', { n: c.annexPage })}</a></div>`;
 }
-const partText = (c) => (isZh && c.partZh) || c.part;
+const partText = (c) => (isZh && c.partZh) || (isMs && c.partMs) || c.part;
 function rowHtml(r) {
   const p = pestMap.get(r.pesticideId),
     c = cropMap.get(r.cropId),
@@ -1022,7 +1025,7 @@ function fillOptions() {
   );
   fill(
     'category',
-    Object.entries(db.categories).map(([zh, en]) => [zh, isZh ? zh : `${en} · ${zh}`])
+    Object.keys(db.categories).map((zh) => [zh, isZh ? zh : `${catName(zh)} · ${zh}`])
   );
 }
 function renderAnnex() {
@@ -1033,6 +1036,7 @@ function renderAnnex() {
 // Redraws everything this script rendered, in the current language, keeping filters, page and open detail.
 function relabel() {
   isZh = I.lang === 'zh';
+  isMs = I.lang === 'ms';
   altLang = isZh ? 'en' : 'zh';
   renderTitles();
   if (!db) return;

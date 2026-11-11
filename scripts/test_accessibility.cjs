@@ -32,7 +32,7 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
     }
   };
   try {
-    for (const lang of ['en', 'zh'])
+    for (const lang of ['en', 'zh', 'ms'])
       for (const width of [390, 1440]) {
         const page = await browser.newPage({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
         await page.goto(url + '?lang=' + lang);
@@ -60,7 +60,7 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
       );
     assert.equal(list.length, 0, `${list.length} accessibility rule(s) violated`);
     console.log(
-      'Accessibility: no WCAG 2.1 A/AA violations on any tab, the crop picker or the detail view, in both languages.'
+      'Accessibility: no WCAG 2.1 A/AA violations on any tab, the crop picker or the detail view, in English, Chinese and Malay.'
     );
   } finally {
     await browser.close();

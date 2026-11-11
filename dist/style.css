@@ -2915,3 +2915,41 @@ tr.group-head small {
   border-color: var(--green);
   background: #eef6ee;
 }
+/* Language switch: a pill showing the active language; opening it lists EN, 中文 and BM. */
+select.lang-toggle {
+  width: auto;
+  min-height: 40px;
+  margin: 0;
+  padding: 6px 30px 6px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--green)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+select.lang-toggle option {
+  background: #fff;
+  color: var(--ink);
+}
+select.lang-toggle:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+@media screen and (max-width: 760px) {
+  select.lang-toggle {
+    position: absolute;
+    top: 14px;
+    right: 15px;
+    z-index: 5;
+    min-height: 44px;
+    max-width: none;
+    flex: none;
+  }
+}

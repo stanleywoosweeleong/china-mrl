@@ -1,15 +1,20 @@
-/* Interface language. English text is the key; zh.js supplies Simplified Chinese (I18N_ZH).
+/* Interface language. English text is the key; zh.js and ms.js supply Simplified Chinese and Bahasa Melayu.
    The choice is stored, can be forced with ?lang=zh or ?lang=en, and otherwise follows the browser.
    Switching is applied in place: static text is swapped here, and each script re-renders what it drew
    through onChange. Nothing is reloaded. */
 (function (root) {
-  const ZH = root.I18N_ZH || (typeof require !== 'undefined' ? require('./zh.js') : {});
+  const load = (name, file) => root[name] || (typeof require !== 'undefined' ? require(file) : {});
+  // One dictionary per language other than English.
+  const DICTS = { zh: load('I18N_ZH', './zh.js'), ms: load('I18N_MS', './ms.js') };
+  const LANGS = ['en', 'zh', 'ms'];
   const hasDom = typeof document !== 'undefined';
-  const has = (key) => Object.prototype.hasOwnProperty.call(ZH, key);
+  const own = (dict, key) => Object.prototype.hasOwnProperty.call(dict, key),
+    // Text is translatable when any language has it.
+    has = (key) => Object.values(DICTS).some((dict) => own(dict, key));
   function pick() {
     try {
       const forced = new URLSearchParams(root.location.search).get('lang');
-      if (forced === 'zh' || forced === 'en') {
+      if (LANGS.includes(forced)) {
         try {
           root.localStorage.setItem('china-mrl-lang', forced);
         } catch {}
@@ -18,18 +23,19 @@
     } catch {}
     try {
       const stored = root.localStorage.getItem('china-mrl-lang');
-      if (stored === 'zh' || stored === 'en') return stored;
+      if (LANGS.includes(stored)) return stored;
     } catch {}
     try {
       const prefs = root.navigator.languages || [root.navigator.language];
       if (/^zh\b/i.test(prefs[0] || '')) return 'zh';
+      if (/^ms\b/i.test(prefs[0] || '')) return 'ms';
     } catch {}
     return 'en';
   }
   let lang = hasDom ? pick() : 'en';
   const listeners = [];
   const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (m, k) => (vars && k in vars ? vars[k] : m));
-  const translate = (s, to) => (to === 'zh' && has(s) ? ZH[s] : s);
+  const translate = (s, to) => (DICTS[to] && own(DICTS[to], s) ? DICTS[to][s] : s);
   const t = (s, vars) => fill(translate(s, lang), vars);
   const collapse = (s) => s.replace(/\s+/g, ' ').trim();
 
@@ -50,9 +56,10 @@
         english = node.nodeValue;
         textOriginals.set(node, english);
       }
+      const key = collapse(english);
       node.nodeValue =
-        lang === 'zh'
-          ? (/^\s/.test(english) ? ' ' : '') + ZH[collapse(english)] + (/\s$/.test(english) ? ' ' : '')
+        DICTS[lang] && own(DICTS[lang], key)
+          ? (/^\s/.test(english) ? ' ' : '') + DICTS[lang][key] + (/\s$/.test(english) ? ' ' : '')
           : english;
     }
     for (const el of scope.querySelectorAll('[placeholder],[aria-label]')) {
@@ -71,7 +78,7 @@
     for (const el of scope.querySelectorAll('[data-i18n-key]')) el.textContent = t(el.dataset.i18nKey);
   }
   function applyChrome() {
-    document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
+    document.documentElement.lang = { zh: 'zh-Hans', ms: 'ms' }[lang] || 'en';
     document.documentElement.dataset.lang = lang;
     headOriginals.title ??= document.title;
     document.title = translate(headOriginals.title, lang);
@@ -80,18 +87,11 @@
       headOriginals.description ??= description.content;
       description.content = translate(headOriginals.description, lang);
     }
-    const toggle = document.getElementById('langToggle');
-    if (toggle) {
-      // Shows only the active language; pressing switches to the other.
-      toggle.innerHTML = `<span class="on" lang="${lang === 'zh' ? 'zh-Hans' : 'en'}">${lang === 'zh' ? '中文' : 'EN'}</span>`;
-      toggle.setAttribute(
-        'aria-label',
-        lang === 'zh' ? '当前语言：中文。切换到 English' : 'Language: English. Switch to 中文 (Chinese)'
-      );
-    }
+    const select = document.getElementById('langSelect');
+    if (select) select.value = lang;
   }
   function setLang(next) {
-    if (next !== 'zh' && next !== 'en') return;
+    if (!LANGS.includes(next)) return;
     if (next === lang) return;
     lang = next;
     try {
@@ -118,13 +118,11 @@
   }
   if (hasDom) {
     applyChrome();
-    if (lang === 'zh') applyDom(document.body);
+    if (lang !== 'en') applyDom(document.body);
     document.documentElement.classList.remove('i18n-pending');
-    const toggle = document.getElementById('langToggle');
-    if (toggle) {
-      toggle.removeAttribute('lang');
-      toggle.addEventListener('click', () => setLang(lang === 'zh' ? 'en' : 'zh'));
-    }
+    // The switch shows the active language and lists the others.
+    const select = document.getElementById('langSelect');
+    if (select) select.addEventListener('change', () => setLang(select.value));
   }
   const api = {
     get lang() {

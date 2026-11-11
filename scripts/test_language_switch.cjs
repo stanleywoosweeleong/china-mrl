@@ -53,7 +53,8 @@ async function goTo(page, state) {
     for (const width of [390, 1280])
       for (const [from, to] of [
         ['en', 'zh'],
-        ['zh', 'en']
+        ['zh', 'ms'],
+        ['ms', 'en']
       ])
         for (const state of [...tabs, 'detail', 'full search', 'access crop']) {
           const open = async (lang) => {
@@ -72,11 +73,13 @@ async function goTo(page, state) {
           await goTo(switched, state);
           await goTo(fresh, state);
           await switched.evaluate(() => (window.__sameDocument = true));
-          const took = await switched.evaluate(() => {
-            const start = performance.now();
-            document.getElementById('langToggle').click();
+          const took = await switched.evaluate((next) => {
+            const start = performance.now(),
+              select = document.getElementById('langSelect');
+            select.value = next;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
             return performance.now() - start;
-          });
+          }, to);
           slowest = Math.max(slowest, took);
           await switched.waitForTimeout(150);
           if (!(await switched.evaluate(() => window.__sameDocument)))
@@ -96,7 +99,7 @@ async function goTo(page, state) {
     assert.deepEqual(problems, []);
     assert(slowest < 1500, `switch took ${Math.round(slowest)}ms`);
     console.log(
-      `Language switch: in place on ${tabs.length + 3} views at 390px and 1280px in both directions, identical to a fresh load; slowest switch ${Math.round(slowest)}ms.`
+      `Language switch: in place on ${tabs.length + 3} views at 390px and 1280px between English, Chinese and Malay, identical to a fresh load; slowest switch ${Math.round(slowest)}ms.`
     );
   } finally {
     await browser.close();

@@ -35,22 +35,25 @@
       t = I.t,
       // Read on every use: the language can change while the app is open.
       zh = () => I.lang === 'zh';
-    let regionNames;
+    const ms = () => I.lang === 'ms',
+      locale = () => (zh() ? 'zh-Hans-CN' : ms() ? 'ms' : 'en');
+    const regionNames = {};
     const countryName = (c) => {
-        if (!zh()) return c.name;
-        if (c.code === 'TW') return '台湾';
+        if (!zh() && !ms()) return c.name;
+        if (c.code === 'TW' && zh()) return '台湾';
         try {
-          regionNames ??= new Intl.DisplayNames(['zh-Hans'], { type: 'region' });
-          const n = regionNames.of(c.code);
+          const tag = zh() ? 'zh-Hans' : 'ms';
+          regionNames[tag] ??= new Intl.DisplayNames([tag], { type: 'region' });
+          const n = regionNames[tag].of(c.code);
           if (n && n !== c.code) return n;
         } catch {}
         return c.name;
       },
-      cropName = (c) => (zh() ? c.zh : c.en),
-      cropPair = (c) => (zh() ? c.zh + ' · ' + c.en : c.en + ' · ' + c.zh),
-      byCrop = (a, b) => cropName(a).localeCompare(cropName(b), zh() ? 'zh-Hans-CN' : 'en'),
+      cropName = (c) => (zh() ? c.zh : (ms() && c.ms) || c.en),
+      cropPair = (c) => (zh() ? c.zh + ' · ' + c.en : cropName(c) + ' · ' + c.zh),
+      byCrop = (a, b) => cropName(a).localeCompare(cropName(b), locale()),
       // Record text: the Chinese field when the interface is Chinese and the record has one.
-      local = (r, field) => (zh() && r[field + 'Zh']) || r[field],
+      local = (r, field) => (zh() && r[field + 'Zh']) || (ms() && r[field + 'Ms']) || r[field],
       statusLabel = (access) =>
         t(
           access.marketAccess === 'approved'
@@ -97,7 +100,7 @@
         option('originSelector', '', t('Global'));
         data.countries
           .map((c) => ({ ...c, label: countryName(c) }))
-          .sort((a, b) => (zh() ? a.label.localeCompare(b.label, 'zh-Hans-CN') : 0))
+          .sort((a, b) => (zh() || ms() ? a.label.localeCompare(b.label, locale()) : 0))
           .forEach((c) => {
             option(ids[0], c.code, c.label);
             option('originSelector', c.code, c.label);
@@ -169,7 +172,7 @@
                 (status === 'documented' && c.access.status !== 'unverified')) &&
               (!category || category === c.category) &&
               (!q ||
-                [c.en, c.zh, c.py, ...(c.aliases || []), ...(c.search || [])]
+                [c.en, c.zh, c.ms || '', c.py, ...(c.aliases || []), ...(c.search || [])]
                   .join(' ')
                   .toLowerCase()
                   .includes(q))

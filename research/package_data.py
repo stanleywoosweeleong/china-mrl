@@ -118,6 +118,12 @@ for c in CATALOG:
 from search_names import SEARCH_NAMES
 for c in CATALOG:c['search']=SEARCH_NAMES.get(c['zh'],[])
 assert not set(SEARCH_NAMES)-{c['zh'] for c in CATALOG}
+# Bahasa Melayu names (navigation aids); crops without one fall back to English in the app.
+import malay_names as ms_names
+for c in CATALOG:
+ if c['zh'] in ms_names.CROPS:c['ms']=ms_names.CROPS[c['zh']]
+ c['partMs']=ms_names.PARTS[c['part']]
+assert not set(ms_names.CROPS)-{c['zh'] for c in CATALOG} and set(ms_names.CATEGORIES)==set(catEn)
 assert len({c['id'] for c in CATALOG})==len(CATALOG)
 # Context for source rows whose food name Annex A does not define; shown beside the review note, never applied.
 review_notes={
@@ -147,6 +153,6 @@ def section_ids(zh):
 banned=dict(source=bp.SOURCE,restrictedSource=bp.RESTRICTED_SOURCE,
  items=[dict(n=i+1,zh=zh,en=en,sections=section_ids(zh)) for i,(zh,en) in enumerate(bp.BANNED)],
  restricted=[dict(zh=zh,en=en,scope=scope,scopeZh=scopeZh,sections=section_ids(zh)) for zh,en,scope,scopeZh in bp.RESTRICTED])
-data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,reviewNotes=review_notes,banned=banned,t2s=''.join(k+v for k,v in sorted(t2s.items())),annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
+data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,categoriesMs=ms_names.CATEGORIES,reviewNotes=review_notes,banned=banned,t2s=''.join(k+v for k,v in sorted(t2s.items())),annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
 Path('dist/database.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')))
 print('Packaged',len(rows),'rows,',len(CATALOG),'crops,',len(exempt),'exemptions')

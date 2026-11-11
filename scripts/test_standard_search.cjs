@@ -87,6 +87,11 @@ const { chromium } = require('playwright'),
     await p.locator('#cropSearch').fill('huolongguo');
     await p.locator('h1').click();
     assert.equal(await p.locator('#crop').inputValue(), '火龙果');
+    // Enter on the box without typing or highlighting keeps the current crop.
+    await p.locator('#cropSearch').click();
+    await p.keyboard.press('Enter');
+    assert.equal(await p.locator('#crop').inputValue(), '火龙果');
+    assert(!(await p.locator('#cropOptions').isVisible()));
     await p.locator('#cropClear').click();
     assert.equal(await p.locator('#crop').inputValue(), '');
     await pickCrop(p, 'durian');

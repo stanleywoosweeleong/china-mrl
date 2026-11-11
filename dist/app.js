@@ -213,7 +213,7 @@ function filter() {
         pest: (a, b) => byName(pestName)(pestMap.get(a.pesticideId), pestMap.get(b.pesticideId)),
         food: byName(rowFood)
       }[sortBy.col];
-    filtered.sort((a, b) => dir * compare(a, b));
+    if (compare) filtered.sort((a, b) => dir * compare(a, b));
   }
   syncSort();
   syncCropInput();
@@ -357,6 +357,7 @@ function reset() {
 }
 function setTab(name) {
   if (!titles[name]) return;
+  if ($('detail').open) $('detail').close?.();
   tab = name;
   document
     .querySelectorAll('nav button')
@@ -406,7 +407,7 @@ function details(k) {
       : 'Original source-table row; select a fresh crop to see group applicability.'
   );
   const isSaved = saved.has(k);
-  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : ''}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
+  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : 'zh'}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
   const compare = `<div class="compare-box"><h3>${t('Compare a laboratory result')}</h3><label for="labMode">${t('Report type')}</label><select id="labMode"><option value="number">${t('Quantified result')}</option><option value="nd">${t('Non-detect / below reporting limit')}</option></select><label for="lab" id="labLabel">${t('Result in mg/kg (ppm by mass)')}</label><input id="lab" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('e.g. 0.015')}"><div id="comparison" role="status">${t('Enter a result to compare.')}</div><p>${t('Arithmetic only. The analyte definition, sample preparation, uncertainty, product form and market access must be assessed separately.')}</p></div>`;
   const source = `<details class="section" open><summary>${t('Applicability and source')}</summary><dl><dt>${t('Original food scope')}</dt><dd>${esc(r.food)}${isZh ? '' : '<br>' + esc(r.foodEn)}</dd><dt>${t('Source category')}</dt><dd>${esc(r.categoryScope || r.category)}</dd><dt>${t('Application')}</dt><dd>${application}</dd><dt>${t('Residue definition')}</dt><dd>${residue}</dd><dt>${t('Effective from')}</dt><dd>${esc(longDate(db.meta.effective))}</dd><dt>${t('Source location')}</dt><dd>${t('Table {table} · PDF page {page} · printed page {printed}', { table: r.table, page: r.page, printed: r.page - (db.meta.printedPageOffset ?? 16) })}</dd>${c ? `<dt>${t('Sampling portion')}</dt><dd>${esc(partText(c))}<br><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Annex A · PDF p. {n} ↗', { n: c.annexPage })}</a></dd>` : ''}</dl><a href="standard.pdf#page=${r.page}" target="_blank" rel="noopener">${t('Open the exact source page ↗')}</a></details>`;
   const methods = `<details class="section"><summary>${t('Testing methods')}</summary>${methodsHtml(p, r, c)}${p.method ? `<details><summary>${t('Source testing-method text (Chinese)')}</summary><p lang="zh" class="technical">${esc(p.method)}</p></details>` : ''}</details>`;
@@ -441,12 +442,14 @@ function details(k) {
   showDetail(k);
 }
 // Wide screens: a side panel that leaves the table usable. Otherwise a modal dialog.
+// Must match the side-panel media query in style.css.
+const PANEL_QUERY = '(min-width: 1400px)';
 function showDetail(k) {
   const d = $('detail');
   document.querySelectorAll('#rows tr.selected').forEach((tr) => tr.classList.remove('selected'));
   document.querySelectorAll('#rows tr').forEach((tr) => tr.dataset.key === k && tr.classList.add('selected'));
   if (d.open) return;
-  const wide = typeof matchMedia === 'function' && matchMedia('(min-width: 1100px)').matches;
+  const wide = typeof matchMedia === 'function' && matchMedia(PANEL_QUERY).matches;
   if (wide && d.show) {
     d.show();
     document.body?.classList.add('panel-open');
@@ -741,8 +744,13 @@ combo.input.addEventListener('keydown', (e) => {
     openCropList();
   } else if (e.key === 'Enter') {
     e.preventDefault();
-    const c = combo.items[Math.max(combo.active, 0)];
+    // Only a highlighted option is chosen; Enter on an untouched box just closes the list.
+    const c = combo.items[combo.active];
     if (!combo.list.hidden && c) chooseCrop(c.id);
+    else {
+      closeCropList();
+      syncCropInput();
+    }
   } else if (e.key === 'Escape' && !combo.list.hidden) {
     e.stopPropagation();
     closeCropList();
@@ -752,6 +760,9 @@ combo.input.addEventListener('keydown', (e) => {
 });
 for (const type of ['pointerdown', 'touchstart'])
   combo.list.addEventListener(type, () => (combo.pressing = true), { passive: true });
+// A press that ends without a choice (scrolling the list) releases the flag once any tap has had time to arrive.
+for (const type of ['pointerup', 'pointercancel', 'touchend', 'touchcancel'])
+  combo.list.addEventListener(type, () => setTimeout(() => (combo.pressing = false), 500), { passive: true });
 // With a mouse, keep focus in the box while an option is pressed.
 combo.list.addEventListener('mousedown', (e) => e.preventDefault());
 combo.list.addEventListener('click', (e) => {
@@ -842,7 +853,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && $('detail').open) $('detail').close();
   if (
     e.key === '/' &&
-    !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName) &&
+    !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName) &&
     !$('detail').open
   ) {
     e.preventDefault();

@@ -19,6 +19,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
       for (const [width, height] of [
         [320, 640],
         [390, 844],
+        [1280, 800],
         [1440, 900]
       ]) {
         const tag = `${lang} ${width}px`;
@@ -94,6 +95,13 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
         await openDetails(page, page.locator('#rows tr').first());
         const box = await page.locator('#detail').boundingBox();
         if (!box || box.width > width) problems.push(`${tag} detail dialog wider than viewport`);
+        // The detail is either a modal dialog or the fixed side panel, never loose in the page.
+        const placement = await page.evaluate(() => {
+          const d = document.getElementById('detail');
+          return { modal: d.matches(':modal'), position: getComputedStyle(d).position };
+        });
+        if (!placement.modal && placement.position !== 'fixed')
+          problems.push(`${tag} detail opens neither as a dialog nor as the side panel`);
         await page.screenshot({ path: `${out}/${lang}-${width}-detail.png` });
         await page.close();
       }
@@ -116,7 +124,7 @@ const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
     await page.close();
     assert.deepEqual(problems, []);
     console.log(
-      `Layout: ${tabs.length} tabs and the detail dialog at 320px, 390px and 1440px in English and Chinese, plus the language switch, passed; screenshots in ${out}.`
+      `Layout: ${tabs.length} tabs and the detail dialog at 320px, 390px, 1280px and 1440px in English and Chinese, plus the language switch, passed; screenshots in ${out}.`
     );
   } finally {
     await browser.close();

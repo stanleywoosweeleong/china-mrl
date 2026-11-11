@@ -110,17 +110,22 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
     await page.goto(url + '?lang=en');
     await page.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
     // The switch offers three languages, changes in place and remembers the choice.
-    assert.equal(await page.locator('#langSelect').inputValue(), 'en');
-    await page.selectOption('#langSelect', 'zh');
+    assert.equal((await page.locator('#langButton').innerText()).trim(), 'EN');
+    assert(await page.locator('#langMenu').isHidden());
+    await page.locator('#langButton').click();
+    assert.equal(await page.locator('#langMenu button').count(), 3);
+    await page.locator('#langMenu [data-lang="zh"]').click();
+    assert(await page.locator('#langMenu').isHidden());
     await page.waitForFunction(() => document.documentElement.dataset.langReady === 'zh');
     assert.equal(await page.locator('#title').innerText(), '查清限量，核对原文。');
-    await page.selectOption('#langSelect', 'ms');
+    await page.locator('#langButton').click();
+    await page.locator('#langMenu [data-lang="ms"]').click();
     await page.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
     assert.equal(await page.locator('#title').innerText(), 'Ketahui hadnya. Lihat sumbernya.');
     assert(!page.url().includes('lang='));
     await page.reload();
     await page.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
-    assert.equal(await page.locator('#langSelect').inputValue(), 'ms');
+    assert.equal((await page.locator('#langButton').innerText()).trim(), 'BM');
     await page.close();
     assert.deepEqual(problems, []);
     console.log(

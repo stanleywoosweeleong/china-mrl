@@ -76,10 +76,10 @@ async function goTo(page, state) {
           await goTo(fresh, state);
           await switched.evaluate(() => (window.__sameDocument = true));
           const took = await switched.evaluate(async (next) => {
-            const start = performance.now(),
-              select = document.getElementById('langSelect');
-            select.value = next;
-            select.dispatchEvent(new Event('change', { bubbles: true }));
+            const start = performance.now();
+            document.getElementById('langButton').click();
+            document.querySelector(`#langMenu [data-lang="${next}"]`).click();
+            if (!document.getElementById('langMenu').hidden) return Infinity;
             // The switch itself must show the new language at once; the page text follows.
             if (document.documentElement.lang !== { zh: 'zh-Hans', ms: 'ms', en: 'en' }[next])
               return Infinity;

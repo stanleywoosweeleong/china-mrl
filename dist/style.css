@@ -2915,8 +2915,13 @@ tr.group-head small {
   border-color: var(--green);
   background: #eef6ee;
 }
-/* Language switch: a pill showing the active language; opening it lists EN, 中文 and BM. */
-select.lang-toggle {
+/* Language switch: a pill showing the active language; tapping it lists EN, 中文 and BM. It is drawn by
+   the page, not a system picker, so a choice takes effect the moment it is tapped. */
+.lang-switch {
+  position: relative;
+  flex: none;
+}
+.lang-pill {
   width: auto;
   min-height: 40px;
   margin: 0;
@@ -2930,26 +2935,58 @@ select.lang-toggle {
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  appearance: none;
-  -webkit-appearance: none;
+  white-space: nowrap;
   cursor: pointer;
+  touch-action: manipulation;
 }
-select.lang-toggle option {
-  background: #fff;
-  color: var(--ink);
-}
-select.lang-toggle:focus-visible {
+.lang-pill:focus-visible,
+.lang-menu button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  min-width: 96px;
+  padding: 4px;
+  border: 1px solid var(--line, #d8ddd6);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+.lang-menu[hidden] {
+  display: none;
+}
+.lang-menu button {
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.lang-menu button[aria-current='true'] {
+  background: #eef6ee;
+  color: var(--green);
+}
 @media screen and (max-width: 760px) {
-  select.lang-toggle {
+  .lang-switch {
     position: absolute;
     top: 14px;
     right: 15px;
-    z-index: 5;
+    z-index: 30;
+  }
+  .lang-pill {
     min-height: 44px;
-    max-width: none;
-    flex: none;
   }
 }

@@ -6,7 +6,8 @@
   const load = (name, file) => root[name] || (typeof require !== 'undefined' ? require(file) : {});
   // One dictionary per language other than English.
   const DICTS = { zh: load('I18N_ZH', './zh.js'), ms: load('I18N_MS', './ms.js') };
-  const LANGS = ['en', 'zh', 'ms'];
+  const LANGS = ['en', 'zh', 'ms'],
+    LABELS = { en: 'EN', zh: '中文', ms: 'BM' };
   const hasDom = typeof document !== 'undefined';
   const own = (dict, key) => Object.prototype.hasOwnProperty.call(dict, key),
     // Text is translatable when any language has it.
@@ -83,8 +84,10 @@
       headOriginals.description ??= description.content;
       description.content = translate(headOriginals.description, lang);
     }
-    const select = document.getElementById('langSelect');
-    if (select) select.value = lang;
+    const button = document.getElementById('langButton');
+    if (button) button.textContent = LABELS[lang];
+    for (const item of document.querySelectorAll?.('#langMenu [data-lang]') || [])
+      item.setAttribute('aria-current', String(item.dataset.lang === lang));
   }
   function setLang(next) {
     if (!LANGS.includes(next)) return;
@@ -131,9 +134,35 @@
     document.documentElement.classList.remove('i18n-pending');
     // Tells tests (and anything else) which language the page text currently shows.
     document.documentElement.dataset.langReady = lang;
-    // The switch shows the active language and lists the others.
-    const select = document.getElementById('langSelect');
-    if (select) select.addEventListener('change', () => setLang(select.value));
+    // The switch shows the active language; tapping it lists all three. It is a menu drawn by the page
+    // rather than a system picker, which on phones animates shut before the choice is reported.
+    const button = document.getElementById('langButton'),
+      menu = document.getElementById('langMenu');
+    if (button && menu) {
+      const show = (open) => {
+        menu.hidden = !open;
+        button.setAttribute('aria-expanded', String(open));
+      };
+      button.addEventListener('click', () => {
+        show(menu.hidden);
+        if (!menu.hidden) menu.querySelector('[aria-current="true"]')?.focus();
+      });
+      menu.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-lang]');
+        if (!item) return;
+        show(false);
+        button.focus();
+        setLang(item.dataset.lang);
+      });
+      document.addEventListener('pointerdown', (e) => {
+        if (!menu.hidden && !e.target.closest('.lang-switch')) show(false);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape' || menu.hidden) return;
+        show(false);
+        button.focus();
+      });
+    }
   }
   const api = {
     get lang() {

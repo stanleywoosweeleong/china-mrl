@@ -69,11 +69,16 @@
               <option value="MY">Malaysia</option>
             </select></label
           ><span>China destination</span>
-          <select id="langSelect" class="lang-toggle" aria-label="Language">
-            <option value="en" lang="en">EN</option>
-            <option value="zh" lang="zh-Hans">中文</option>
-            <option value="ms" lang="ms">BM</option>
-          </select>
+          <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" id="langButton" class="lang-pill" aria-haspopup="true" aria-expanded="false">
+              EN
+            </button>
+            <div id="langMenu" class="lang-menu" hidden>
+              <button type="button" data-lang="en" lang="en">EN</button>
+              <button type="button" data-lang="zh" lang="zh-Hans">中文</button>
+              <button type="button" data-lang="ms" lang="ms">BM</button>
+            </div>
+          </div>
         </div>
       </header>
       <main>

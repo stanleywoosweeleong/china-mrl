@@ -33,25 +33,24 @@
         t: (s, v) => s.replace(/\{(\w+)\}/g, (m, k) => (v && k in v ? v[k] : m))
       },
       t = I.t,
-      isZh = I.lang === 'zh',
-      altLang = isZh ? 'en' : 'zh';
-    let regionNames = null;
-    try {
-      if (isZh) regionNames = new Intl.DisplayNames(['zh-Hans'], { type: 'region' });
-    } catch {}
+      // Read on every use: the language can change while the app is open.
+      zh = () => I.lang === 'zh';
+    let regionNames;
     const countryName = (c) => {
+        if (!zh()) return c.name;
+        if (c.code === 'TW') return '台湾';
         try {
-          const n = regionNames && regionNames.of(c.code);
-          if (c.code === 'TW' && isZh) return '台湾';
+          regionNames ??= new Intl.DisplayNames(['zh-Hans'], { type: 'region' });
+          const n = regionNames.of(c.code);
           if (n && n !== c.code) return n;
         } catch {}
         return c.name;
       },
-      cropName = (c) => (isZh ? c.zh : c.en),
-      cropPair = (c) => (isZh ? c.zh + ' · ' + c.en : c.en + ' · ' + c.zh),
-      byCrop = (a, b) => cropName(a).localeCompare(cropName(b), isZh ? 'zh-Hans-CN' : 'en'),
+      cropName = (c) => (zh() ? c.zh : c.en),
+      cropPair = (c) => (zh() ? c.zh + ' · ' + c.en : c.en + ' · ' + c.zh),
+      byCrop = (a, b) => cropName(a).localeCompare(cropName(b), zh() ? 'zh-Hans-CN' : 'en'),
       // Record text: the Chinese field when the interface is Chinese and the record has one.
-      local = (r, field) => (isZh && r[field + 'Zh']) || r[field],
+      local = (r, field) => (zh() && r[field + 'Zh']) || r[field],
       statusLabel = (access) =>
         t(
           access.marketAccess === 'approved'
@@ -83,24 +82,33 @@
         o.textContent = label;
         el(id).append(o);
       }
-      option(ids[0], '', t('Global · select an origin'));
-      el('originSelector').innerHTML = '';
-      option('originSelector', '', t('Global'));
-      data.countries
-        .map((c) => ({ ...c, label: countryName(c) }))
-        .sort((a, b) => (isZh ? a.label.localeCompare(b.label, 'zh-Hans-CN') : 0))
-        .forEach((c) => {
-          option(ids[0], c.code, c.label);
-          option('originSelector', c.code, c.label);
-        });
       const countryOf = (code) => {
         const c = data.countries.find((c) => c.code === code);
         return c ? countryName(c) : '';
       };
-      crops
-        .slice()
-        .sort(byCrop)
-        .forEach((c) => option(ids[1], c.id, cropPair(c)));
+      // Origin and crop lists carry names in the interface language; refilled when it changes.
+      function fillSelects() {
+        const values = ids
+          .slice(0, 2)
+          .concat('originSelector')
+          .map((id) => [id, el(id).value]);
+        for (const [id] of values) el(id).innerHTML = '';
+        option(ids[0], '', t('Global · select an origin'));
+        option('originSelector', '', t('Global'));
+        data.countries
+          .map((c) => ({ ...c, label: countryName(c) }))
+          .sort((a, b) => (zh() ? a.label.localeCompare(b.label, 'zh-Hans-CN') : 0))
+          .forEach((c) => {
+            option(ids[0], c.code, c.label);
+            option('originSelector', c.code, c.label);
+          });
+        crops
+          .slice()
+          .sort(byCrop)
+          .forEach((c) => option(ids[1], c.id, cropPair(c)));
+        for (const [id, value] of values) el(id).value = value;
+      }
+      fillSelects();
       let storedOrigin = null;
       try {
         storedOrigin = localStorage.getItem('china-mrl-origin');
@@ -110,17 +118,20 @@
       el(ids[0]).value = initialOrigin;
       el('originSelector').value = initialOrigin;
       el(ids[1]).value = '榴莲';
-      el('accessCoverage').textContent =
-        t(
-          'Coverage: {records} documented combinations across {origins} origins. All {crops} crops can be checked; other combinations return “Not verified”.',
-          {
-            records: data.records.length,
-            origins: new Set(data.records.map((r) => r.origin)).size,
-            crops: crops.length
-          }
-        ) +
-        ' ' +
-        t(data.coverage);
+      const renderCoverage = () => {
+        el('accessCoverage').textContent =
+          t(
+            'Coverage: {records} documented combinations across {origins} origins. All {crops} crops can be checked; other combinations return “Not verified”.',
+            {
+              records: data.records.length,
+              origins: new Set(data.records.map((r) => r.origin)).size,
+              crops: crops.length
+            }
+          ) +
+          ' ' +
+          t(data.coverage);
+      };
+      renderCoverage();
       // The catalogue opens on documented crops when the origin has any; the visitor's own choice then sticks.
       let statusChosen = false,
         statusOrigin = null;
@@ -287,6 +298,11 @@
           el('originSelector').value = el(ids[0]).value;
           render();
         });
+      });
+      I.onChange?.(() => {
+        fillSelects();
+        renderCoverage();
+        render();
       });
       el('originSelector').disabled = false;
       el('originSelector').addEventListener('change', () => {

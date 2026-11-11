@@ -32,11 +32,12 @@ function scriptKeys() {
   for (const file of ['app.js', 'market-access.js', 'pwa.js']) {
     const src = fs.readFileSync(path.join(dist, file), 'utf8');
     // Every single-quoted literal with letters that sits inside a t(...) call, including ternary branches.
-    for (const call of src.matchAll(/\bt\(\s*([\s\S]*?)\)\s*[;,)}\n+`<]/g))
+    for (const call of src.matchAll(/\b(?:t|say)\(\s*([\s\S]*?)\)\s*[;,)}\n+`<]/g))
       for (const lit of call[1].matchAll(/'((?:[^'\\]|\\.)*[A-Za-z](?:[^'\\]|\\.)*)'/g)) {
         const key = lit[1].replace(/\\'/g, "'");
-        // Skip code identifiers ('group', 'official-guide') and template fragments.
-        if (!/^[a-z-]+$/.test(key) && !/[`\n]|\\n/.test(key)) keys.add(key);
+        // Skip code identifiers ('group', 'official-guide', element ids like 'pwaReady') and template fragments.
+        if (!/^[a-z-]+$/.test(key) && !/^[a-z]+[A-Z][A-Za-z]*$/.test(key) && !/[`\n]|\\n/.test(key))
+          keys.add(key);
       }
   }
   return keys;

@@ -9,8 +9,9 @@ const I =
     typeof I18n !== 'undefined'
       ? I18n
       : { lang: 'en', t: (s, v) => s.replace(/\{(\w+)\}/g, (m, k) => (v && k in v ? v[k] : m)) },
-  t = I.t,
-  isZh = I.lang === 'zh',
+  t = I.t;
+// The interface language can change while the app is open; relabel() redraws for the new one.
+let isZh = I.lang === 'zh',
   altLang = isZh ? 'en' : 'zh';
 // Primary name follows the interface language; the other language is shown as the secondary line.
 const cropName = (c) => (isZh ? c.zh : c.en),
@@ -355,6 +356,18 @@ function reset() {
   sortBy = { col: '', dir: 'asc' };
   filter();
 }
+function renderTitles() {
+  const [title, , sub] = titles[tab];
+  $('title').textContent = t(title);
+  $('subtitle').textContent = t(sub);
+  $('searchTitle').textContent = t(
+    tab === 'full'
+      ? 'Search crops or all 10,749 source entries'
+      : tab === 'saved'
+        ? 'Your saved source references'
+        : 'Find the limits for your crop'
+  );
+}
 function setTab(name) {
   if (!titles[name]) return;
   if ($('detail').open) $('detail').close?.();
@@ -362,9 +375,6 @@ function setTab(name) {
   document
     .querySelectorAll('nav button')
     .forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
-  const [title, , sub] = titles[name];
-  $('title').textContent = t(title);
-  $('subtitle').textContent = t(sub);
   $('explorer').hidden = !['fresh', 'full', 'saved'].includes(name);
   ['sources', 'guide', 'exempt', 'access'].forEach((id) => ($(id).hidden = id !== name));
   $('cropLabel').hidden = name !== 'fresh';
@@ -375,22 +385,18 @@ function setTab(name) {
   $('quick').hidden = name !== 'fresh';
   $('navMore').classList.toggle('active', ['full', 'exempt', 'sources', 'guide'].includes(name));
   $('navMoreItems').classList.toggle('open', false);
-  $('searchTitle').textContent = t(
-    name === 'full'
-      ? 'Search crops or all 10,749 source entries'
-      : name === 'saved'
-        ? 'Your saved source references'
-        : 'Find the limits for your crop'
-  );
+  renderTitles();
   ['search', 'pesticide', 'kind', 'category'].forEach((id) => ($(id).value = ''));
   if (db) {
     filter();
     if (name === 'exempt') renderExempt();
   }
 }
+let detailKey = null;
 function details(k) {
   const r = filtered.find((x) => key(x) === k) || fromKey(k);
   if (!r) return;
+  detailKey = k;
   const p = pestMap.get(r.pesticideId),
     c = cropMap.get(r.cropId),
     note = r.sourceNote ? `<p class="warn">${esc(t(r.sourceNote))}</p>` : '';
@@ -456,6 +462,7 @@ function showDetail(k) {
   } else d.showModal();
 }
 $('detail').addEventListener('close', () => {
+  detailKey = null;
   document.body?.classList.remove('panel-open');
   document.querySelectorAll('#rows tr.selected').forEach((tr) => tr.classList.remove('selected'));
 });
@@ -861,6 +868,63 @@ document.addEventListener('keydown', (e) => {
     $('search').focus();
   }
 });
+// Select lists and other text that carries names in the interface language.
+function fillOptions() {
+  const fill = (id, entries) => {
+    const select = $(id),
+      value = select.value;
+    // Keep the first, static "All …" option; drop the rest before refilling.
+    if (select.options) while (select.options.length > 1) select.remove(1);
+    for (const [v, label] of entries) {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = label;
+      select.append(o);
+    }
+    select.value = value;
+  };
+  fill(
+    'crop',
+    freshCrops
+      .slice()
+      .sort(byName(cropName))
+      .map((c) => [c.id, cropPair(c)])
+  );
+  fill(
+    'pesticide',
+    db.pesticides
+      .slice()
+      .sort(byName(pestName))
+      .map((p) => [p.id, `${pestName(p)} · ${pestAlt(p)}`])
+  );
+  fill(
+    'category',
+    Object.entries(db.categories).map(([zh, en]) => [zh, isZh ? zh : `${en} · ${zh}`])
+  );
+}
+function renderAnnex() {
+  $('annexText').innerHTML = db.annex
+    .map((a) => `<h4>${t('PDF page {n}', { n: a.page })}</h4><pre lang="zh">${esc(a.text)}</pre>`)
+    .join('');
+}
+// Redraws everything this script rendered, in the current language, keeping filters, page and open detail.
+function relabel() {
+  isZh = I.lang === 'zh';
+  altLang = isZh ? 'en' : 'zh';
+  renderTitles();
+  if (!db) return;
+  const at = page,
+    open = $('detail').open ? detailKey : null;
+  closeCropList();
+  fillOptions();
+  renderAnnex();
+  filter();
+  page = at;
+  render();
+  renderExempt();
+  if (open) details(open);
+}
+I.onChange?.(relabel);
 fetch('database.json')
   .then((r) => {
     if (!r.ok) throw Error('Data request failed');
@@ -873,25 +937,9 @@ fetch('database.json')
     freshCrops = d.crops.filter((c) => isFresh(c));
     rowMap = new Map(d.rows.map((r) => [r.id, r]));
     d.crops.forEach((c) => MRL.membership(c).forEach((n) => knownNames.add(n)));
-    function option(id, value, label) {
-      const o = document.createElement('option');
-      o.value = value;
-      o.textContent = label;
-      $(id).append(o);
-    }
-    freshCrops
-      .slice()
-      .sort(byName(cropName))
-      .forEach((c) => option('crop', c.id, cropPair(c)));
-    d.pesticides
-      .slice()
-      .sort(byName(pestName))
-      .forEach((p) => option('pesticide', p.id, `${pestName(p)} · ${pestAlt(p)}`));
-    Object.entries(d.categories).forEach(([zh, en]) => option('category', zh, isZh ? zh : `${en} · ${zh}`));
+    fillOptions();
     $('crop').value = '榴莲';
-    $('annexText').innerHTML = d.annex
-      .map((a) => `<h4>${t('PDF page {n}', { n: a.page })}</h4><pre lang="zh">${esc(a.text)}</pre>`)
-      .join('');
+    renderAnnex();
     filter();
     renderExempt();
     migrateSaved();
@@ -910,9 +958,9 @@ fetch('database.json')
   })
   .catch((e) => {
     $('loadError').hidden = false;
-    $('loadError').textContent = t(
-      'The reference database could not load. Please reload the page; no regulatory conclusion can be drawn from this error.'
-    );
+    $('loadError').dataset.i18nKey =
+      'The reference database could not load. Please reload the page; no regulatory conclusion can be drawn from this error.';
+    $('loadError').textContent = t($('loadError').dataset.i18nKey);
     $('export').disabled = true;
     $('print').disabled = true;
     console.error(e);

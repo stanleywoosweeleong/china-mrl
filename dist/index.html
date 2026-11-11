@@ -17,6 +17,19 @@
     <link rel="icon" type="image/png" href="icons/favicon.png" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="style.css" />
+    <script>
+      // Chinese visitors: keep the page hidden until i18n.js has swapped the text, so English never flashes.
+      try {
+        var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('china-mrl-lang');
+        if (l !== 'zh' && l !== 'en') l = /^zh\b/i.test((navigator.languages || [navigator.language])[0] || '') ? 'zh' : 'en';
+        if (l === 'zh') {
+          document.documentElement.classList.add('i18n-pending');
+          setTimeout(function () {
+            document.documentElement.classList.remove('i18n-pending');
+          }, 3000);
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <aside>

@@ -34,6 +34,7 @@ const scripts = [
   'test_standard_search',
   'test_access_catalogue',
   'test_layout',
+  'test_language_switch',
   'test_accessibility',
   'test_pwa',
   'test_auto_update'

@@ -2653,3 +2653,6 @@ nav .short {
     padding-right: 84px;
   }
 }
+html.i18n-pending body {
+  visibility: hidden;
+}

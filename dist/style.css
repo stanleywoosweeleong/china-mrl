@@ -2597,3 +2597,35 @@ nav .short {
     padding-right: 120px;
   }
 }
+/* Simpler language switch: a small two-letter pill, the active language in green text. */
+.lang-toggle {
+  gap: 0;
+  padding: 0 4px;
+}
+.lang-toggle span {
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 500;
+}
+.lang-toggle span + span {
+  border-left: 1px solid var(--line);
+}
+.lang-toggle span.on {
+  background: none;
+  color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+@media screen and (max-width: 760px) {
+  .lang-toggle span {
+    padding: 6px 10px;
+  }
+  .brand {
+    padding-right: 96px;
+  }
+}

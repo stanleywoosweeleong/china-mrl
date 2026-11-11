@@ -74,7 +74,7 @@
     if (toggle) {
       // Both languages are shown; the active one is marked. Pressing switches to the other.
       toggle.innerHTML = [
-        ['zh', '中文'],
+        ['zh', '中'],
         ['en', 'EN']
       ]
         .map(

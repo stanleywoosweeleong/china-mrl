@@ -451,7 +451,7 @@
     'Type a crop name': '输入作物名称或拼音',
     'Show all fresh-produce entries': '显示全部新鲜果蔬条目',
     'Matching crops': '符合的作物',
-    'Search pesticide or food…': '搜索农药或食品名称…',
+    'Pesticide or food…': '搜索农药或食品名称…',
     'Check market access': '查询市场准入',
     'View conditions': '查看准入条件',
     '★ Saved': '★ 已保存',

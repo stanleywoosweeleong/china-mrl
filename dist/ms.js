@@ -515,8 +515,10 @@
     'Offline storage unavailable. You can continue online; reload to retry.':
       'Storan luar talian tidak tersedia. Anda boleh terus menggunakan dalam talian; muat semula untuk mencuba lagi.',
     'Choose your language': 'Pilih bahasa anda',
-    'You can change the language at any time with the button at the top right.':
-      'Anda boleh menukar bahasa pada bila-bila masa dengan butang di penjuru kanan atas.',
+    'You can change it later with this button at the top right:':
+      'Anda boleh menukarnya kemudian dengan butang ini di penjuru kanan atas:',
+    'Pesticide residue limits for fresh produce exported to China.':
+      'Had sisa racun perosak bagi hasil segar yang dieksport ke China.',
     Continue: 'Teruskan'
   };
   if (typeof module !== 'undefined') module.exports = MS;

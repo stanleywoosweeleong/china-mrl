@@ -532,8 +532,8 @@
     'Offline storage unavailable. You can continue online; reload to retry.':
       '离线存储不可用。您可以继续联网使用；刷新页面可重试。',
     'Choose your language': '选择语言',
-    'You can change the language at any time with the button at the top right.':
-      '之后可随时点击右上角的按钮切换语言。',
+    'You can change it later with this button at the top right:': '之后可随时点击右上角的这个按钮更改：',
+    'Pesticide residue limits for fresh produce exported to China.': '出口中国的新鲜农产品农药残留限量。',
     Continue: '继续'
   };
   if (typeof module !== 'undefined') module.exports = ZH;

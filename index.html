@@ -515,8 +515,15 @@
         </footer>
       </main>
     </div>
-    <dialog id="welcome" class="welcome" aria-labelledby="welcomeTitle">
-      <span class="mark" aria-hidden="true">m<span>rl</span></span>
+    <dialog id="welcome" class="welcome" aria-labelledby="welcomeTitle" tabindex="-1">
+      <div class="welcome-brand">
+        <span class="mark" aria-hidden="true">m<span>rl</span></span>
+        <div>
+          <strong>China MRL</strong>
+          <span>Pesticide residue limits for fresh produce exported to China.</span>
+        </div>
+      </div>
+      <p class="welcome-step" data-keep aria-hidden="true">Language · 语言 · Bahasa</p>
       <h2 id="welcomeTitle">Choose your language</h2>
       <div class="welcome-options" role="radiogroup" aria-labelledby="welcomeTitle" data-keep>
         <button type="button" role="radio" aria-checked="false" data-welcome-lang="en" lang="en">English</button>
@@ -525,7 +532,10 @@
           Bahasa Melayu
         </button>
       </div>
-      <p class="welcome-note">You can change the language at any time with the button at the top right.</p>
+      <p class="welcome-note">
+        <span>You can change it later with this button at the top right:</span>
+        <span class="welcome-pill" id="welcomePill" data-keep aria-hidden="true">EN</span>
+      </p>
       <button type="button" id="welcomeDone" class="welcome-done">Continue</button>
     </dialog>
     <dialog id="detail" aria-labelledby="detailTitle">

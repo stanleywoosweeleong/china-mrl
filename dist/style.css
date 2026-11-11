@@ -2994,18 +2994,44 @@ tr.group-head small {
 /* First-visit welcome: choose a language. */
 dialog.welcome {
   max-width: 380px;
-  padding: 28px 24px 24px;
-  text-align: center;
+  padding: 24px;
+  outline: none;
 }
 dialog.welcome::backdrop {
   background: #f5f7f2;
   backdrop-filter: none;
 }
-dialog.welcome .mark {
-  margin: 0 auto;
+.welcome-brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.welcome-brand .mark {
+  flex: none;
+  margin: 0;
+}
+.welcome-brand strong {
+  display: block;
+  font-size: 17px;
+}
+.welcome-brand div span {
+  display: block;
+  margin-top: 2px;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.welcome-step {
+  margin: 18px 0 4px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 dialog.welcome h2 {
-  margin: 16px 0 18px;
+  margin: 0 0 14px;
   font-size: 22px;
 }
 .welcome-options {
@@ -3013,7 +3039,10 @@ dialog.welcome h2 {
   gap: 10px;
 }
 .welcome-options button {
-  min-height: 56px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-height: 58px;
   margin: 0;
   padding: 10px 16px;
   border: 2px solid var(--line);
@@ -3023,19 +3052,51 @@ dialog.welcome h2 {
   font: inherit;
   font-size: 18px;
   font-weight: 600;
+  text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+}
+/* A radio mark: empty ring, or a green disc with a tick for the chosen language. */
+.welcome-options button::before {
+  content: '';
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #94a3b8;
+  border-radius: 50%;
+  box-sizing: border-box;
 }
 .welcome-options button[aria-checked='true'] {
   border-color: var(--green);
   background: #eef6ee;
   color: var(--green);
 }
+.welcome-options button[aria-checked='true']::before {
+  border-color: var(--green);
+  background: var(--green)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6.5 12.5l3.5 3.5 7.5-8' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 20px no-repeat;
+}
 .welcome-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
   margin: 16px 0;
   color: #334155;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.45;
+}
+.welcome-pill {
+  flex: none;
+  padding: 5px 24px 5px 12px;
+  border-radius: 999px;
+  background: var(--green)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E")
+    no-repeat right 9px center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
 }
 .welcome-done {
   width: 100%;

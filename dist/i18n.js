@@ -88,8 +88,10 @@
       headOriginals.description ??= description.content;
       description.content = translate(headOriginals.description, lang);
     }
-    const button = document.getElementById('langButton');
-    if (button) button.textContent = LABELS[lang];
+    for (const id of ['langButton', 'welcomePill']) {
+      const label = document.getElementById(id);
+      if (label) label.textContent = LABELS[lang];
+    }
     for (const item of document.querySelectorAll?.('#langMenu [data-lang]') || [])
       item.setAttribute('aria-current', String(item.dataset.lang === lang));
     for (const item of document.querySelectorAll?.('[data-welcome-lang]') || [])
@@ -197,7 +199,8 @@
       // However it is closed, the language on screen is the one kept.
       welcome.addEventListener('close', keep);
       welcome.showModal();
-      welcome.querySelector('[aria-checked="true"]')?.focus();
+      // Focus rests on the screen itself, so no option carries a second outline beside the selected one.
+      welcome.focus();
     }
   }
   const api = {

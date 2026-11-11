@@ -101,6 +101,15 @@ const { chromium } = require('playwright'),
       limits.map(parseFloat),
       limits.map(parseFloat).sort((a, b) => b - a)
     );
+    // Limits for pesticides banned in China sit in their own group after the others, under a visible heading.
+    await p.selectOption('#sortSelect', '');
+    assert.equal(await p.locator('#rows tr.group-head').count(), 0);
+    const firstNames = (await p.locator('#rows tr td:nth-child(2) strong').allInnerTexts()).join('|');
+    assert(!/Aldrin|Paraquat|DDT/.test(firstNames), firstNames);
+    while (!(await p.locator('#rows tr.group-head').count())) await p.locator('#next').click();
+    const heading = await p.locator('#rows tr.group-head').innerText();
+    assert(/Pesticides banned for use in China · \d+ limits/.test(heading), heading);
+    assert((await p.locator('#rows tr.group-head').boundingBox()).height > 40);
     // Limit sheet on a phone: shown on screen with every limit in the view; Print is one tap away.
     await p.evaluate(() => {
       window.__printed = 0;

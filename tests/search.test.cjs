@@ -128,10 +128,13 @@ test('sorting, the crop picker ranking and the print sheet', async () => {
   vm.runInContext("sortBy = { col: 'limit', dir: 'desc' }; filter()", ctx);
   const limits = vm.runInContext('filtered.map((r) => r.mrl)', ctx);
   assert.equal(limits.length, 89);
-  assert.deepEqual(
-    limits,
-    [...limits].sort((a, b) => b - a)
-  );
+  // Sorted within each group: other pesticides first, then those banned for use in China.
+  const from = vm.runInContext('bannedFrom', ctx);
+  for (const group of [[...limits].slice(0, from), [...limits].slice(from)])
+    assert.deepEqual(
+      group,
+      [...group].sort((a, b) => b - a)
+    );
   assert.equal(nodes.rows.className, 'crop-context');
   const ids = (q) => vm.runInContext(`cropMatches(normalized(${JSON.stringify(q)})).map((c) => c.id)`, ctx);
   assert.equal(ids('liulian')[0], '榴莲');

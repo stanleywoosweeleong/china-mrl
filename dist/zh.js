@@ -498,6 +498,8 @@
     '{status}. This is a rule on use inside China; the limit above still applies to imports.':
       '{status}。这是中国境内的用药规定；进口产品仍按上面的限量检验。',
     'See the banned list': '查看禁用名单',
+    'Pesticides banned for use in China · {n} limits': '中国禁止使用的农药 · {n} 项限量',
+    'Their limits still apply to imports.': '这些限量同样适用于进口产品。',
     '{n} limits in the standard': '标准中有 {n} 项限量',
     'No limit in the standard': '标准中没有限量',
     'No match in this list. A pesticide that is not listed here is not thereby permitted.':

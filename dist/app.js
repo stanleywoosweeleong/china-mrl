@@ -40,6 +40,8 @@ let fullCrop = null,
 const isFresh = (c) => ['水果', '蔬菜'].includes(c.category);
 // User-chosen sort; empty col keeps the default order (pesticide name, or food then pesticide).
 let sortBy = { col: '', dir: 'asc' };
+// Index in `filtered` where the group of banned-pesticide limits starts (its length when there is none).
+let bannedFrom = 0;
 try {
   const a = JSON.parse(localStorage.getItem('china-mrl-v2-saved') || '[]');
   if (Array.isArray(a)) saved = new Set(a.filter((x) => typeof x === 'string'));
@@ -229,6 +231,17 @@ function filter() {
       }[sortBy.col];
     if (compare) filtered.sort((a, b) => dir * compare(a, b));
   }
+  // Limits for pesticides China bans outright form their own group after the rest, whatever the sort.
+  bannedFrom = filtered.length;
+  if (tab !== 'saved') {
+    const isBanned = (r) => {
+      const s = useStatus.get(r.pesticideId);
+      return Boolean(s && !s.scope);
+    };
+    const others = filtered.filter((r) => !isBanned(r));
+    bannedFrom = others.length;
+    filtered = [...others, ...filtered.filter(isBanned)];
+  }
   syncSort();
   syncCropInput();
   page = 1;
@@ -337,16 +350,22 @@ function render() {
   );
   // With a crop selected every row is that crop, so phones can drop the repeated name. Saved items keep theirs.
   $('rows').className = fullCrop || (tab === 'fresh' && cropMap.get($('crop').value)) ? 'crop-context' : '';
+  const first = (page - 1) * size,
+    bannedCount = filtered.length - bannedFrom,
+    groupHead = `<tr class="group-head"><td colspan="5"><strong>${t('Pesticides banned for use in China · {n} limits', { n: bannedCount.toLocaleString() })}</strong><small>${t('Their limits still apply to imports.')} <button type="button" class="link" data-tab="banned">${t('See the banned list')}</button></small></td></tr>`;
   $('rows').innerHTML = filtered
-    .slice((page - 1) * size, page * size)
-    .map((r) => {
+    .slice(first, page * size)
+    .map((r, i) => {
+      // The heading sits above the first banned row, and again at the top of later pages inside the group.
+      const head =
+        bannedCount && (first + i === bannedFrom || (i === 0 && first > bannedFrom)) ? groupHead : '';
       const p = pestMap.get(r.pesticideId),
         c = cropMap.get(r.cropId),
         k = esc(key(r)),
         name = c ? cropName(c) : foodName(r),
         alt = c ? cropAlt(c) : foodAlt(r),
         isSaved = saved.has(key(r));
-      return `<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small>${useNote(p) ? `<small class="warn use-note">${esc(useNote(p))}</small>` : ''}</td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
+      return `${head}<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small></td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
     })
     .join('');
   $('empty').hidden = filtered.length > 0;
@@ -427,9 +446,13 @@ function details(k) {
       : 'Original source-table row; select a fresh crop to see group applicability.'
   );
   const isSaved = saved.has(k);
-  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : 'zh'}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}${useNote(p) ? `<p class="warn">${t('{status}. This is a rule on use inside China; the limit above still applies to imports.', { status: esc(useNote(p)) })} <button type="button" class="link" data-tab="banned">${t('See the banned list')}</button></p>` : ''}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
+  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : 'zh'}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
   const compare = `<div class="compare-box"><h3>${t('Compare a laboratory result')}</h3><label for="labMode">${t('Report type')}</label><select id="labMode"><option value="number">${t('Quantified result')}</option><option value="nd">${t('Non-detect / below reporting limit')}</option></select><label for="lab" id="labLabel">${t('Result in mg/kg (ppm by mass)')}</label><input id="lab" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('e.g. 0.015')}"><div id="comparison" role="status">${t('Enter a result to compare.')}</div><p>${t('Arithmetic only. The analyte definition, sample preparation, uncertainty, product form and market access must be assessed separately.')}</p></div>`;
   const source = `<details class="section" open><summary>${t('Applicability and source')}</summary><dl><dt>${t('Original food scope')}</dt><dd>${esc(r.food)}${isZh ? '' : '<br>' + esc(r.foodEn)}</dd><dt>${t('Source category')}</dt><dd>${esc(r.categoryScope || r.category)}</dd><dt>${t('Application')}</dt><dd>${application}</dd><dt>${t('Residue definition')}</dt><dd>${residue}</dd><dt>${t('Effective from')}</dt><dd>${esc(longDate(db.meta.effective))}</dd><dt>${t('Source location')}</dt><dd>${t('Table {table} · PDF page {page} · printed page {printed}', { table: r.table, page: r.page, printed: r.page - (db.meta.printedPageOffset ?? 16) })}</dd>${c ? `<dt>${t('Sampling portion')}</dt><dd>${esc(partText(c))}<br><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Annex A · PDF p. {n} ↗', { n: c.annexPage })}</a></dd>` : ''}</dl><a href="standard.pdf#page=${r.page}" target="_blank" rel="noopener">${t('Open the exact source page ↗')}</a></details>`;
+  // Use status in China is separate information: one line at the end, pointing to its own section.
+  const use = useNote(p)
+    ? `<p class="use-line">${t('{status}. This is a rule on use inside China; the limit above still applies to imports.', { status: esc(useNote(p)) })} <button type="button" class="link" data-tab="banned">${t('See the banned list')}</button></p>`
+    : '';
   const methods = `<details class="section"><summary>${t('Testing methods')}</summary>${methodsHtml(p, r, c)}${p.method ? `<details><summary>${t('Source testing-method text (Chinese)')}</summary><p lang="zh" class="technical">${esc(p.method)}</p></details>` : ''}</details>`;
   // The limit and the comparison come first; source detail and methods fold away below.
   $('detailContent').innerHTML =
@@ -437,6 +460,7 @@ function details(k) {
     compare +
     source +
     methods +
+    use +
     `<p>${t('Chinese source wording controls. Combined residue definitions may include metabolites or multiple active substances.')}</p>`;
   const update = () => {
     const input = $('lab'),
@@ -667,10 +691,14 @@ function printSheet() {
     access =
       crop && isFresh(crop) && typeof MarketAccess !== 'undefined' ? MarketAccess.cropStatus(crop.id) : null;
   const items = rows
-    .map((r) => {
+    .map((r, i) => {
       const p = pestMap.get(r.pesticideId),
-        c = cropMap.get(r.cropId);
-      return `<div class="sheet-row"><div><strong>${esc(pestName(p))}</strong> <span lang="${altLang}">${esc(pestAlt(p))}</span>${crop ? '' : `<br><em>${esc(c ? cropName(c) : foodName(r))}</em>`}<small>${esc(methodText(p, r, c))}${r.match === 'group' ? ' · ' + esc(r.food) : ''}</small></div><b>${r.mrl}${r.provisional ? '*' : ''}${r.kind === 'EMRL' ? ' <i>EMRL</i>' : ''}</b></div>`;
+        c = cropMap.get(r.cropId),
+        head =
+          i === bannedFrom
+            ? `<div class="sheet-group">${t('Pesticides banned for use in China · {n} limits', { n: (filtered.length - bannedFrom).toLocaleString() })}</div>`
+            : '';
+      return `${head}<div class="sheet-row"><div><strong>${esc(pestName(p))}</strong> <span lang="${altLang}">${esc(pestAlt(p))}</span>${crop ? '' : `<br><em>${esc(c ? cropName(c) : foodName(r))}</em>`}<small>${esc(methodText(p, r, c))}${r.match === 'group' ? ' · ' + esc(r.food) : ''}</small></div><b>${r.mrl}${r.provisional ? '*' : ''}${r.kind === 'EMRL' ? ' <i>EMRL</i>' : ''}</b></div>`;
     })
     .join('');
   $('printSheet').innerHTML =

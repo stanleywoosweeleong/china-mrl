@@ -108,18 +108,37 @@ test('banned section renders, flags limits and jumps to a pesticide in the stand
       Number(nodes.resultCount.textContent),
       db.rows.filter((r) => r.pesticideId === paraquat.id).length
     );
-    // Limits for a banned pesticide carry the flag, in the list and in the detail.
-    assert.match(nodes.rows.innerHTML, lang === 'zh' ? /中国禁止使用/ : /Banned for use in China/);
+    // A view of one banned pesticide is all one group, under its heading.
+    assert.equal((nodes.rows.innerHTML.match(/class="group-head"/g) || []).length, 1);
+    assert(nodes.rows.innerHTML.startsWith('<tr class="group-head">'));
     vm.runInContext("setTab('fresh')", ctx);
     nodes.crop.value = '榴莲';
     vm.runInContext('filter()', ctx);
+    // A crop's results: limits for pesticides that are not banned come first, with no heading on page 1;
+    // the banned group follows as a block, and no row carries a banned note.
+    const order = vm.runInContext('filtered.map((r) => r.pesticideId)', ctx),
+      from = vm.runInContext('bannedFrom', ctx),
+      bannedIds = new Set(db.banned.items.flatMap((x) => x.sections));
+    assert.equal(order.length, 89);
+    assert(from > 20 && from < 89, 'banned group starts at ' + from);
+    assert(order.slice(0, from).every((id) => !bannedIds.has(id)));
+    assert(order.slice(from).every((id) => bannedIds.has(id)));
+    assert.doesNotMatch(nodes.rows.innerHTML, /group-head|use-note/);
+    vm.runInContext(`page = ${Math.floor(from / 20) + 1}; render()`, ctx);
+    assert.equal((nodes.rows.innerHTML.match(/class="group-head"/g) || []).length, 1);
+    assert(
+      nodes.rows.innerHTML.includes(
+        (lang === 'zh' ? '中国禁止使用的农药 · ' : 'Pesticides banned for use in China · ') + (89 - from)
+      )
+    );
+    // The detail has one quiet line pointing to the banned section.
     const row = db.rows.find(
       (r) => r.pesticideId === paraquat.id && r.category === '水果' && r.food.startsWith('皮不可食')
     );
     vm.runInContext(`details('${row.id}|榴莲')`, ctx);
     assert.match(
       nodes.detailContent.innerHTML,
-      lang === 'zh' ? /中国禁止使用。/ : /Banned for use in China\./
+      lang === 'zh' ? /class="use-line">中国禁止使用。/ : /class="use-line">Banned for use in China\./
     );
     assert.match(nodes.detailContent.innerHTML, /data-tab="banned"/);
   }

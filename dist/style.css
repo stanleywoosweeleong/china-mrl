@@ -2819,3 +2819,58 @@ nav [data-tab='banned'] {
     overflow-wrap: break-word;
   }
 }
+.use-line {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+/* Heading for the group of limits whose pesticide is banned for use in China. */
+tr.group-head,
+tbody tr.group-head:hover {
+  background: #f6f1e6;
+  cursor: default;
+}
+tr.group-head td {
+  padding: 12px 20px;
+  white-space: normal;
+}
+tr.group-head strong {
+  display: block;
+  font-size: 14px;
+}
+tr.group-head small {
+  display: block;
+  margin-top: 2px;
+}
+@media screen and (max-width: 760px) {
+  .table-wrap tr.group-head {
+    display: block;
+    margin: 18px 0 10px;
+    padding: 12px 14px;
+    border-color: #ecd9a8;
+  }
+  .table-wrap tr.group-head td {
+    padding: 0;
+  }
+}
+.sheet .sheet-group,
+#printSheet .sheet-group {
+  margin-top: 10px;
+  padding: 6px 0 4px;
+  border-bottom: 2px solid var(--ink);
+  font-weight: 700;
+  break-after: avoid;
+  break-inside: avoid;
+}
+@media screen and (max-width: 760px) {
+  /* The group heading is not a result card: its text is never hidden with the repeated crop name. */
+  #rows tr.group-head td:nth-child(1) strong,
+  #rows.crop-context tr.group-head td:nth-child(1) strong,
+  #rows tr.group-head td:nth-child(1) small,
+  #rows.crop-context tr.group-head td:nth-child(1) small {
+    display: block;
+  }
+  #rows tr.group-head td:nth-child(1) strong {
+    font-size: 15px;
+  }
+}

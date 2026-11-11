@@ -87,12 +87,12 @@ To maintain coverage, review official GACC notices and the origin authority, pre
 
 ## Banned in China
 
-The **Banned in China** tab lists pesticides China bans for use, so growers elsewhere can avoid them:
+The **Banned in China** view lists pesticides China bans for use, so growers elsewhere can avoid them:
 
 - **Banned outright (60):** MARA Announcement No. 1039 (13 July 2026), read on the Heilongjiang agriculture department's republication and cross-checked against two trade reproductions. 41 of the 60 have a section in GB 2763-2026; each links to its limits (1,159 rows in all).
 - **Banned on certain crops (9):** from MARA's 2019 list of banned and restricted pesticides, less the eleven entries since banned outright. This part may be out of date.
 
-In limit results, pesticides banned outright are kept apart: limits for other pesticides come first, and the banned ones follow in their own headed group (still counted, sortable, exported and printed, because their limits apply to imports). Rows carry no banned notes; the detail view has one line at the end pointing to this section. These are rules on use inside China, not import requirements: imports are checked against GB 2763 limits, and the app says so. The data lives in `research/banned_pesticides.py`; English names are aids. The weekly source watch flags the list for re-checking after 90 days.
+In limit results, pesticides banned outright are kept out of the main list: it shows only the other pesticides, and the banned ones appear in a collapsed **Banned in China** section under the results (still counted in the total, exported and printed, because their limits apply to imports). The full list has no tab of its own; it opens from that section's link or from a detail view. These are rules on use inside China, not import requirements: imports are checked against GB 2763 limits, and the app says so. The data lives in `research/banned_pesticides.py`; English names are aids. The weekly source watch flags the list for re-checking after 90 days.
 
 ## Languages
 

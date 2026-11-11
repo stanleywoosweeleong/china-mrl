@@ -2353,8 +2353,8 @@ dialog details.section[open] {
     font-size: 14px;
     font-weight: 600;
   }
-  #rows.crop-context td:nth-child(1) strong,
-  #rows.crop-context td:nth-child(1) small:not(.source-scope) {
+  tbody.crop-context td:nth-child(1) strong,
+  tbody.crop-context td:nth-child(1) small:not(.source-scope) {
     display: none;
   }
   .table-wrap td:nth-child(3) {
@@ -2865,12 +2865,48 @@ tr.group-head small {
 @media screen and (max-width: 760px) {
   /* The group heading is not a result card: its text is never hidden with the repeated crop name. */
   #rows tr.group-head td:nth-child(1) strong,
-  #rows.crop-context tr.group-head td:nth-child(1) strong,
+  tbody.crop-context tr.group-head td:nth-child(1) strong,
   #rows tr.group-head td:nth-child(1) small,
-  #rows.crop-context tr.group-head td:nth-child(1) small {
+  tbody.crop-context tr.group-head td:nth-child(1) small {
     display: block;
   }
   #rows tr.group-head td:nth-child(1) strong {
     font-size: 15px;
   }
+}
+
+/* Banned section under the results: collapsed by default. */
+.banned-limits {
+  margin-top: 18px;
+  border: 1px solid #ecd9a8;
+  border-radius: 9px;
+  background: #fbf7ee;
+  padding: 0 16px;
+}
+.banned-limits > summary {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  list-style: none;
+}
+.banned-limits > summary::after {
+  content: '＋';
+  margin-left: auto;
+  color: var(--muted);
+}
+.banned-limits[open] > summary::after {
+  content: '－';
+}
+.banned-limits > summary::-webkit-details-marker {
+  display: none;
+}
+.banned-limits[open] {
+  padding-bottom: 16px;
+}
+.banned-limits > p {
+  margin: 0 0 12px;
+  font-size: 14px;
 }

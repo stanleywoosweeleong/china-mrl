@@ -47,7 +47,6 @@
         </button>
         <div id="navMoreItems" class="nav-more-items">
           <button data-tab="full">▤ <span>Entire standard</span></button
-          ><button data-tab="banned">⊘ <span>Banned in China</span></button
           ><button data-tab="exempt">◎ <span>Exempt pesticides</span></button
           ><button data-tab="sources">↗ <span>Sources & coverage</span></button
           ><button data-tab="guide">ⓘ <span>Export essentials</span></button>
@@ -207,6 +206,22 @@
               ><button id="next" aria-label="Next page">→</button>
             </div>
           </div>
+          <details id="bannedLimits" class="banned-limits" hidden>
+            <summary id="bannedLimitsSummary">Banned in China</summary>
+            <p>
+              These pesticides are banned for use in China. Their limits still apply to imports.
+              <button type="button" class="link" data-tab="banned">See the full banned list</button>
+            </p>
+            <div class="table-wrap">
+              <table>
+                <caption class="sr">
+                  Limits for pesticides banned in China
+                </caption>
+                <tbody id="bannedLimitRows"></tbody>
+              </table>
+            </div>
+            <p id="bannedLimitsMore" class="table-note" hidden></p>
+          </details>
           <p class="table-note">
             * Provisional limit (临时限量), not an analytical detection limit. EMRL means an extraneous
             residue limit for environmental residues. Neither indicates permission to use the pesticide.

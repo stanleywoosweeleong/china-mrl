@@ -29,7 +29,7 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
         await page.goto(url + '?lang=' + lang);
         await page.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
         for (const tab of tabs) {
-          await page.evaluate((t) => document.querySelector(`nav [data-tab="${t}"]`).click(), tab);
+          await page.evaluate((t) => setTab(t), tab);
           await page.waitForTimeout(200);
           const overflow = await page.evaluate(
             () => document.documentElement.scrollWidth - window.innerWidth

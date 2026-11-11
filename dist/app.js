@@ -331,8 +331,17 @@ function renderCrop() {
     `${access ? `<div class="access-banner ${access.status}"><p class="crop-access-status">${t('Selected origin: {status}. MRLs alone do not establish permission.', { status: accessText })}</p><button type="button" data-access-view="${esc(c.id)}">${t(access.status === 'unverified' ? 'Check market access' : 'View conditions')}</button></div>` : ''}<div><span class="tag">${t(c.category === '水果' ? 'SELECTED CROP · FRESH FRUIT' : 'SELECTED CROP · FRESH VEGETABLE')}</span><h2>${esc(cropName(c))} <span lang="${altLang}">${esc(cropAlt(c))}</span></h2><p>${t('{direct} direct entries · {group} group-based entries', { direct, group: all.length - direct })}</p>${unmappedNote(c)}</div><div><small>${t('PART TO BE TESTED · ANNEX A')}</small><p>${esc(partText(c))}</p><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Read Annex A, PDF p. {n} ↗', { n: c.annexPage })}</a></div>`;
 }
 const partText = (c) => (isZh && c.partZh) || c.part;
+function rowHtml(r) {
+  const p = pestMap.get(r.pesticideId),
+    c = cropMap.get(r.cropId),
+    k = esc(key(r)),
+    name = c ? cropName(c) : foodName(r),
+    alt = c ? cropAlt(c) : foodAlt(r),
+    isSaved = saved.has(key(r));
+  return `<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small></td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
+}
 function render() {
-  page = Math.min(page, Math.max(1, Math.ceil(filtered.length / size)));
+  page = Math.min(page, Math.max(1, Math.ceil(bannedFrom / size)));
   $('resultCount').textContent = filtered.length.toLocaleString();
   const savedTotal = [...saved].filter((k) => fromKey(k)).length;
   $('savedCount').textContent = savedTotal;
@@ -350,35 +359,47 @@ function render() {
   );
   // With a crop selected every row is that crop, so phones can drop the repeated name. Saved items keep theirs.
   $('rows').className = fullCrop || (tab === 'fresh' && cropMap.get($('crop').value)) ? 'crop-context' : '';
-  const first = (page - 1) * size,
-    bannedCount = filtered.length - bannedFrom,
-    groupHead = `<tr class="group-head"><td colspan="5"><strong>${t('Pesticides banned for use in China · {n} limits', { n: bannedCount.toLocaleString() })}</strong><small>${t('Their limits still apply to imports.')} <button type="button" class="link" data-tab="banned">${t('See the banned list')}</button></small></td></tr>`;
-  $('rows').innerHTML = filtered
+  // The main list holds limits for pesticides that are not banned in China; the rest go to the Banned section.
+  const main = filtered.slice(0, bannedFrom),
+    banned = filtered.slice(bannedFrom),
+    first = (page - 1) * size;
+  $('rows').innerHTML = main
     .slice(first, page * size)
-    .map((r, i) => {
-      // The heading sits above the first banned row, and again at the top of later pages inside the group.
-      const head =
-        bannedCount && (first + i === bannedFrom || (i === 0 && first > bannedFrom)) ? groupHead : '';
-      const p = pestMap.get(r.pesticideId),
-        c = cropMap.get(r.cropId),
-        k = esc(key(r)),
-        name = c ? cropName(c) : foodName(r),
-        alt = c ? cropAlt(c) : foodAlt(r),
-        isSaved = saved.has(key(r));
-      return `${head}<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small></td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
-    })
+    .map(rowHtml)
     .join('');
   $('empty').hidden = filtered.length > 0;
   $('range').textContent = filtered.length
-    ? t('Showing {from}–{to} of {total}', {
-        from: (page - 1) * size + 1,
-        to: Math.min(page * size, filtered.length),
-        total: filtered.length.toLocaleString()
-      })
+    ? (main.length
+        ? t('Showing {from}–{to} of {total}', {
+            from: first + 1,
+            to: Math.min(page * size, main.length),
+            total: main.length.toLocaleString()
+          })
+        : '') +
+      (banned.length
+        ? (main.length ? ' · ' : '') +
+          t('{n} more in the Banned section below', { n: banned.length.toLocaleString() })
+        : '')
     : t('0 matching numeric records');
-  $('pageLabel').textContent = `${page} / ${Math.max(1, Math.ceil(filtered.length / size))}`;
+  $('pageLabel').textContent = `${page} / ${Math.max(1, Math.ceil(main.length / size))}`;
   $('prev').disabled = page === 1;
-  $('next').disabled = page * size >= filtered.length;
+  $('next').disabled = page * size >= main.length;
+  // Banned section: this view's limits for pesticides China bans for use. Collapsed unless it is all there is.
+  const shown = banned.slice(0, 200);
+  $('bannedLimits').hidden = !banned.length;
+  if (banned.length && !main.length) $('bannedLimits').open = true;
+  $('bannedLimitsSummary').textContent = t('Banned in China · {n} limits', {
+    n: banned.length.toLocaleString()
+  });
+  $('bannedLimitRows').className = $('rows').className;
+  $('bannedLimitRows').innerHTML = shown.map(rowHtml).join('');
+  $('bannedLimitsMore').hidden = banned.length <= shown.length;
+  $('bannedLimitsMore').textContent = t(
+    'Showing the first {n}. Choose a crop or a pesticide to see the rest.',
+    {
+      n: shown.length
+    }
+  );
   $('export').disabled = !filtered.length;
   $('print').disabled = !filtered.length;
 }
@@ -415,7 +436,7 @@ function setTab(name) {
   $('primaryFilters').classList.toggle('full-filters', name === 'full');
   $('fullSearchNote').hidden = name !== 'full';
   $('quick').hidden = name !== 'fresh';
-  $('navMore').classList.toggle('active', ['full', 'banned', 'exempt', 'sources', 'guide'].includes(name));
+  $('navMore').classList.toggle('active', ['full', 'exempt', 'sources', 'guide'].includes(name));
   $('navMoreItems').classList.toggle('open', false);
   renderTitles();
   ['search', 'pesticide', 'kind', 'category'].forEach((id) => ($(id).value = ''));
@@ -490,8 +511,10 @@ function details(k) {
 const PANEL_QUERY = '(min-width: 1400px)';
 function showDetail(k) {
   const d = $('detail');
-  document.querySelectorAll('#rows tr.selected').forEach((tr) => tr.classList.remove('selected'));
-  document.querySelectorAll('#rows tr').forEach((tr) => tr.dataset.key === k && tr.classList.add('selected'));
+  document.querySelectorAll('tbody tr.selected').forEach((tr) => tr.classList.remove('selected'));
+  document
+    .querySelectorAll('tbody tr[data-key]')
+    .forEach((tr) => tr.dataset.key === k && tr.classList.add('selected'));
   if (d.open) return;
   const wide = typeof matchMedia === 'function' && matchMedia(PANEL_QUERY).matches;
   if (wide && d.show) {
@@ -502,7 +525,7 @@ function showDetail(k) {
 $('detail').addEventListener('close', () => {
   detailKey = null;
   document.body?.classList.remove('panel-open');
-  document.querySelectorAll('#rows tr.selected').forEach((tr) => tr.classList.remove('selected'));
+  document.querySelectorAll('tbody tr.selected').forEach((tr) => tr.classList.remove('selected'));
 });
 function methodMatches(p, r, c) {
   const names = c ? MRL.membership(c) : new Set([MRL.parseFood(r.food).base]),

@@ -498,6 +498,14 @@
     '{status}. This is a rule on use inside China; the limit above still applies to imports.':
       '{status}。这是中国境内的用药规定；进口产品仍按上面的限量检验。',
     'See the banned list': '查看禁用名单',
+    'See the full banned list': '查看完整禁用名单',
+    'These pesticides are banned for use in China. Their limits still apply to imports.':
+      '这些农药在中国禁止使用。它们的限量同样适用于进口产品。',
+    'Limits for pesticides banned in China': '中国禁用农药的限量',
+    'Banned in China · {n} limits': '中国禁用农药 · {n} 项限量',
+    '{n} more in the Banned section below': '另有 {n} 项在下方“中国禁用农药”部分',
+    'Showing the first {n}. Choose a crop or a pesticide to see the rest.':
+      '只显示前 {n} 项。请选择作物或农药以查看其余条目。',
     'Pesticides banned for use in China · {n} limits': '中国禁止使用的农药 · {n} 项限量',
     'Their limits still apply to imports.': '这些限量同样适用于进口产品。',
     '{n} limits in the standard': '标准中有 {n} 项限量',

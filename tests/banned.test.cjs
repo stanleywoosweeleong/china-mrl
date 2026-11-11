@@ -108,29 +108,36 @@ test('banned section renders, flags limits and jumps to a pesticide in the stand
       Number(nodes.resultCount.textContent),
       db.rows.filter((r) => r.pesticideId === paraquat.id).length
     );
-    // A view of one banned pesticide is all one group, under its heading.
-    assert.equal((nodes.rows.innerHTML.match(/class="group-head"/g) || []).length, 1);
-    assert(nodes.rows.innerHTML.startsWith('<tr class="group-head">'));
+    // A view of one banned pesticide: nothing in the main list, everything in the Banned section, opened.
+    const total = db.rows.filter((r) => r.pesticideId === paraquat.id).length;
+    assert.equal(nodes.rows.innerHTML, '');
+    assert.equal(nodes.bannedLimits.hidden, false);
+    assert.equal(nodes.bannedLimits.open, true);
+    assert.equal((nodes.bannedLimitRows.innerHTML.match(/<tr data-key=/g) || []).length, total);
+    assert(nodes.bannedLimitsSummary.textContent.includes(String(total)));
     vm.runInContext("setTab('fresh')", ctx);
     nodes.crop.value = '榴莲';
     vm.runInContext('filter()', ctx);
-    // A crop's results: limits for pesticides that are not banned come first, with no heading on page 1;
-    // the banned group follows as a block, and no row carries a banned note.
-    const order = vm.runInContext('filtered.map((r) => r.pesticideId)', ctx),
-      from = vm.runInContext('bannedFrom', ctx),
-      bannedIds = new Set(db.banned.items.flatMap((x) => x.sections));
-    assert.equal(order.length, 89);
-    assert(from > 20 && from < 89, 'banned group starts at ' + from);
-    assert(order.slice(0, from).every((id) => !bannedIds.has(id)));
-    assert(order.slice(from).every((id) => bannedIds.has(id)));
-    assert.doesNotMatch(nodes.rows.innerHTML, /group-head|use-note/);
-    vm.runInContext(`page = ${Math.floor(from / 20) + 1}; render()`, ctx);
-    assert.equal((nodes.rows.innerHTML.match(/class="group-head"/g) || []).length, 1);
-    assert(
-      nodes.rows.innerHTML.includes(
-        (lang === 'zh' ? '中国禁止使用的农药 · ' : 'Pesticides banned for use in China · ') + (89 - from)
-      )
-    );
+    // A crop: the main list holds only pesticides that are not banned; the banned ones are in their section.
+    const bannedIds = new Set(db.banned.items.flatMap((x) => x.sections)),
+      idsIn = (html) => [...html.matchAll(/<tr data-key="(\d+):/g)].map((m) => Number(m[1]));
+    vm.runInContext('sortBy = { col: "", dir: "asc" }; filter()', ctx);
+    const from = vm.runInContext('bannedFrom', ctx);
+    assert.equal(from, 51);
+    assert.equal(nodes.resultCount.textContent, '89');
+    let listed = [];
+    for (let pageNo = 1; pageNo <= 3; pageNo++) {
+      vm.runInContext(`page = ${pageNo}; render()`, ctx);
+      listed.push(...idsIn(nodes.rows.innerHTML));
+    }
+    assert.equal(listed.length, 51);
+    assert(listed.every((id) => !bannedIds.has(id)));
+    assert.equal(nodes.next.disabled, true);
+    const inSection = idsIn(nodes.bannedLimitRows.innerHTML);
+    assert.equal(inSection.length, 38);
+    assert(inSection.every((id) => bannedIds.has(id)));
+    assert(nodes.range.textContent.includes(lang === 'zh' ? '另有 38 项' : '38 more in the Banned section'));
+    assert.doesNotMatch(nodes.rows.innerHTML + nodes.bannedLimitRows.innerHTML, /use-note|group-head/);
     // The detail has one quiet line pointing to the banned section.
     const row = db.rows.find(
       (r) => r.pesticideId === paraquat.id && r.category === '水果' && r.food.startsWith('皮不可食')

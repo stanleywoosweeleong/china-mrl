@@ -2,6 +2,8 @@
 // Opens a tab; on phones the secondary tabs sit under "More".
 async function openTab(page, name) {
   const button = page.locator(`nav [data-tab="${name}"]`);
+  // A view without a tab of its own (the banned list) is opened the way its links do.
+  if (!(await button.count())) return page.evaluate((n) => setTab(n), name);
   if (!(await button.isVisible())) await page.locator('#navMore').click();
   await button.click();
 }

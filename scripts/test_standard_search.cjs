@@ -101,15 +101,27 @@ const { chromium } = require('playwright'),
       limits.map(parseFloat),
       limits.map(parseFloat).sort((a, b) => b - a)
     );
-    // Limits for pesticides banned in China sit in their own group after the others, under a visible heading.
+    // Banned pesticides are kept out of the crop's list and shown only in the collapsed Banned section.
     await p.selectOption('#sortSelect', '');
-    assert.equal(await p.locator('#rows tr.group-head').count(), 0);
-    const firstNames = (await p.locator('#rows tr td:nth-child(2) strong').allInnerTexts()).join('|');
-    assert(!/Aldrin|Paraquat|DDT/.test(firstNames), firstNames);
-    while (!(await p.locator('#rows tr.group-head').count())) await p.locator('#next').click();
-    const heading = await p.locator('#rows tr.group-head').innerText();
-    assert(/Pesticides banned for use in China · \d+ limits/.test(heading), heading);
-    assert((await p.locator('#rows tr.group-head').boundingBox()).height > 40);
+    assert.equal(await p.locator('#resultCount').innerText(), '89');
+    let names = [];
+    for (;;) {
+      names.push(...(await p.locator('#rows tr td:nth-child(2) strong').allInnerTexts()));
+      if (await p.locator('#next').isDisabled()) break;
+      await p.locator('#next').click();
+    }
+    assert.equal(names.length, 51);
+    assert(!names.some((n) => /^(Aldrin|Paraquat|DDT|Carbofuran|Methamidophos)$/.test(n)), names.join('|'));
+    assert((await p.locator('#range').innerText()).includes('38 more in the Banned section below'));
+    assert(!(await p.locator('#bannedLimitRows tr').first().isVisible()));
+    await p.locator('#bannedLimitsSummary').click();
+    assert.equal(await p.locator('#bannedLimitRows tr').count(), 38);
+    assert((await p.locator('#bannedLimitRows').innerText()).includes('Paraquat'));
+    // Its link opens the full banned list, which has no tab of its own.
+    assert.equal(await p.locator('nav [data-tab="banned"]').count(), 0);
+    await p.locator('#bannedLimits [data-tab="banned"]').click();
+    assert.equal(await p.locator('#bannedRows .exempt-row').count(), 60);
+    await openTab(p, 'fresh');
     // Limit sheet on a phone: shown on screen with every limit in the view; Print is one tap away.
     await p.evaluate(() => {
       window.__printed = 0;

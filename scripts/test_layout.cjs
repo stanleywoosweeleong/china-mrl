@@ -159,6 +159,21 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
       assert(box.y >= 0 && box.y + box.height <= 844 && box.x >= 0 && box.x + box.width <= 390);
       await ctx.close();
     }
+    // On desktop, Share sits last in the sidebar, below Export essentials.
+    {
+      const wide = await browser.newPage({ viewport: { width: 1280, height: 800 }, serviceWorkers: 'block' });
+      await wide.goto(url + '?lang=en');
+      await wide.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
+      const tops = await wide.evaluate(() =>
+        [...document.querySelectorAll('nav button')]
+          .filter((b) => b.offsetParent)
+          .map((b) => [b.id || b.dataset.tab, b.getBoundingClientRect().top])
+          .sort((a, b) => a[1] - b[1])
+          .map((b) => b[0])
+      );
+      assert.deepEqual(tops.slice(-2), ['guide', 'shareOpen'], tops.join(','));
+      await wide.close();
+    }
     // First visit: the welcome screen offers the languages, previews the one tapped and keeps it.
     for (const [locale, first] of [
       ['en-US', 'en'],

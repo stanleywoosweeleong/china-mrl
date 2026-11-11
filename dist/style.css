@@ -1899,6 +1899,9 @@ nav [data-tab='access'] {
 nav [data-tab='guide'] {
   order: 7;
 }
+nav #shareOpen {
+  order: 8;
+}
 
 /* Crop picker */
 .field {

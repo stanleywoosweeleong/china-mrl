@@ -65,6 +65,11 @@ const titles = {
     'Saved references',
     'Saved on this browser, with the original food scope and crop context.'
   ],
+  banned: [
+    'Know what not to use.',
+    'Banned in China',
+    'Pesticides China bans or restricts for use, linked to their limits in the standard.'
+  ],
   exempt: [
     'Know when an exemption applies.',
     'Exempt pesticides',
@@ -341,7 +346,7 @@ function render() {
         name = c ? cropName(c) : foodName(r),
         alt = c ? cropAlt(c) : foodAlt(r),
         isSaved = saved.has(key(r));
-      return `<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small></td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
+      return `<tr data-key="${k}"><td><strong>${esc(name)}</strong>${alt && alt !== name ? `<small lang="${altLang}">${esc(alt)}</small>` : ''}${c ? `<small class="source-scope">${t(r.match === 'group' ? 'Via group: ' : 'Direct: ')}${esc(r.food)}</small>` : `<small>${esc(catName(r.category))}</small>`}</td><td data-label="${t('PESTICIDE')}"><strong>${esc(pestName(p))}</strong><small lang="${altLang}">${esc(pestAlt(p))}</small>${useNote(p) ? `<small class="warn use-note">${esc(useNote(p))}</small>` : ''}</td><td data-label="${t('LIMIT')}"><span class="num">${r.mrl}${r.provisional ? '*' : ''}</span><span class="unit">mg/kg</span>${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}${r.conflict ? `<small class="warn">${t('Conflicting matches · review')}</small>` : ''}${r.sourceNote ? `<small class="warn">${t('Source numbering note')}</small>` : ''}</td><td><span class="badge ${r.match === 'group' ? 'group' : ''}">${r.match === 'group' ? t('Group rule') : r.kind}</span><small>${t('Table {table} · p. {page}', { table: r.table, page: r.page })}</small></td><td><div class="row-actions"><button data-save="${k}" class="${isSaved ? 'saved' : ''}" aria-label="${t(isSaved ? 'Unsave' : 'Save')} ${esc(name)} ${esc(pestName(p))}" aria-pressed="${isSaved}">${isSaved ? '★' : '☆'}</button><button data-detail="${k}" class="view">${t('Details ↗')}</button></div></td></tr>`;
     })
     .join('');
   $('empty').hidden = filtered.length > 0;
@@ -384,20 +389,21 @@ function setTab(name) {
     .querySelectorAll('nav button')
     .forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
   $('explorer').hidden = !['fresh', 'full', 'saved'].includes(name);
-  ['sources', 'guide', 'exempt', 'access'].forEach((id) => ($(id).hidden = id !== name));
+  ['sources', 'guide', 'exempt', 'access', 'banned'].forEach((id) => ($(id).hidden = id !== name));
   $('cropLabel').hidden = name !== 'fresh';
   $('categoryLabel').hidden = name !== 'full';
   $('searchModeLabel').hidden = name !== 'full';
   $('primaryFilters').classList.toggle('full-filters', name === 'full');
   $('fullSearchNote').hidden = name !== 'full';
   $('quick').hidden = name !== 'fresh';
-  $('navMore').classList.toggle('active', ['full', 'exempt', 'sources', 'guide'].includes(name));
+  $('navMore').classList.toggle('active', ['full', 'banned', 'exempt', 'sources', 'guide'].includes(name));
   $('navMoreItems').classList.toggle('open', false);
   renderTitles();
   ['search', 'pesticide', 'kind', 'category'].forEach((id) => ($(id).value = ''));
   if (db) {
     filter();
     if (name === 'exempt') renderExempt();
+    if (name === 'banned') renderBanned();
   }
 }
 let detailKey = null;
@@ -421,7 +427,7 @@ function details(k) {
       : 'Original source-table row; select a fresh crop to see group applicability.'
   );
   const isSaved = saved.has(k);
-  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : 'zh'}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
+  const head = `<span class="tag">GB 2763-2026 · § 4.${r.table} · ${r.kind}</span><h2 id="detailTitle">${esc(c ? cropName(c) : foodName(r))}</h2><h3>${esc(pestName(p))}</h3><p lang="${isZh ? 'en' : 'zh'}">${esc(isZh ? pestAlt(p) : r.food + ' · ' + p.zh)}</p><div class="limit"><strong>${r.mrl}${r.provisional ? '*' : ''}</strong> mg/kg ${esc(r.qualifier)}</div>${r.provisional ? `<p class="warn">${t('* Provisional limit (临时限量). This is not an analytical detection-limit marker.')}</p>` : ''}${r.conflict ? `<p class="warn">${t('More than one equally specific match has a different limit. Resolve applicability against the source before comparison.')}</p>` : ''}${note}${useNote(p) ? `<p class="warn">${t('{status}. This is a rule on use inside China; the limit above still applies to imports.', { status: esc(useNote(p)) })} <button type="button" class="link" data-tab="banned">${t('See the banned list')}</button></p>` : ''}<button type="button" class="detail-save ${isSaved ? 'saved' : ''}" data-save="${esc(k)}" aria-pressed="${isSaved}">${t(isSaved ? '★ Saved' : '☆ Save this limit')}</button>`;
   const compare = `<div class="compare-box"><h3>${t('Compare a laboratory result')}</h3><label for="labMode">${t('Report type')}</label><select id="labMode"><option value="number">${t('Quantified result')}</option><option value="nd">${t('Non-detect / below reporting limit')}</option></select><label for="lab" id="labLabel">${t('Result in mg/kg (ppm by mass)')}</label><input id="lab" type="number" inputmode="decimal" min="0" step="any" placeholder="${t('e.g. 0.015')}"><div id="comparison" role="status">${t('Enter a result to compare.')}</div><p>${t('Arithmetic only. The analyte definition, sample preparation, uncertainty, product form and market access must be assessed separately.')}</p></div>`;
   const source = `<details class="section" open><summary>${t('Applicability and source')}</summary><dl><dt>${t('Original food scope')}</dt><dd>${esc(r.food)}${isZh ? '' : '<br>' + esc(r.foodEn)}</dd><dt>${t('Source category')}</dt><dd>${esc(r.categoryScope || r.category)}</dd><dt>${t('Application')}</dt><dd>${application}</dd><dt>${t('Residue definition')}</dt><dd>${residue}</dd><dt>${t('Effective from')}</dt><dd>${esc(longDate(db.meta.effective))}</dd><dt>${t('Source location')}</dt><dd>${t('Table {table} · PDF page {page} · printed page {printed}', { table: r.table, page: r.page, printed: r.page - (db.meta.printedPageOffset ?? 16) })}</dd>${c ? `<dt>${t('Sampling portion')}</dt><dd>${esc(partText(c))}<br><a href="standard.pdf#page=${c.annexPage}" target="_blank" rel="noopener">${t('Annex A · PDF p. {n} ↗', { n: c.annexPage })}</a></dd>` : ''}</dl><a href="standard.pdf#page=${r.page}" target="_blank" rel="noopener">${t('Open the exact source page ↗')}</a></details>`;
   const methods = `<details class="section"><summary>${t('Testing methods')}</summary>${methodsHtml(p, r, c)}${p.method ? `<details><summary>${t('Source testing-method text (Chinese)')}</summary><p lang="zh" class="technical">${esc(p.method)}</p></details>` : ''}</details>`;
@@ -505,6 +511,46 @@ function methodsHtml(p, r, c) {
       ? ''
       : `<p class="technical">${t('The standard designates no testing method for this food category. The methods it gives for other categories are listed below; agree the method with your laboratory.')}</p>`;
   return `${none}<ul class="methods">${rows.map(({ m, l }) => `<li class="${l === best ? 'match' : ''}"><strong>${esc(isZh ? m.categories.join('、') : m.categoriesEn.join(', '))}</strong> — ${m.standards.map(esc).join(', ')} <small>${t(m.basis === 'reference' ? 'method by reference (参照)' : 'specified method (按照)')}${l === best ? t(' · applies to this entry') : ''}</small></li>`).join('')}</ul>`;
+}
+// Use status in China for a section of the standard: banned outright, or banned on certain crops.
+let useStatus = new Map();
+function useNote(p) {
+  const s = useStatus.get(p.id);
+  if (!s) return '';
+  return s.scope
+    ? t('Banned for use in China on: {scope}', { scope: isZh ? s.scopeZh : s.scope })
+    : t('Banned for use in China');
+}
+function renderBanned() {
+  if (!db?.banned) return;
+  const q = typed($('bannedSearch').value),
+    hit = (x) => !q || normalized([x.zh, x.en, x.scope, x.scopeZh].join(' ')).includes(q),
+    limits = (x) => db.rows.filter((r) => x.sections.includes(r.pesticideId)).length,
+    name = (x) =>
+      `<div><strong>${esc(isZh ? x.zh : x.en)}</strong><small lang="${altLang}">${esc(isZh ? x.en : x.zh)}</small>${x.scope ? `<small class="warn">${t('Banned on: {scope}', { scope: esc(isZh ? x.scopeZh : x.scope) })}</small>` : ''}</div>`,
+    link = (x) =>
+      x.sections.length
+        ? `<button type="button" data-pesticide="${x.sections[0]}">${t('{n} limits in the standard', { n: limits(x) })}</button>`
+        : `<small>${t('No limit in the standard')}</small>`,
+    none = `<p>${t('No match in this list. A pesticide that is not listed here is not thereby permitted.')}</p>`;
+  const banned = db.banned.items.filter(hit),
+    restricted = db.banned.restricted.filter(hit);
+  $('bannedHeading').textContent = t('Banned outright · {n} pesticides', { n: db.banned.items.length });
+  $('bannedRows').innerHTML = banned.length
+    ? banned
+        .map(
+          (x) =>
+            `<div class="exempt-row"><span>${String(x.n).padStart(2, '0')}</span>${name(x)}${link(x)}</div>`
+        )
+        .join('')
+    : none;
+  $('restrictedRows').innerHTML = restricted.length
+    ? restricted.map((x) => `<div class="exempt-row"><span>◐</span>${name(x)}${link(x)}</div>`).join('')
+    : none;
+  const src = db.banned.source,
+    old = db.banned.restrictedSource;
+  $('bannedSource').innerHTML =
+    `${t('Banned list')}: <a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(isZh ? src.titleZh : src.title)} ↗</a> · ${esc(longDate(src.date))} · ${esc(isZh ? src.publisherZh : src.publisher)}. ${t('Crop-specific bans')}: <a href="${esc(old.url)}" target="_blank" rel="noopener">${esc(isZh ? old.titleZh : old.title)} ↗</a>. ${t('Checked {date}. Names in English are aids; the Chinese names control. Confirm against the ministry’s current notices before relying on this list.', { date: esc(longDate(src.reviewed)) })}`;
 }
 function renderExempt() {
   if (!db) return;
@@ -600,6 +646,7 @@ $('search').addEventListener('input', filter);
   $(id).addEventListener('change', filter)
 );
 $('exemptSearch').addEventListener('input', renderExempt);
+$('bannedSearch').addEventListener('input', renderBanned);
 $('reset').onclick = reset;
 $('prev').onclick = () => {
   page--;
@@ -839,6 +886,12 @@ document.addEventListener('click', (e) => {
     MarketAccess.show(b.dataset.accessView);
     return;
   }
+  if (b.dataset.pesticide) {
+    setTab('full');
+    $('pesticide').value = b.dataset.pesticide;
+    filter();
+    return;
+  }
   if (b.dataset.tab) setTab(b.dataset.tab);
   if (b.dataset.crop) {
     if (tab !== 'fresh') setTab('fresh');
@@ -940,6 +993,7 @@ function relabel() {
   page = at;
   render();
   renderExempt();
+  renderBanned();
   if (open) details(open);
 }
 I.onChange?.(relabel);
@@ -952,6 +1006,9 @@ fetch('database.json')
     db = d;
     for (let i = 0; i + 1 < (d.t2s || '').length; i += 2) t2s.set(d.t2s[i], d.t2s[i + 1]);
     if (typeof MarketAccess !== 'undefined') MarketAccess.simplified = simplified;
+    for (const x of d.banned?.items || []) for (const id of x.sections) useStatus.set(id, {});
+    for (const x of d.banned?.restricted || [])
+      for (const id of x.sections) useStatus.set(id, { scope: x.scope, scopeZh: x.scopeZh });
     pestMap = new Map(d.pesticides.map((p) => [p.id, p]));
     cropMap = new Map(d.crops.map((c) => [c.id, c]));
     freshCrops = d.crops.filter((c) => isFresh(c));

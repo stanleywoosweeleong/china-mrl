@@ -6,7 +6,7 @@ const { chromium } = require('playwright'),
   { openDetails } = require('./ui_helpers.cjs');
 const url = process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/';
 const out = process.env.SCREENSHOT_DIR || 'test-results/screenshots';
-const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
+const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access', 'guide'];
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({

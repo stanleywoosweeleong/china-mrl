@@ -4,7 +4,7 @@ const { chromium } = require('playwright'),
   assert = require('assert'),
   { openTab } = require('./ui_helpers.cjs');
 const url = process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/';
-const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
+const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access', 'guide'];
 const text = (page) =>
   page.evaluate(() =>
     [

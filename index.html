@@ -47,6 +47,7 @@
         </button>
         <div id="navMoreItems" class="nav-more-items">
           <button data-tab="full">▤ <span>Entire standard</span></button
+          ><button data-tab="banned">⊘ <span>Banned in China</span></button
           ><button data-tab="exempt">◎ <span>Exempt pesticides</span></button
           ><button data-tab="sources">↗ <span>Sources & coverage</span></button
           ><button data-tab="guide">ⓘ <span>Export essentials</span></button>
@@ -224,6 +225,32 @@
           /></label>
           <div id="exemptRows"></div>
           <a href="standard.pdf#page=417" target="_blank" rel="noopener">Read Annex B in the source ↗</a>
+        </section>
+        <section id="banned" class="content-panel" hidden>
+          <span class="tag">USE BANNED IN CHINA</span>
+          <h2>Pesticides China bans for use</h2>
+          <p>
+            China's agriculture ministry bans these 60 pesticides from sale and use in China. If your crop is
+            going to China, the safest course is not to use them. Most have very low limits in the residue
+            standard, and some have no limit at all.
+          </p>
+          <p>
+            This is a rule on use inside China, not an import requirement in itself. Imports are checked against
+            the residue limits in GB 2763. Follow your own country's pesticide rules as well.
+          </p>
+          <label class="searchbox" style="margin: 20px 0"
+            ><span>⌕</span
+            ><input id="bannedSearch" placeholder="Search a banned or restricted pesticide"
+          /></label>
+          <h3 id="bannedHeading">Banned outright</h3>
+          <div id="bannedRows"></div>
+          <h3>Banned on certain crops</h3>
+          <p>
+            These remain legal in China for some uses but are banned on the crops shown. Taken from the ministry's
+            2019 list, less the entries since banned outright; it may have changed.
+          </p>
+          <div id="restrictedRows"></div>
+          <p id="bannedSource" class="table-note"></p>
         </section>
         <section id="sources" class="content-panel" hidden>
           <span class="tag">PROVENANCE & COMPLETENESS</span>

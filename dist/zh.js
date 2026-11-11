@@ -475,6 +475,38 @@
     'No fresh crop matches. Try another name, or search the Entire standard.':
       '没有符合的新鲜作物。请换一个名称，或到“完整标准”中搜索。',
 
+    // Banned in China
+    'Banned in China': '中国禁用农药',
+    'Know what not to use.': '知道哪些农药不能用。',
+    'Pesticides China bans or restricts for use, linked to their limits in the standard.':
+      '中国禁止或限制使用的农药，并可查看标准中对应的限量。',
+    'USE BANNED IN CHINA': '中国禁止使用',
+    'Pesticides China bans for use': '中国禁止使用的农药',
+    "China's agriculture ministry bans these 60 pesticides from sale and use in China. If your crop is going to China, the safest course is not to use them. Most have very low limits in the residue standard, and some have no limit at all.":
+      '中国农业农村部禁止在中国销售和使用这 60 种农药。产品如果要出口到中国，最稳妥的做法是不使用它们：其中多数在残留限量标准中的限量很低，有些根本没有限量。',
+    "This is a rule on use inside China, not an import requirement in itself. Imports are checked against the residue limits in GB 2763. Follow your own country's pesticide rules as well.":
+      '这是中国境内的用药规定，本身并不是进口要求。进口产品按 GB 2763 的残留限量检验。同时也请遵守您所在国家的农药规定。',
+    'Search a banned or restricted pesticide': '搜索禁用或限用农药',
+    'Banned outright': '全面禁用',
+    'Banned outright · {n} pesticides': '全面禁用 · {n} 种',
+    'Banned on certain crops': '在部分作物上禁用',
+    "These remain legal in China for some uses but are banned on the crops shown. Taken from the ministry's 2019 list, less the entries since banned outright; it may have changed.":
+      '这些农药在中国仍可用于部分用途，但禁止用于所列作物。内容取自农业农村部 2019 年版名录，并已去掉其后被全面禁用的品种；名录此后可能有变化。',
+    'Banned for use in China': '中国禁止使用',
+    'Banned for use in China on: {scope}': '中国禁止用于：{scope}',
+    'Banned on: {scope}': '禁止用于：{scope}',
+    '{status}. This is a rule on use inside China; the limit above still applies to imports.':
+      '{status}。这是中国境内的用药规定；进口产品仍按上面的限量检验。',
+    'See the banned list': '查看禁用名单',
+    '{n} limits in the standard': '标准中有 {n} 项限量',
+    'No limit in the standard': '标准中没有限量',
+    'No match in this list. A pesticide that is not listed here is not thereby permitted.':
+      '名单中没有符合的农药。没有列入名单，并不表示可以使用。',
+    'Banned list': '禁用名单',
+    'Crop-specific bans': '部分作物禁用',
+    'Checked {date}. Names in English are aids; the Chinese names control. Confirm against the ministry’s current notices before relying on this list.':
+      '核对日期：{date}。请以农业农村部现行公告为准。',
+
     // Offline / install
     'Preparing offline reference…': '正在准备离线数据…',
     'Install app': '安装应用',

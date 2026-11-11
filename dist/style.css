@@ -2742,3 +2742,80 @@ html.i18n-pending body {
 .sheet .sheet-note {
   margin-top: 10px;
 }
+/* Banned in China */
+#banned h3 {
+  margin: 22px 0 8px;
+}
+#banned .exempt-row button {
+  flex: none;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--green);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#banned .exempt-row > small {
+  color: var(--muted);
+}
+.use-note {
+  font-weight: 600;
+}
+button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--green);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+nav [data-tab='banned'] {
+  order: 4;
+}
+@media screen and (max-width: 760px) {
+  #banned .exempt-row button,
+  button.link {
+    min-height: 44px;
+  }
+}
+#banned .exempt-row button,
+#banned .exempt-row > small {
+  margin-left: auto;
+}
+#banned .exempt-row > span {
+  flex: none;
+  min-width: 1.6em;
+}
+#banned .exempt-row > div {
+  flex: 1;
+  min-width: 0;
+}
+@media screen and (max-width: 760px) {
+  /* Name on the first line, the link to its limits below it. */
+  #banned .exempt-row {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+  }
+  #banned .exempt-row button,
+  #banned .exempt-row > small {
+    margin-left: calc(1.6em + 12px);
+    flex-basis: 100%;
+    text-align: left;
+  }
+  #banned .exempt-row button {
+    flex-basis: auto;
+  }
+}
+@media screen and (max-width: 760px) {
+  #banned .exempt-row > div {
+    flex: 1 1 calc(100% - 3.2em);
+  }
+  #banned .exempt-row strong {
+    overflow-wrap: break-word;
+  }
+}

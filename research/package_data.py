@@ -139,6 +139,14 @@ for config in ['s2t','s2tw','s2hk']:
 # Variants the converters do not produce.
 t2s.update({'槤':'莲','梿':'莲','蕃':'番','菓':'果','蔴':'麻','荳':'豆','蔥':'葱','薑':'姜','麵':'面','檸':'柠','薯':'薯'})
 t2s={k:v for k,v in t2s.items() if k!=v}
-data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,reviewNotes=review_notes,t2s=''.join(k+v for k,v in sorted(t2s.items())),annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
+# Pesticides China bans or restricts for use, linked to their sections in the standard where they have one.
+import banned_pesticides as bp
+def section_ids(zh):
+ # A section may combine names (氰戊菊酯和S-氰戊菊酯) or carry a qualifier (六六六 in the EMRL tables).
+ return [p['id'] for p in ps if zh==p['zh'] or zh in re.split(r'和|、|\(|\)',p['zh'])]
+banned=dict(source=bp.SOURCE,restrictedSource=bp.RESTRICTED_SOURCE,
+ items=[dict(n=i+1,zh=zh,en=en,sections=section_ids(zh)) for i,(zh,en) in enumerate(bp.BANNED)],
+ restricted=[dict(zh=zh,en=en,scope=scope,scopeZh=scopeZh,sections=section_ids(zh)) for zh,en,scope,scopeZh in bp.RESTRICTED])
+data=dict(meta=dict(standard='GB 2763-2026',effective='2026-03-01',checked='2026-11-09',rows=len(rows),sections=len(ps),pesticidesInStandard=585,printedPageOffset=16,exemptions=44,source='https://gain.fas.usda.gov/Download.aspx?p=3696&q=e0dbfbad-4854-4f2f-80a6-c5e095672d46',sha256=hashlib.sha256(Path('research/usda-standard.pdf').read_bytes()).hexdigest()),rows=rows,pesticides=ps,crops=CATALOG,exemptions=exempt,categories=catEn,labels=labels,reviewNotes=review_notes,banned=banned,t2s=''.join(k+v for k,v in sorted(t2s.items())),annex=[dict(page=i+1,text=doc[i].get_text()) for i in range(412,416)])
 Path('dist/database.json').write_text(json.dumps(data,ensure_ascii=False,separators=(',',':')))
 print('Packaged',len(rows),'rows,',len(CATALOG),'crops,',len(exempt),'exemptions')

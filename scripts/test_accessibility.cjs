@@ -6,7 +6,7 @@ const { chromium } = require('playwright'),
   { openTab, openDetails } = require('./ui_helpers.cjs');
 const url = process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/';
 const axe = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
-const tabs = ['fresh', 'full', 'saved', 'exempt', 'sources', 'access', 'guide'];
+const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access', 'guide'];
 (async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || undefined,

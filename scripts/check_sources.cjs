@@ -23,6 +23,12 @@ const get = async (url) => {
     const origins = [...new Set(stale.map((r) => r.origin))].sort().join(', ');
     findings.push(`${stale.length} records were last reviewed more than 90 days ago (origins: ${origins}).`);
   }
+  // The banned-pesticide list is a dated copy of ministry notices; it needs a person to re-check it.
+  const banned = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../dist/database.json'), 'utf8')).banned;
+  if (banned && !(today - Date.parse(banned.source.reviewed + 'T00:00:00Z') <= 90 * 86400000))
+    findings.push(
+      `The banned-pesticide list was last checked on ${banned.source.reviewed}. Review MARA's current notices (${banned.source.url}) and the crop-specific list.`
+    );
   const translated = data.records.filter((r) => r.evidenceType === 'list-translation');
   if (translated.length) {
     const recorded = translated

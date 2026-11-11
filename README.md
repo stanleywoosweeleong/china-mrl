@@ -85,6 +85,15 @@ To maintain coverage, review official GACC notices and the origin authority, pre
 - **Print limit sheet:** prints every limit in the current view (up to 600) with testing methods, in the interface language. On phones and in the installed app it opens on screen first, with a Print button, because printing is not always available there.
 - **Accessibility:** `scripts/test_accessibility.cjs` runs axe-core (WCAG 2.1 A and AA, including colour contrast) on every tab, the crop picker and the detail view in both languages. It cannot measure icon-only glyphs, and it is not a substitute for testing with a screen reader.
 
+## Banned in China
+
+The **Banned in China** tab lists pesticides China bans for use, so growers elsewhere can avoid them:
+
+- **Banned outright (60):** MARA Announcement No. 1039 (13 July 2026), read on the Heilongjiang agriculture department's republication and cross-checked against two trade reproductions. 41 of the 60 have a section in GB 2763-2026; each links to its limits (1,159 rows in all).
+- **Banned on certain crops (9):** from MARA's 2019 list of banned and restricted pesticides, less the eleven entries since banned outright. This part may be out of date.
+
+Limits for these pesticides carry a "Banned for use in China" note in results and in the detail view. These are rules on use inside China, not import requirements: imports are checked against GB 2763 limits, and the app says so. The data lives in `research/banned_pesticides.py`; English names are aids. The weekly source watch flags the list for re-checking after 90 days.
+
 ## Languages
 
 The interface is available in English and Simplified Chinese. The header switch (中文 / English) remembers the choice; Chinese-language browsers start in Chinese; `?lang=zh` or `?lang=en` in a link forces a language. In Chinese mode crop, pesticide, food and category names show Chinese first, lists sort by pinyin, and market-access records use their Chinese text (`scopeZh`, `conditionsZh`, `titleZh`). Taiwan is shown as 台湾 in Chinese mode.

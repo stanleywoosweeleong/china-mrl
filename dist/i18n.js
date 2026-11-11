@@ -72,16 +72,8 @@
     }
     const toggle = document.getElementById('langToggle');
     if (toggle) {
-      // Both languages are shown; the active one is marked. Pressing switches to the other.
-      toggle.innerHTML = [
-        ['zh', '中'],
-        ['en', 'EN']
-      ]
-        .map(
-          ([code, label]) =>
-            `<span class="${code === lang ? 'on' : ''}" lang="${code === 'zh' ? 'zh-Hans' : 'en'}">${label}</span>`
-        )
-        .join('');
+      // Shows only the active language; pressing switches to the other.
+      toggle.innerHTML = `<span class="on" lang="${lang === 'zh' ? 'zh-Hans' : 'en'}">${lang === 'zh' ? '中文' : 'EN'}</span>`;
       toggle.removeAttribute('lang');
       toggle.setAttribute(
         'aria-label',

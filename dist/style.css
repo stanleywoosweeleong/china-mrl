@@ -2629,3 +2629,27 @@ nav .short {
     padding-right: 96px;
   }
 }
+/* Language switch: one filled pill naming the active language. */
+.lang-toggle {
+  padding: 3px;
+}
+.lang-toggle span,
+.lang-toggle span.on {
+  min-width: 40px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+@media screen and (max-width: 760px) {
+  .lang-toggle span,
+  .lang-toggle span.on {
+    padding: 7px 14px;
+  }
+  .brand {
+    padding-right: 84px;
+  }
+}

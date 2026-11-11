@@ -116,6 +116,12 @@ function longDate(d) {
 function normalized(s) {
   return String(s).toLowerCase().replace(/[\s-]/g, '');
 }
+// What a person typed: Traditional characters become Simplified (榴槤 → 榴莲) so they match the data.
+let t2s = new Map();
+const simplified = (s) => (t2s.size ? [...String(s)].map((ch) => t2s.get(ch) || ch).join('') : String(s));
+const typed = (s) => normalized(simplified(s));
+// Every name a crop can be found by; `search` holds everyday and regional names (search only).
+const cropNames = (c) => [c.en, c.zh, ...(c.aliases || []), ...(c.search || [])];
 // Crop recognition for the full-standard search: exact names first, then whole words of crop names. Plurals are accepted; several matches become suggestions.
 function singulars(q) {
   const v = new Set([q]);
@@ -126,12 +132,13 @@ function singulars(q) {
 }
 function findSearchCrop(raw) {
   fullSuggestions = [];
+  raw = simplified(raw);
   const q = normalized(raw);
   if (!q) return null;
   const cat = $('category').value,
     pool = db.crops.filter((c) => !cat || c.category === cat || (c.extraCategories || []).includes(cat)),
     forms = singulars(q),
-    names = (c) => [c.en, c.zh, ...(c.aliases || [])];
+    names = cropNames;
   const exact = pool.filter((c) => names(c).some((n) => forms.includes(normalized(n))));
   if (exact.length === 1) return exact[0];
   if (exact.length) {
@@ -160,7 +167,7 @@ function findSearchCrop(raw) {
 function filter() {
   if (!db) return;
   const crop = cropMap.get($('crop').value),
-    q = normalized($('search').value),
+    q = typed($('search').value),
     pid = Number($('pesticide').value),
     kind = $('kind').value;
   fullSuggestions = [];
@@ -196,7 +203,8 @@ function filter() {
             p.residue,
             c?.en,
             c?.zh,
-            ...(c?.aliases || [])
+            ...(c?.aliases || []),
+            ...(c?.search || [])
           ].join(' ')
         ).includes(q))
     );
@@ -486,18 +494,21 @@ function methodText(p, r, c) {
     ? hit
         .map(({ m }) => m.standards.join(', ') + (m.basis === 'reference' ? t(' (by reference)') : ''))
         .join('; ')
-    : t('See source text');
+    : t('None designated for this food category');
 }
 // Testing methods by clause; the clause naming this row's commodity, else its category, is marked.
 function methodsHtml(p, r, c) {
   if (!p.methods?.length)
     return `<p class="technical">${t('The standard designates no testing method for this section: all of its limits are provisional (临时限量). Agree the method with your laboratory, for example an applicable GB 23200 multi-residue method.')}</p>`;
-  const { rows, best } = methodMatches(p, r, c);
-  return `<ul class="methods">${rows.map(({ m, l }) => `<li class="${l === best ? 'match' : ''}"><strong>${esc(isZh ? m.categories.join('、') : m.categoriesEn.join(', '))}</strong> — ${m.standards.map(esc).join(', ')} <small>${t(m.basis === 'reference' ? 'method by reference (参照)' : 'specified method (按照)')}${l === best ? t(' · applies to this entry') : ''}</small></li>`).join('')}</ul>`;
+  const { rows, best } = methodMatches(p, r, c),
+    none = rows.some((x) => x.l === best)
+      ? ''
+      : `<p class="technical">${t('The standard designates no testing method for this food category. The methods it gives for other categories are listed below; agree the method with your laboratory.')}</p>`;
+  return `${none}<ul class="methods">${rows.map(({ m, l }) => `<li class="${l === best ? 'match' : ''}"><strong>${esc(isZh ? m.categories.join('、') : m.categoriesEn.join(', '))}</strong> — ${m.standards.map(esc).join(', ')} <small>${t(m.basis === 'reference' ? 'method by reference (参照)' : 'specified method (按照)')}${l === best ? t(' · applies to this entry') : ''}</small></li>`).join('')}</ul>`;
 }
 function renderExempt() {
   if (!db) return;
-  const q = normalized($('exemptSearch').value),
+  const q = typed($('exemptSearch').value),
     rows = db.exemptions.filter((x) => normalized(x.en + ' ' + (x.enSource || '') + ' ' + x.zh).includes(q));
   $('exemptRows').innerHTML = rows.length
     ? rows
@@ -618,8 +629,16 @@ function printSheet() {
   $('printSheet').innerHTML =
     `<h1>${esc(crop ? cropPair(crop) : t(titles[tab][1]))}</h1><p class="sheet-meta">${t('Pesticide residue limits for China · {standard} · effective {date}', { standard: esc(db.meta.standard), date: esc(longDate(db.meta.effective)) })}${crop ? ' · ' + t('Part to be tested: {part}', { part: esc(partText(crop)) }) : ''}</p>${access && origin ? `<p class="sheet-meta">${esc(origin)}: ${t(access.marketAccess === 'approved' ? 'approved market access · conditions apply' : { conditional: 'access documented · conditions apply', restricted: 'restriction documented', unverified: 'market access not verified' }[access.status])}</p>` : ''}<p class="sheet-head"><span>${t('Pesticide · testing method')}</span><span>${t('Limit mg/kg')}</span></p><div class="sheet-rows">${items}</div><p class="sheet-note">${t('{shown} of {total} limits in this view.', { shown: rows.length, total: filtered.length })} ${t('* Provisional limit. Reference only: check the Chinese standard, the residue definition and market access before shipment. Data reviewed {date}.', { date: esc(db.meta.checked) })}</p>`;
   $('printSheet').hidden = false;
-  window.print();
+  // Phones and the installed app show the sheet on screen first: printing is not always available there.
+  const onScreen =
+    typeof matchMedia === 'function' &&
+    (matchMedia('(max-width: 760px)').matches || matchMedia('(display-mode: standalone)').matches);
+  if (onScreen && $('sheetDialog').showModal) {
+    $('sheetView').innerHTML = $('printSheet').innerHTML;
+    if (!$('sheetDialog').open) $('sheetDialog').showModal();
+  } else window.print();
 }
+$('sheetPrint').onclick = () => window.print();
 function syncSort() {
   document.querySelectorAll('th button.sort').forEach((b) => {
     const on = b.dataset.sort === sortBy.col;
@@ -649,7 +668,7 @@ function cropMatches(q) {
   const crops = freshCrops.slice().sort(byName(cropName));
   if (!q) return crops;
   const rank = (c) => {
-    const names = [c.zh, c.en, ...(c.aliases || [])].map(normalized);
+    const names = cropNames(c).map(normalized);
     if (names.some((n) => n === q) || c.py === q) return 0;
     if (names.some((n) => n.startsWith(q)) || (c.py || '').startsWith(q) || c.pyi === q) return 1;
     if (
@@ -690,8 +709,8 @@ function closeCropList() {
 function openCropList() {
   if (!db) return;
   const selected = cropMap.get($('crop').value),
-    typed = normalized(combo.input.value),
-    q = selected && typed === normalized(cropName(selected)) ? '' : typed;
+    entered = typed(combo.input.value),
+    q = selected && entered === normalized(cropName(selected)) ? '' : entered;
   combo.items = cropMatches(q);
   if (q && combo.active < 0) combo.active = 0;
   combo.active = Math.min(combo.active, combo.items.length - 1);
@@ -730,13 +749,11 @@ combo.input.addEventListener('focus', () => {
 combo.input.addEventListener('blur', () => {
   if (combo.pressing) return;
   // Leaving the box with one clear answer typed (keyboard "Done") selects it.
-  const typed = normalized(combo.input.value),
+  const entered = typed(combo.input.value),
     selected = cropMap.get($('crop').value);
-  if (typed && !(selected && typed === normalized(cropName(selected)))) {
-    const matches = cropMatches(typed),
-      exact = matches.filter((c) =>
-        [c.zh, c.en, c.py, ...(c.aliases || [])].some((n) => normalized(n) === typed)
-      );
+  if (entered && !(selected && entered === normalized(cropName(selected)))) {
+    const matches = cropMatches(entered),
+      exact = matches.filter((c) => [...cropNames(c), c.py].some((n) => normalized(n) === entered));
     if (matches.length === 1 || exact.length === 1) return chooseCrop((exact[0] || matches[0]).id);
   }
   closeCropList();
@@ -915,6 +932,7 @@ function relabel() {
   if (!db) return;
   const at = page,
     open = $('detail').open ? detailKey : null;
+  if ($('sheetDialog').open) $('sheetDialog').close?.();
   closeCropList();
   fillOptions();
   renderAnnex();
@@ -932,6 +950,8 @@ fetch('database.json')
   })
   .then((d) => {
     db = d;
+    for (let i = 0; i + 1 < (d.t2s || '').length; i += 2) t2s.set(d.t2s[i], d.t2s[i + 1]);
+    if (typeof MarketAccess !== 'undefined') MarketAccess.simplified = simplified;
     pestMap = new Map(d.pesticides.map((p) => [p.id, p]));
     cropMap = new Map(d.crops.map((c) => [c.id, c]));
     freshCrops = d.crops.filter((c) => isFresh(c));
@@ -946,11 +966,8 @@ fetch('database.json')
     if (typeof MarketAccess !== 'undefined')
       MarketAccess.init(
         freshCrops,
-        () => {
-          const selected = tab === 'fresh' ? $('crop').value : null;
-          setTab('access');
-          return selected;
-        },
+        // Changing the origin keeps the current tab; the checker follows the crop being viewed.
+        () => (tab === 'fresh' ? $('crop').value : null),
         () => {
           if (tab === 'fresh') renderCrop();
         }

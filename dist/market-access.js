@@ -156,7 +156,8 @@
           '{documented} documented · {restricted} restrictions documented · {unverified} not verified. Partial evidence coverage; zero recorded restrictions does not establish their absence.',
           { documented: counts.conditional, restricted: counts.restricted, unverified: counts.unverified }
         );
-        const q = el('accessCropSearch').value.trim().toLowerCase(),
+        // Traditional input is converted to Simplified; regional names and pinyin also find a crop.
+        const q = api.simplified(el('accessCropSearch').value).trim().toLowerCase(),
           status = el('accessStatus').value || 'all',
           category = el('accessCategory').value;
         const rows = entries
@@ -166,7 +167,11 @@
                 c.access.status === status ||
                 (status === 'documented' && c.access.status !== 'unverified')) &&
               (!category || category === c.category) &&
-              (!q || [c.en, c.zh, ...(c.aliases || [])].join(' ').toLowerCase().includes(q))
+              (!q ||
+                [c.en, c.zh, c.py, ...(c.aliases || []), ...(c.search || [])]
+                  .join(' ')
+                  .toLowerCase()
+                  .includes(q))
           )
           .sort(
             (a, b) =>
@@ -323,7 +328,7 @@
       );
     }
   }
-  const api = { lookup, catalogue, cropStatus, init, show() {} };
+  const api = { lookup, catalogue, cropStatus, init, show() {}, simplified: (s) => String(s) };
   if (typeof module !== 'undefined') module.exports = api;
   else root.MarketAccess = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

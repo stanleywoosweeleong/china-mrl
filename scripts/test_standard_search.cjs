@@ -101,8 +101,29 @@ const { chromium } = require('playwright'),
       limits.map(parseFloat),
       limits.map(parseFloat).sort((a, b) => b - a)
     );
+    // Limit sheet on a phone: shown on screen with every limit in the view; Print is one tap away.
+    await p.evaluate(() => {
+      window.__printed = 0;
+      window.print = () => window.__printed++;
+    });
+    const total = Number(await p.locator('#resultCount').innerText());
+    await p.locator('#print').click();
+    assert(await p.locator('#sheetDialog').isVisible());
+    assert.equal(await p.locator('#sheetView .sheet-row').count(), total);
+    assert.equal(await p.evaluate(() => window.__printed), 0);
+    assert.equal(
+      await p.evaluate(() => {
+        const d = document.getElementById('sheetDialog');
+        return d.scrollWidth > d.clientWidth;
+      }),
+      false
+    );
+    await p.locator('#sheetPrint').click();
+    assert.equal(await p.evaluate(() => window.__printed), 1);
+    await p.locator('#sheetDialog form button').click();
+    assert(!(await p.locator('#sheetDialog').isVisible()));
     console.log(
-      'Entire standard: bilingual crop recognition, group detail/save, category filtering, exact mode, banana parity, pesticide text search, crop picker and sorting passed.'
+      'Entire standard: bilingual crop recognition, group detail/save, category filtering, exact mode, banana parity, pesticide text search, crop picker, sorting and the limit sheet passed.'
     );
   } finally {
     await b.close();

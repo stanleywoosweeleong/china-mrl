@@ -34,7 +34,7 @@ All 442 pages of extracted text match the original third-party copy. Full-table 
 
 ## Rebuilding the data
 
-Place the source PDF at `research/usda-standard.pdf`. Run `python research/build_database.py`, then `python research/package_data.py`; copy the verified PDF to `dist/standard.pdf`. PyMuPDF is required for extraction and pypinyin for packaging. `research/catalog.py` contains the Annex A crop mappings. Review source changes, classification mappings, qualifiers, residue definitions and exceptions before publication. Preserve source numbering anomalies (sections 173 and 223) in the document while parsing their content correctly.
+Place the source PDF at `research/usda-standard.pdf`. Run `python research/build_database.py`, then `python research/package_data.py`; copy the verified PDF to `dist/standard.pdf`. PyMuPDF is required for extraction, and pypinyin and opencc-python-reimplemented for packaging. `research/catalog.py` contains the Annex A crop mappings. Review source changes, classification mappings, qualifiers, residue definitions and exceptions before publication. Preserve source numbering anomalies (sections 173 and 223) in the document while parsing their content correctly.
 
 `research/verify_tables.py` keeps the reviewed notes already in `research/grid-audit.json` (raw count, source numbering corrections) and independently checks numerical values by table using pdfplumber's ruled table geometry. Category/commodity interpretation is separately checked through regression cases. Do not represent automated matching as an official legal interpretation.
 
@@ -64,7 +64,7 @@ Push the updated `main` branch to deploy. The optional `scripts/deploy_pages.py`
 
 ## Country-of-origin market access
 
-Selecting an origin opens **Market access**, with a country-specific crop catalogue showing all crops by default, sorted with documented access first, and filters for evidence status, fruit/vegetable category and crop name. Conditions/source buttons retain the selected country and form; fresh-crop MRL buttons carry the crop into the reference lookup. The Fresh produce selector labels the same origin-specific evidence status and the selected crop card repeats it. MRL limits remain independent of market-access permission. The **Market access** tab checks exact origin, commodity and product form combinations. All 184 mapped crops and ISO 3166-1 countries/territories are selectable. Evidence coverage is 311 fresh-product combinations across 60 origins, in three tiers that are labelled wherever they appear:
+Selecting an origin keeps you on the current tab and updates the crop card's access banner; the **Market access** tab has a country-specific crop catalogue that opens on crops with a record (all crops one choice away), sorted with documented access first, and filters for evidence status, fruit/vegetable category and crop name. Conditions/source buttons retain the selected country and form; fresh-crop MRL buttons carry the crop into the reference lookup. The Fresh produce selector labels the same origin-specific evidence status and the selected crop card repeats it. MRL limits remain independent of market-access permission. The **Market access** tab checks exact origin, commodity and product form combinations. All 184 mapped crops and ISO 3166-1 countries/territories are selectable. Evidence coverage is 311 fresh-product combinations across 60 origins, in three tiers that are labelled wherever they appear:
 
 - **Protocols and official guides (21):** GACC announcements read on MOFCOM or provincial commerce-department republications, and five Malaysian entries from the dated 2025 FAMA export guide. Conditions for the eleven added on 10 November 2026 are paraphrased summaries.
 - **GACC list via translation (290):** fresh fruit from GACC's permitted list as given in Produce Report's edited English translation (updated 6 October 2026). GACC's own site refused automated access, so the official list was not read directly; each record says so.
@@ -78,11 +78,11 @@ To maintain coverage, review official GACC notices and the origin authority, pre
 
 ## Interface
 
-- **Crop picker:** type a crop in Chinese, English, pinyin (`liulian`) or initials (`ll`); matches show whether the selected origin has a market-access record. It drives a hidden `#crop` select, which remains the source of truth.
+- **Crop picker:** type a crop in Simplified or Traditional Chinese (榴槤), an everyday or regional name (凤梨, 牛油果, 土豆; see `research/search_names.py`, used for search only and never for matching limits), English, pinyin (`liulian`) or initials (`ll`); matches show whether the selected origin has a market-access record. It drives a hidden `#crop` select, which remains the source of truth.
 - **Phones (up to 760px):** search first, compact result cards that open details on tap, a bottom tab bar (Fresh produce, Market access, Saved, More), and touch targets of at least 44px. Nothing scrolls sideways.
 - **Wide screens (1400px and up):** details open as a side panel beside the table; narrower screens use a dialog. Column headings sort the table; phones get a sort menu.
 - **Detail view:** the limit, Save and the laboratory comparison come first; applicability, source and testing methods are collapsible.
-- **Print limit sheet:** prints every limit in the current view (up to 600) with testing methods, in the interface language.
+- **Print limit sheet:** prints every limit in the current view (up to 600) with testing methods, in the interface language. On phones and in the installed app it opens on screen first, with a Print button, because printing is not always available there.
 - **Accessibility:** `scripts/test_accessibility.cjs` runs axe-core (WCAG 2.1 A and AA, including colour contrast) on every tab, the crop picker and the detail view in both languages. It cannot measure icon-only glyphs, and it is not a substitute for testing with a screen reader.
 
 ## Languages

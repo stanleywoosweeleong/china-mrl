@@ -2656,3 +2656,89 @@ nav .short {
 html.i18n-pending body {
   visibility: hidden;
 }
+/* Limit sheet shown on screen (phones and the installed app). The printed layout is under @media print. */
+#sheetDialog {
+  width: min(680px, calc(100% - 20px));
+  max-width: none;
+  max-height: 92vh;
+  padding: 0 16px 16px;
+}
+.sheet-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.sheet-bar button {
+  min-height: 44px;
+  padding: 8px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--green);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sheet-bar #sheetPrint {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+.sheet-hint {
+  margin: 10px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.sheet h1 {
+  margin: 6px 0 4px;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+.sheet .sheet-meta,
+.sheet .sheet-note {
+  margin: 0 0 4px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sheet .sheet-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0 2px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--ink);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+.sheet .sheet-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.sheet .sheet-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.sheet .sheet-row b {
+  white-space: nowrap;
+  font-size: 15px;
+}
+.sheet .sheet-row i {
+  font-size: 11px;
+  font-style: normal;
+}
+.sheet .sheet-note {
+  margin-top: 10px;
+}

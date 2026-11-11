@@ -203,7 +203,9 @@
     ' · applies to this entry': ' · 适用于本条目',
     'None designated (provisional limits)': '未指定（临时限量）',
     ' (by reference)': '（参照）',
-    'See source text': '见原文',
+    'None designated for this food category': '标准未为该类食品指定',
+    'The standard designates no testing method for this food category. The methods it gives for other categories are listed below; agree the method with your laboratory.':
+      '标准没有为这一类食品指定检测方法。下面列出标准为其他类别指定的方法；请与检测实验室商定方法。',
     'Compare a laboratory result': '比对检测结果',
     'Report type': '报告类型',
     'Quantified result': '定量结果',
@@ -435,6 +437,11 @@
 
     // Redesign: crop picker, sorting, navigation, detail and print sheet
     More: '更多',
+    'Limit sheet': '限量表',
+    Print: '打印',
+    Close: '关闭',
+    'If printing is not available here, open this site in your browser to print, or take a screenshot.':
+      '如果这里无法打印，请用浏览器打开本网站再打印，或者直接截图保存。',
     Produce: '果蔬',
     Access: '准入',
     Saved: '已保存',

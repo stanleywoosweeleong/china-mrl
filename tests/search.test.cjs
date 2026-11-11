@@ -152,3 +152,37 @@ test('sorting, the crop picker ranking and the print sheet', async () => {
   assert.match(nodes.printSheet.innerHTML, /GB 23200\.\d+/);
   assert.match(nodes.printSheet.innerHTML, /89 of 89 limits in this view/);
 });
+test('Traditional Chinese and regional names find crops and limits', async () => {
+  const { nodes, ctx, search } = await app();
+  const ids = (q) => vm.runInContext(`cropMatches(typed(${JSON.stringify(q)})).map((c) => c.id)`, ctx);
+  for (const [q, id] of [
+    ['榴槤', '榴莲'],
+    ['榴梿', '榴莲'],
+    ['鳳梨', '菠萝'],
+    ['凤梨', '菠萝'],
+    ['芭樂', '番石榴'],
+    ['釋迦', '番荔枝'],
+    ['奇異果', '猕猴桃'],
+    ['牛油果', '鳄梨'],
+    ['高麗菜', '结球甘蓝'],
+    ['馬鈴薯', '马铃薯'],
+    ['土豆', '马铃薯'],
+    ['西红柿', '番茄'],
+    ['蘋果', '苹果'],
+    ['龍眼', '龙眼']
+  ])
+    assert.equal(ids(q)[0], id, q);
+  // Entire-standard search: a Traditional crop name resolves the crop, and Traditional text finds rows.
+  assert.equal(search('榴槤'), '榴莲');
+  assert.equal(nodes.resultCount.textContent, '89');
+  assert.equal(search('鳳梨'), '菠萝');
+  nodes.fullSearchMode.value = 'exact';
+  nodes.search.value = '馬鈴薯';
+  vm.runInContext('filter()', ctx);
+  assert(Number(nodes.resultCount.textContent.replace(/,/g, '')) > 50);
+  nodes.fullSearchMode.value = 'applicable';
+  // Search names never change which limits apply.
+  const MRL = require('../dist/rules.js'),
+    db = JSON.parse(fs.readFileSync('dist/database.json'));
+  assert(!MRL.membership(db.crops.find((c) => c.id === '菠萝')).has('凤梨'));
+});

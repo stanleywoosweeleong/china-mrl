@@ -10,7 +10,14 @@ const { chromium } = require('playwright'),
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.goto(process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/');
     await page.waitForFunction(() => !document.getElementById('originSelector').disabled);
+    // Changing the origin keeps the current tab and updates the crop card there.
+    await page.selectOption('#originSelector', 'TH');
+    assert(await page.locator('#explorer').isVisible());
+    assert(!(await page.locator('#access').isVisible()));
+    assert((await page.locator('#cropCard').innerText()).includes('access documented'));
     await page.selectOption('#originSelector', 'MY');
+    assert((await page.locator('#cropCard').innerText()).includes('approved market access'));
+    await openTab(page, 'access');
     assert((await page.locator('#accessCatalogueSummary').innerText()).startsWith('10 documented'));
     // The catalogue opens on crops that have a record; "All crops" shows the rest.
     assert.equal(await page.locator('#accessStatus').inputValue(), 'documented');

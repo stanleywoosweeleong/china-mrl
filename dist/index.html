@@ -465,6 +465,16 @@
       <form method="dialog"><button class="close" aria-label="Close details">×</button></form>
       <div id="detailContent"></div>
     </dialog>
+    <dialog id="sheetDialog" aria-label="Limit sheet">
+      <div class="sheet-bar">
+        <button type="button" id="sheetPrint">Print</button>
+        <form method="dialog"><button>Close</button></form>
+      </div>
+      <p class="sheet-hint">
+        If printing is not available here, open this site in your browser to print, or take a screenshot.
+      </p>
+      <div id="sheetView" class="sheet"></div>
+    </dialog>
     <div id="toast" role="status"></div>
     <div id="printSheet" hidden></div>
     <script src="zh.js"></script>

@@ -513,7 +513,11 @@
     'Offline reference ready · app updates install automatically.':
       'Rujukan luar talian sedia · kemas kini aplikasi dipasang secara automatik.',
     'Offline storage unavailable. You can continue online; reload to retry.':
-      'Storan luar talian tidak tersedia. Anda boleh terus menggunakan dalam talian; muat semula untuk mencuba lagi.'
+      'Storan luar talian tidak tersedia. Anda boleh terus menggunakan dalam talian; muat semula untuk mencuba lagi.',
+    'Choose your language': 'Pilih bahasa anda',
+    'You can change the language at any time with the button at the top right.':
+      'Anda boleh menukar bahasa pada bila-bila masa dengan butang di penjuru kanan atas.',
+    Continue: 'Teruskan'
   };
   if (typeof module !== 'undefined') module.exports = MS;
   else root.I18N_MS = MS;

@@ -2990,3 +2990,69 @@ tr.group-head small {
     min-height: 44px;
   }
 }
+
+/* First-visit welcome: choose a language. */
+dialog.welcome {
+  max-width: 380px;
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+dialog.welcome::backdrop {
+  background: #f5f7f2;
+  backdrop-filter: none;
+}
+dialog.welcome .mark {
+  margin: 0 auto;
+}
+dialog.welcome h2 {
+  margin: 16px 0 18px;
+  font-size: 22px;
+}
+.welcome-options {
+  display: grid;
+  gap: 10px;
+}
+.welcome-options button {
+  min-height: 56px;
+  margin: 0;
+  padding: 10px 16px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.welcome-options button[aria-checked='true'] {
+  border-color: var(--green);
+  background: #eef6ee;
+  color: var(--green);
+}
+.welcome-note {
+  margin: 16px 0;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.welcome-done {
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.welcome-options button:focus-visible,
+.welcome-done:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}

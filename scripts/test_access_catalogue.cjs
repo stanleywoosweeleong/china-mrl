@@ -9,6 +9,7 @@ const { chromium } = require('playwright'),
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.goto(process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/');
+    await page.locator('#welcomeDone').click();
     await page.waitForFunction(() => !document.getElementById('originSelector').disabled);
     // Changing the origin keeps the current tab and updates the crop card there.
     await page.selectOption('#originSelector', 'TH');

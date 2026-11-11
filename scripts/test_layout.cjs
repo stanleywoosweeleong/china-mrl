@@ -127,6 +127,46 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
     await page.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
     assert.equal((await page.locator('#langButton').innerText()).trim(), 'BM');
     await page.close();
+    // First visit: the welcome screen offers the languages, previews the one tapped and keeps it.
+    for (const [locale, first] of [
+      ['en-US', 'en'],
+      ['zh-CN', 'zh'],
+      ['ms-MY', 'ms']
+    ]) {
+      const ctx = await browser.newContext({
+          locale,
+          viewport: { width: 390, height: 844 },
+          serviceWorkers: 'block'
+        }),
+        visit = await ctx.newPage();
+      await visit.goto(url);
+      await visit.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
+      assert(await visit.locator('#welcome').isVisible(), locale);
+      assert.equal(
+        await visit.locator('#welcome [aria-checked="true"]').getAttribute('data-welcome-lang'),
+        first
+      );
+      assert.deepEqual(await visit.locator('#welcome [data-welcome-lang]').allInnerTexts(), [
+        'English',
+        '中文',
+        'Bahasa Melayu'
+      ]);
+      const box = await visit.locator('#welcome').boundingBox();
+      assert(box.y >= 0 && box.y + box.height <= 844 && box.x >= 0 && box.x + box.width <= 390, locale);
+      await visit.locator('#welcome [data-welcome-lang="ms"]').click();
+      await visit.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
+      assert.equal(await visit.locator('#welcomeDone').innerText(), 'Teruskan');
+      assert.equal(await visit.locator('#welcomeTitle').innerText(), 'Pilih bahasa anda');
+      await visit.locator('#welcomeDone').click();
+      assert(await visit.locator('#welcome').isHidden());
+      assert.equal((await visit.locator('#langButton').innerText()).trim(), 'BM');
+      // It is asked once.
+      await visit.reload();
+      await visit.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
+      assert(await visit.locator('#welcome').isHidden());
+      assert.equal(await visit.locator('#title').innerText(), 'Ketahui hadnya. Lihat sumbernya.');
+      await ctx.close();
+    }
     assert.deepEqual(problems, []);
     console.log(
       `Layout: ${tabs.length} tabs and the detail dialog at 320px, 390px, 1280px and 1440px in English, Chinese and Malay, plus the language switch, passed; screenshots in ${out}.`

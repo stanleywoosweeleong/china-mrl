@@ -9,6 +9,9 @@ const { chromium } = require('playwright'),
   try {
     const p = await b.newPage({ viewport: { width: 390, height: 844 } });
     await p.goto(process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/');
+    // A first visit starts at the welcome screen; continuing keeps the language shown.
+    await p.locator('#welcomeDone').click();
+    assert(await p.locator('#welcome').isHidden());
     await p.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
     await openTab(p, 'full');
     assert.equal(await p.locator('#resultCount').innerText(), '10,749');

@@ -96,7 +96,7 @@ In limit results, pesticides banned outright are kept out of the main list: it s
 
 ## Languages
 
-The interface is available in English, Simplified Chinese and Bahasa Melayu. The header switch shows the active language (EN, 中文 or BM) and lists the others; the choice is remembered. Browsers set to Chinese or Malay start in that language, and `?lang=zh`, `?lang=ms` or `?lang=en` in a link forces one.
+The interface is available in English, Simplified Chinese and Bahasa Melayu. The header switch shows the active language (EN, 中文 or BM) and lists the others; the choice is remembered. On a first visit a welcome screen asks for the language, with the browser's language (Chinese, Malay, otherwise English) already selected; it is shown once, and `?lang=zh`, `?lang=ms` or `?lang=en` in a link forces one.
 
 - **Chinese:** crop, pesticide, food and category names show Chinese first, lists sort by pinyin, and market-access records use their Chinese text (`scopeZh`, `conditionsZh`, `titleZh`). Taiwan is shown as 台湾.
 - **Malay:** the interface, the 184 fresh crop names, food categories and Annex A testing parts are in Malay (`research/malay_names.py`). Pesticide names, non-fresh commodities, source food names, residue definitions and market-access record text stay in English, with the Chinese beside them where the app shows it.

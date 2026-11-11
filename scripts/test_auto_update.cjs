@@ -65,6 +65,8 @@ const server = http.createServer((req, res) => {
       if (f === page.mainFrame()) navigations++;
     });
     await page.goto('http://localhost:8091/china-mrl/');
+    // First visit: continue past the welcome screen.
+    await page.locator('#welcomeDone').click();
     await page.waitForFunction(
       () => !!navigator.serviceWorker.controller && document.getElementById('originSelector').value === 'MY'
     );

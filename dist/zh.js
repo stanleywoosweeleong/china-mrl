@@ -530,7 +530,11 @@
     'Offline storage is not supported in this browser.': '此浏览器不支持离线存储。',
     'Offline reference ready · app updates install automatically.': '离线数据已就绪 · 应用会自动更新。',
     'Offline storage unavailable. You can continue online; reload to retry.':
-      '离线存储不可用。您可以继续联网使用；刷新页面可重试。'
+      '离线存储不可用。您可以继续联网使用；刷新页面可重试。',
+    'Choose your language': '选择语言',
+    'You can change the language at any time with the button at the top right.':
+      '之后可随时点击右上角的按钮切换语言。',
+    Continue: '继续'
   };
   if (typeof module !== 'undefined') module.exports = ZH;
   else root.I18N_ZH = ZH;

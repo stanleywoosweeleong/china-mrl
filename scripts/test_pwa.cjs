@@ -40,6 +40,8 @@ const server = http.createServer((req, res) => {
       const ctx = await browser.newContext();
       const page = await ctx.newPage();
       await page.goto('http://localhost:8087' + suffix);
+      // First visit: continue past the welcome screen.
+      await page.locator('#welcomeDone').click();
       await page.waitForFunction(() =>
         document.getElementById('pwaReady').textContent.includes('Offline reference ready')
       );

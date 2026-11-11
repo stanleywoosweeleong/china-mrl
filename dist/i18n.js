@@ -25,6 +25,8 @@
     try {
       const stored = root.localStorage.getItem('china-mrl-lang');
       if (LANGS.includes(stored)) return stored;
+      // Nothing chosen yet (and the choice can be kept): the welcome screen asks.
+      firstVisit = true;
     } catch {}
     try {
       const prefs = root.navigator.languages || [root.navigator.language];
@@ -33,6 +35,7 @@
     } catch {}
     return 'en';
   }
+  let firstVisit = false;
   let lang = hasDom ? pick() : 'en';
   const listeners = [];
   const fill = (s, vars) => s.replace(/\{(\w+)\}/g, (m, k) => (vars && k in vars ? vars[k] : m));
@@ -51,7 +54,8 @@
     while (walker.nextNode()) {
       const node = walker.currentNode,
         key = collapse(node.nodeValue);
-      if (!key || !has(key) || node.parentElement.closest('script,style,pre,[lang="zh"]')) continue;
+      if (!key || !has(key) || node.parentElement.closest('script,style,pre,[lang="zh"],[data-keep]'))
+        continue;
       texts.push({ node, english: node.nodeValue, key });
     }
     for (const el of scope.querySelectorAll('[placeholder],[aria-label]'))
@@ -88,6 +92,8 @@
     if (button) button.textContent = LABELS[lang];
     for (const item of document.querySelectorAll?.('#langMenu [data-lang]') || [])
       item.setAttribute('aria-current', String(item.dataset.lang === lang));
+    for (const item of document.querySelectorAll?.('[data-welcome-lang]') || [])
+      item.setAttribute('aria-checked', String(item.dataset.welcomeLang === lang));
   }
   function setLang(next) {
     if (!LANGS.includes(next)) return;
@@ -162,6 +168,36 @@
         show(false);
         button.focus();
       });
+    }
+  }
+  // First visit: a welcome screen offers the languages by their own names, with the device's language
+  // already selected. Choosing one shows the app in it at once; the switch at the top changes it later.
+  if (hasDom && firstVisit) {
+    const welcome = document.getElementById('welcome');
+    if (welcome && typeof welcome.showModal === 'function') {
+      const keep = () => {
+        try {
+          root.localStorage.setItem('china-mrl-lang', lang);
+        } catch {}
+      };
+      welcome.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-welcome-lang]');
+        if (item) setLang(item.dataset.welcomeLang);
+        else if (e.target.closest('#welcomeDone')) welcome.close();
+      });
+      // Arrow keys move between the languages, as in any group of radio buttons.
+      welcome.addEventListener('keydown', (e) => {
+        const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+        if (!step || !e.target.closest('[data-welcome-lang]')) return;
+        e.preventDefault();
+        const next = LANGS[(LANGS.indexOf(lang) + step + LANGS.length) % LANGS.length];
+        setLang(next);
+        welcome.querySelector(`[data-welcome-lang="${next}"]`).focus();
+      });
+      // However it is closed, the language on screen is the one kept.
+      welcome.addEventListener('close', keep);
+      welcome.showModal();
+      welcome.querySelector('[aria-checked="true"]')?.focus();
     }
   }
   const api = {

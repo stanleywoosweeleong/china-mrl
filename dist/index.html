@@ -515,6 +515,19 @@
         </footer>
       </main>
     </div>
+    <dialog id="welcome" class="welcome" aria-labelledby="welcomeTitle">
+      <span class="mark" aria-hidden="true">m<span>rl</span></span>
+      <h2 id="welcomeTitle">Choose your language</h2>
+      <div class="welcome-options" role="radiogroup" aria-labelledby="welcomeTitle" data-keep>
+        <button type="button" role="radio" aria-checked="false" data-welcome-lang="en" lang="en">English</button>
+        <button type="button" role="radio" aria-checked="false" data-welcome-lang="zh" lang="zh-Hans">中文</button>
+        <button type="button" role="radio" aria-checked="false" data-welcome-lang="ms" lang="ms">
+          Bahasa Melayu
+        </button>
+      </div>
+      <p class="welcome-note">You can change the language at any time with the button at the top right.</p>
+      <button type="button" id="welcomeDone" class="welcome-done">Continue</button>
+    </dialog>
     <dialog id="detail" aria-labelledby="detailTitle">
       <form method="dialog"><button class="close" aria-label="Close details">×</button></form>
       <div id="detailContent"></div>

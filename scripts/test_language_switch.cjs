@@ -73,11 +73,16 @@ async function goTo(page, state) {
           await goTo(switched, state);
           await goTo(fresh, state);
           await switched.evaluate(() => (window.__sameDocument = true));
-          const took = await switched.evaluate((next) => {
+          const took = await switched.evaluate(async (next) => {
             const start = performance.now(),
               select = document.getElementById('langSelect');
             select.value = next;
             select.dispatchEvent(new Event('change', { bubbles: true }));
+            // The switch itself must show the new language at once; the page text follows.
+            if (document.documentElement.lang !== { zh: 'zh-Hans', ms: 'ms', en: 'en' }[next])
+              return Infinity;
+            while (document.documentElement.dataset.langReady !== next)
+              await new Promise((r) => setTimeout(r, 1));
             return performance.now() - start;
           }, to);
           slowest = Math.max(slowest, took);
@@ -97,7 +102,7 @@ async function goTo(page, state) {
           await fresh.close();
         }
     assert.deepEqual(problems, []);
-    assert(slowest < 1500, `switch took ${Math.round(slowest)}ms`);
+    assert(slowest < 600, `switch took ${Math.round(slowest)}ms`);
     console.log(
       `Language switch: in place on ${tabs.length + 3} views at 390px and 1280px between English, Chinese and Malay, identical to a fresh load; slowest switch ${Math.round(slowest)}ms.`
     );

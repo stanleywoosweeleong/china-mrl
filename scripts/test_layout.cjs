@@ -112,14 +112,14 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
     // The switch offers three languages, changes in place and remembers the choice.
     assert.equal(await page.locator('#langSelect').inputValue(), 'en');
     await page.selectOption('#langSelect', 'zh');
-    await page.waitForFunction(() => document.documentElement.dataset.lang === 'zh');
+    await page.waitForFunction(() => document.documentElement.dataset.langReady === 'zh');
     assert.equal(await page.locator('#title').innerText(), '查清限量，核对原文。');
     await page.selectOption('#langSelect', 'ms');
-    await page.waitForFunction(() => document.documentElement.dataset.lang === 'ms');
+    await page.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
     assert.equal(await page.locator('#title').innerText(), 'Ketahui hadnya. Lihat sumbernya.');
     assert(!page.url().includes('lang='));
     await page.reload();
-    await page.waitForFunction(() => document.documentElement.dataset.lang === 'ms');
+    await page.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
     assert.equal(await page.locator('#langSelect').inputValue(), 'ms');
     await page.close();
     assert.deepEqual(problems, []);

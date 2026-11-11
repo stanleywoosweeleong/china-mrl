@@ -24,7 +24,17 @@ const cropName = (c) => (isZh ? c.zh : (isMs && c.ms) || c.en),
   foodName = (r) => (isZh ? r.food : r.foodEn),
   foodAlt = (r) => (isZh ? r.foodEn : r.food),
   catName = (zh) => (isZh ? zh : (isMs && db.categoriesMs?.[zh]) || db.categories[zh] || zh),
-  byName = (name) => (a, b) => name(a).localeCompare(name(b), isZh ? 'zh-Hans-CN' : isMs ? 'ms' : 'en');
+  // One collator per language: localeCompare with a locale argument builds a new one on every call,
+  // which made the first sort of 568 pesticide names by pinyin very slow on phones.
+  collators = {},
+  collator = () => {
+    const tag = isZh ? 'zh-Hans-CN' : isMs ? 'ms' : 'en';
+    return (collators[tag] ??= new Intl.Collator(tag));
+  },
+  byName = (name) => {
+    const c = collator();
+    return (a, b) => c.compare(name(a), name(b));
+  };
 let db = null,
   filtered = [],
   page = 1,
@@ -42,6 +52,8 @@ let fullCrop = null,
 const isFresh = (c) => ['水果', '蔬菜'].includes(c.category);
 // User-chosen sort; empty col keeps the default order (pesticide name, or food then pesticide).
 let sortBy = { col: '', dir: 'asc' };
+// Page to stay on for the next filter() (a language change); otherwise filtering returns to page 1.
+let nextPage = 0;
 // Index in `filtered` where the group of banned-pesticide limits starts (its length when there is none).
 let bannedFrom = 0;
 try {
@@ -91,6 +103,12 @@ const titles = {
   ]
 };
 const key = (r) => r.id + '|' + (r.cropId || '');
+// A crop's applicable limits never change while the app is open, so they are worked out once per crop.
+const resolvedRows = new Map();
+function resolved(c) {
+  if (!resolvedRows.has(c.id)) resolvedRows.set(c.id, MRL.resolve(db.rows, c));
+  return resolvedRows.get(c.id);
+}
 function fromKey(k) {
   const [id, cropId] = k.split('|'),
     r = rowMap.get(id);
@@ -98,8 +116,7 @@ function fromKey(k) {
   if (cropId) {
     const c = cropMap.get(cropId);
     if (!c) return null;
-    if (!resolvedByCrop.has(cropId))
-      resolvedByCrop.set(cropId, new Map(MRL.resolve(db.rows, c).map((x) => [x.id, x])));
+    if (!resolvedByCrop.has(cropId)) resolvedByCrop.set(cropId, new Map(resolved(c).map((x) => [x.id, x])));
     return resolvedByCrop.get(cropId).get(id) || null;
   }
   return r;
@@ -187,10 +204,10 @@ function filter() {
       ? [...saved].map(fromKey).filter(Boolean)
       : tab === 'full'
         ? fullCrop
-          ? MRL.resolve(db.rows, fullCrop)
+          ? resolved(fullCrop)
           : db.rows
         : crop
-          ? MRL.resolve(db.rows, crop)
+          ? resolved(crop)
           : db.rows.filter((r) => ['水果', '蔬菜'].includes(r.category));
   filtered = rows.filter((r) => {
     const p = pestMap.get(r.pesticideId),
@@ -249,7 +266,8 @@ function filter() {
   if (tab === 'fresh' && crop && typeof MarketAccess !== 'undefined') MarketAccess.sync(crop.id);
   syncSort();
   syncCropInput();
-  page = 1;
+  page = nextPage || 1;
+  nextPage = 0;
   renderSearchNote();
   renderCrop();
   render();
@@ -318,7 +336,7 @@ function renderCrop() {
   const c = cropMap.get($('crop').value);
   $('cropCard').hidden = tab !== 'fresh' || !c;
   if (!c) return;
-  const all = MRL.resolve(db.rows, c),
+  const all = resolved(c),
     direct = all.filter((r) => r.match === 'direct').length,
     access = typeof MarketAccess !== 'undefined' ? MarketAccess.cropStatus(c.id) : null;
   const accessText =
@@ -449,6 +467,7 @@ function setTab(name) {
     filter();
     if (name === 'exempt') renderExempt();
     if (name === 'banned') renderBanned();
+    if (name === 'sources') renderAnnex();
   }
 }
 let detailKey = null;
@@ -566,6 +585,8 @@ function methodsHtml(p, r, c) {
 }
 // Use status in China for a section of the standard: banned outright, or banned on certain crops.
 let useStatus = new Map();
+// Number of limit rows per section of the standard, counted once when the data loads.
+const limitCount = new Map();
 function useNote(p) {
   const s = useStatus.get(p.id);
   if (!s) return '';
@@ -577,7 +598,7 @@ function renderBanned() {
   if (!db?.banned) return;
   const q = typed($('bannedSearch').value),
     hit = (x) => !q || normalized([x.zh, x.en, x.scope, x.scopeZh].join(' ')).includes(q),
-    limits = (x) => db.rows.filter((r) => x.sections.includes(r.pesticideId)).length,
+    limits = (x) => x.sections.reduce((n, id) => n + (limitCount.get(id) || 0), 0),
     name = (x) =>
       `<div><strong>${esc(isZh ? x.zh : x.en)}</strong><small lang="${altLang}">${esc(isZh ? x.en : x.zh)}</small>${x.scope ? `<small class="warn">${t('Banned on: {scope}', { scope: esc(isZh ? x.scopeZh : x.scope) })}</small>` : ''}</div>`,
     link = (x) =>
@@ -995,39 +1016,46 @@ document.addEventListener('keydown', (e) => {
   }
 });
 // Select lists and other text that carries names in the interface language.
+// Each list is built once per language as markup and reused: rebuilding 568 pesticide options element by
+// element on every language change is what made the switch slow on phones.
+const optionMarkup = {};
 function fillOptions() {
-  const fill = (id, entries) => {
+  const lists = (optionMarkup[I.lang] ??= (() => {
+    const html = (first, entries) =>
+      `<option value="">${esc(t(first))}</option>` +
+      entries.map(([v, label]) => `<option value="${esc(v)}">${esc(label)}</option>`).join('');
+    return {
+      crop: html(
+        'All original fresh-produce entries',
+        freshCrops
+          .slice()
+          .sort(byName(cropName))
+          .map((c) => [c.id, cropPair(c)])
+      ),
+      pesticide: html(
+        'All pesticides',
+        db.pesticides
+          .slice()
+          .sort(byName(pestName))
+          .map((p) => [p.id, `${pestName(p)} · ${pestAlt(p)}`])
+      ),
+      category: html(
+        'All food categories',
+        Object.keys(db.categories).map((zh) => [zh, isZh ? zh : `${catName(zh)} · ${zh}`])
+      )
+    };
+  })());
+  for (const [id, markup] of Object.entries(lists)) {
     const select = $(id),
       value = select.value;
-    // Keep the first, static "All …" option; drop the rest before refilling.
-    if (select.options) while (select.options.length > 1) select.remove(1);
-    for (const [v, label] of entries) {
-      const o = document.createElement('option');
-      o.value = v;
-      o.textContent = label;
-      select.append(o);
-    }
+    // The crop list is hidden (the picker draws its own); it only needs its values, so it is built once.
+    if (id === 'crop' && cropListBuilt) continue;
+    select.innerHTML = markup;
     select.value = value;
-  };
-  fill(
-    'crop',
-    freshCrops
-      .slice()
-      .sort(byName(cropName))
-      .map((c) => [c.id, cropPair(c)])
-  );
-  fill(
-    'pesticide',
-    db.pesticides
-      .slice()
-      .sort(byName(pestName))
-      .map((p) => [p.id, `${pestName(p)} · ${pestAlt(p)}`])
-  );
-  fill(
-    'category',
-    Object.keys(db.categories).map((zh) => [zh, isZh ? zh : `${catName(zh)} · ${zh}`])
-  );
+  }
+  cropListBuilt = true;
 }
+let cropListBuilt = false;
 function renderAnnex() {
   $('annexText').innerHTML = db.annex
     .map((a) => `<h4>${t('PDF page {n}', { n: a.page })}</h4><pre lang="zh">${esc(a.text)}</pre>`)
@@ -1045,12 +1073,12 @@ function relabel() {
   if ($('sheetDialog').open) $('sheetDialog').close?.();
   closeCropList();
   fillOptions();
-  renderAnnex();
+  nextPage = at;
   filter();
-  page = at;
-  render();
-  renderExempt();
-  renderBanned();
+  // Views that are not on screen are redrawn when they are next opened (setTab).
+  if (tab === 'sources') renderAnnex();
+  if (tab === 'exempt') renderExempt();
+  if (tab === 'banned') renderBanned();
   if (open) details(open);
 }
 I.onChange?.(relabel);
@@ -1063,6 +1091,7 @@ fetch('database.json')
     db = d;
     for (let i = 0; i + 1 < (d.t2s || '').length; i += 2) t2s.set(d.t2s[i], d.t2s[i + 1]);
     if (typeof MarketAccess !== 'undefined') MarketAccess.simplified = simplified;
+    for (const r of d.rows) limitCount.set(r.pesticideId, (limitCount.get(r.pesticideId) || 0) + 1);
     for (const x of d.banned?.items || []) for (const id of x.sections) useStatus.set(id, {});
     for (const x of d.banned?.restricted || [])
       for (const id of x.sections) useStatus.set(id, { scope: x.scope, scopeZh: x.scopeZh });

@@ -39,41 +39,37 @@
   const t = (s, vars) => fill(translate(s, lang), vars);
   const collapse = (s) => s.replace(/\s+/g, ' ').trim();
 
-  // Static page text. The English wording of every translated text node and attribute is remembered,
-  // so either language can be shown at any time.
-  const textOriginals = new WeakMap(),
-    attrOriginals = new WeakMap(),
+  // Static page text. This script runs before the others, while the page holds only its own markup, so
+  // the translatable text nodes and attributes are collected once here. Switching language then touches
+  // just these, not everything the scripts have rendered since.
+  const texts = [],
+    attrs = [],
     headOriginals = {};
-  function applyDom(scope) {
+  function collectStatics(scope) {
     const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    for (const node of nodes) {
-      let english = textOriginals.get(node);
-      if (english === undefined) {
-        if (node.parentElement.closest('script,style,pre,[lang="zh"]')) continue;
-        if (!has(collapse(node.nodeValue))) continue;
-        english = node.nodeValue;
-        textOriginals.set(node, english);
+    while (walker.nextNode()) {
+      const node = walker.currentNode,
+        key = collapse(node.nodeValue);
+      if (!key || !has(key) || node.parentElement.closest('script,style,pre,[lang="zh"]')) continue;
+      texts.push({ node, english: node.nodeValue, key });
+    }
+    for (const el of scope.querySelectorAll('[placeholder],[aria-label]'))
+      for (const attr of ['placeholder', 'aria-label']) {
+        const english = el.getAttribute(attr);
+        if (english && has(english)) attrs.push({ el, attr, english });
       }
-      const key = collapse(english);
+  }
+  function applyDom(scope) {
+    const dict = DICTS[lang];
+    for (const { node, english, key } of texts) {
+      // A node a script has since replaced is redrawn by that script.
+      if (!node.isConnected) continue;
       node.nodeValue =
-        DICTS[lang] && own(DICTS[lang], key)
-          ? (/^\s/.test(english) ? ' ' : '') + DICTS[lang][key] + (/\s$/.test(english) ? ' ' : '')
+        dict && own(dict, key)
+          ? (/^\s/.test(english) ? ' ' : '') + dict[key] + (/\s$/.test(english) ? ' ' : '')
           : english;
     }
-    for (const el of scope.querySelectorAll('[placeholder],[aria-label]')) {
-      let english = attrOriginals.get(el);
-      if (!english) {
-        english = {};
-        for (const attr of ['placeholder', 'aria-label']) {
-          const v = el.getAttribute(attr);
-          if (v && has(v)) english[attr] = v;
-        }
-        attrOriginals.set(el, english);
-      }
-      for (const [attr, v] of Object.entries(english)) el.setAttribute(attr, translate(v, lang));
-    }
+    for (const { el, attr, english } of attrs) el.setAttribute(attr, translate(english, lang));
     // Text a script set from a single key (status lines) follows the language too.
     for (const el of scope.querySelectorAll('[data-i18n-key]')) el.textContent = t(el.dataset.i18nKey);
   }
@@ -106,20 +102,35 @@
       }
     } catch {}
     if (!hasDom) return;
+    // The switch itself updates at once; the page text follows on the next frame, so a phone can close
+    // its picker and show the new choice before the heavier redraw starts.
     applyChrome();
-    applyDom(document.body);
-    for (const fn of listeners) {
-      try {
-        fn(lang);
-      } catch (e) {
-        console.error(e);
+    if (pending) return;
+    pending = true;
+    const redraw = () => {
+      pending = false;
+      applyDom(document.body);
+      for (const fn of listeners) {
+        try {
+          fn(lang);
+        } catch (e) {
+          console.error(e);
+        }
       }
-    }
+      document.documentElement.dataset.langReady = lang;
+    };
+    if (typeof root.requestAnimationFrame === 'function')
+      root.requestAnimationFrame(() => setTimeout(redraw, 0));
+    else redraw();
   }
+  let pending = false;
   if (hasDom) {
+    collectStatics(document.body);
     applyChrome();
     if (lang !== 'en') applyDom(document.body);
     document.documentElement.classList.remove('i18n-pending');
+    // Tells tests (and anything else) which language the page text currently shows.
+    document.documentElement.dataset.langReady = lang;
     // The switch shows the active language and lists the others.
     const select = document.getElementById('langSelect');
     if (select) select.addEventListener('change', () => setLang(select.value));

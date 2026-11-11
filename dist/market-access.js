@@ -1,7 +1,18 @@
 (function (root) {
   'use strict';
+  // Records indexed by origin, crop and form, built once per record list.
+  const indexes = new WeakMap();
   function lookup(records, origin, crop, form) {
-    const matches = records.filter((r) => r.origin === origin && r.crop === crop && r.form === form);
+    let index = indexes.get(records);
+    if (!index) {
+      index = new Map();
+      for (const r of records) {
+        const k = r.origin + '|' + r.crop + '|' + r.form;
+        index.set(k, [...(index.get(k) || []), r]);
+      }
+      indexes.set(records, index);
+    }
+    const matches = index.get(origin + '|' + crop + '|' + form) || [];
     if (matches.length !== 1) return { status: 'unverified' };
     const r = matches[0];
     if (!['conditional', 'restricted'].includes(r.status) || !r.url || !r.reviewed)
@@ -36,7 +47,10 @@
       // Read on every use: the language can change while the app is open.
       zh = () => I.lang === 'zh';
     const ms = () => I.lang === 'ms',
-      locale = () => (zh() ? 'zh-Hans-CN' : ms() ? 'ms' : 'en');
+      locale = () => (zh() ? 'zh-Hans-CN' : ms() ? 'ms' : 'en'),
+      collators = {},
+      // Cached per language; see byName in app.js.
+      compare = (a, b) => (collators[locale()] ??= new Intl.Collator(locale())).compare(a, b);
     const regionNames = {};
     const countryName = (c) => {
         if (!zh() && !ms()) return c.name;
@@ -51,7 +65,7 @@
       },
       cropName = (c) => (zh() ? c.zh : (ms() && c.ms) || c.en),
       cropPair = (c) => (zh() ? c.zh + ' · ' + c.en : cropName(c) + ' · ' + c.zh),
-      byCrop = (a, b) => cropName(a).localeCompare(cropName(b), locale()),
+      byCrop = (a, b) => compare(cropName(a), cropName(b)),
       // Record text: the Chinese field when the interface is Chinese and the record has one.
       local = (r, field) => (zh() && r[field + 'Zh']) || (ms() && r[field + 'Ms']) || r[field],
       statusLabel = (access) =>
@@ -79,37 +93,38 @@
       const data = await response.json();
       if (!Array.isArray(data.records) || !Array.isArray(data.countries))
         throw Error('Invalid protocol data');
-      function option(id, value, label) {
-        const o = document.createElement('option');
-        o.value = value;
-        o.textContent = label;
-        el(id).append(o);
-      }
       const countryOf = (code) => {
         const c = data.countries.find((c) => c.code === code);
         return c ? countryName(c) : '';
       };
       // Origin and crop lists carry names in the interface language; refilled when it changes.
+      const countryLists = {};
+      // Built once per language as markup and reused; see fillOptions in app.js.
+      const selectMarkup = {};
       function fillSelects() {
-        const values = ids
-          .slice(0, 2)
-          .concat('originSelector')
-          .map((id) => [id, el(id).value]);
-        for (const [id] of values) el(id).innerHTML = '';
-        option(ids[0], '', t('Global · select an origin'));
-        option('originSelector', '', t('Global'));
-        data.countries
-          .map((c) => ({ ...c, label: countryName(c) }))
-          .sort((a, b) => (zh() || ms() ? a.label.localeCompare(b.label, locale()) : 0))
-          .forEach((c) => {
-            option(ids[0], c.code, c.label);
-            option('originSelector', c.code, c.label);
-          });
-        crops
-          .slice()
-          .sort(byCrop)
-          .forEach((c) => option(ids[1], c.id, cropPair(c)));
-        for (const [id, value] of values) el(id).value = value;
+        const lists = (selectMarkup[I.lang] ??= (() => {
+          const countries = (countryLists[I.lang] ??= data.countries
+            .map((c) => ({ ...c, label: countryName(c) }))
+            .sort((a, b) => (zh() || ms() ? compare(a.label, b.label) : 0)));
+          const html = (entries) =>
+            entries.map(([v, label]) => `<option value="${escape(v)}">${escape(label)}</option>`).join('');
+          const places = countries.map((c) => [c.code, c.label]);
+          return {
+            [ids[0]]: html([['', t('Global · select an origin')], ...places]),
+            originSelector: html([['', t('Global')], ...places]),
+            [ids[1]]: html(
+              crops
+                .slice()
+                .sort(byCrop)
+                .map((c) => [c.id, cropPair(c)])
+            )
+          };
+        })());
+        for (const [id, markup] of Object.entries(lists)) {
+          const value = el(id).value;
+          el(id).innerHTML = markup;
+          el(id).value = value;
+        }
       }
       fillSelects();
       let storedOrigin = null;
@@ -195,17 +210,6 @@
               .join('')
           : `<p>${t('No crops match this view. Try “All crops” or another produce type. An empty list is not a prohibition or permission.')}</p>`;
       }
-      function syncFreshOptions() {
-        const select = el('crop');
-        if (!select?.options) return;
-        for (const option of select.options) {
-          const c = crops.find((c) => c.id === option.value);
-          if (c)
-            option.textContent =
-              cropPair(c) +
-              (currentOrigin ? ' — ' + statusLabel(lookup(data.records, currentOrigin, c.id, 'fresh')) : '');
-        }
-      }
       function render() {
         const origin = el(ids[0]).value,
           crop = el(ids[1]).value,
@@ -216,7 +220,6 @@
           country = countryOf(origin) || t('Global');
         currentData = data;
         currentOrigin = origin;
-        syncFreshOptions();
         renderCatalogue();
         el('originSelector').value = origin;
         const place = origin ? country : t('All origins');

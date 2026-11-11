@@ -415,7 +415,8 @@ function render() {
     n: banned.length.toLocaleString()
   });
   $('bannedLimitRows').className = $('rows').className;
-  $('bannedLimitRows').innerHTML = shown.map(rowHtml).join('');
+  // Its rows are drawn only while the section is open; opening it redraws (see the toggle listener).
+  $('bannedLimitRows').innerHTML = $('bannedLimits').open ? shown.map(rowHtml).join('') : '';
   $('bannedLimitsMore').hidden = banned.length <= shown.length;
   $('bannedLimitsMore').textContent = t(
     'Showing the first {n}. Choose a crop or a pesticide to see the rest.',
@@ -426,6 +427,9 @@ function render() {
   $('export').disabled = !filtered.length;
   $('print').disabled = !filtered.length;
 }
+$('bannedLimits').addEventListener('toggle', () => {
+  if ($('bannedLimits').open && db) render();
+});
 function reset() {
   ['search', 'pesticide', 'kind', 'category'].forEach((id) => ($(id).value = ''));
   $('crop').value = '';
@@ -468,6 +472,7 @@ function setTab(name) {
     if (name === 'exempt') renderExempt();
     if (name === 'banned') renderBanned();
     if (name === 'sources') renderAnnex();
+    if (name === 'access' && typeof MarketAccess !== 'undefined') MarketAccess.refresh();
   }
 }
 let detailKey = null;
@@ -965,6 +970,7 @@ document.addEventListener('click', (e) => {
   }
   if (b.dataset.pesticide) {
     setTab('full');
+    ensureOptions('pesticide');
     $('pesticide').value = b.dataset.pesticide;
     filter();
     return;
@@ -1019,42 +1025,69 @@ document.addEventListener('keydown', (e) => {
 // Each list is built once per language as markup and reused: rebuilding 568 pesticide options element by
 // element on every language change is what made the switch slow on phones.
 const optionMarkup = {};
-function fillOptions() {
-  const lists = (optionMarkup[I.lang] ??= (() => {
-    const html = (first, entries) =>
-      `<option value="">${esc(t(first))}</option>` +
-      entries.map(([v, label]) => `<option value="${esc(v)}">${esc(label)}</option>`).join('');
-    return {
-      crop: html(
-        'All original fresh-produce entries',
-        freshCrops
-          .slice()
-          .sort(byName(cropName))
-          .map((c) => [c.id, cropPair(c)])
-      ),
-      pesticide: html(
-        'All pesticides',
-        db.pesticides
-          .slice()
-          .sort(byName(pestName))
-          .map((p) => [p.id, `${pestName(p)} · ${pestAlt(p)}`])
-      ),
-      category: html(
-        'All food categories',
-        Object.keys(db.categories).map((zh) => [zh, isZh ? zh : `${catName(zh)} · ${zh}`])
-      )
-    };
-  })());
-  for (const [id, markup] of Object.entries(lists)) {
+const optionLists = {
+  crop: () => [
+    'All original fresh-produce entries',
+    freshCrops
+      .slice()
+      .sort(byName(cropName))
+      .map((c) => [c.id, cropPair(c)])
+  ],
+  pesticide: () => [
+    'All pesticides',
+    db.pesticides
+      .slice()
+      .sort(byName(pestName))
+      .map((p) => [p.id, pesticideLabel(p)])
+  ],
+  category: () => ['All food categories', Object.keys(db.categories).map((zh) => [zh, categoryLabel(zh)])]
+};
+const pesticideLabel = (p) => `${pestName(p)} · ${pestAlt(p)}`,
+  categoryLabel = (zh) => (isZh ? zh : `${catName(zh)} · ${zh}`),
+  optionTag = (value, label) => `<option value="${esc(value)}">${esc(label)}</option>`;
+function listMarkup(id) {
+  const cache = (optionMarkup[I.lang] ??= {});
+  if (!cache[id]) {
+    const [first, entries] = optionLists[id]();
+    cache[id] = optionTag('', t(first)) + entries.map(([v, label]) => optionTag(v, label)).join('');
+  }
+  return cache[id];
+}
+// Lists whose full contents are out of date. After a language change a list keeps only what it shows (its
+// first option and the selected one); the rest is rebuilt when the list is opened or set by the app.
+const staleSelects = new Set(),
+  firstOption = { pesticide: 'All pesticides', category: 'All food categories' };
+function fillOptions(lazy) {
+  for (const id of Object.keys(optionLists)) {
     const select = $(id),
       value = select.value;
     // The crop list is hidden (the picker draws its own); it only needs its values, so it is built once.
-    if (id === 'crop' && cropListBuilt) continue;
-    select.innerHTML = markup;
+    if (id === 'crop') {
+      if (cropListBuilt) continue;
+      cropListBuilt = true;
+    } else if (lazy) {
+      const label =
+        value && (id === 'pesticide' ? pesticideLabel(pestMap.get(Number(value))) : categoryLabel(value));
+      select.innerHTML = optionTag('', t(firstOption[id])) + (value ? optionTag(value, label) : '');
+      select.value = value;
+      staleSelects.add(id);
+      continue;
+    }
+    staleSelects.delete(id);
+    select.innerHTML = listMarkup(id);
     select.value = value;
   }
-  cropListBuilt = true;
 }
+function ensureOptions(id) {
+  if (!staleSelects.delete(id)) return;
+  const select = $(id),
+    value = select.value;
+  select.innerHTML = listMarkup(id);
+  select.value = value;
+}
+for (const id of ['pesticide', 'category'])
+  for (const type of ['pointerdown', 'touchstart', 'mousedown', 'focus', 'keydown'])
+    $(id).addEventListener(type, () => ensureOptions(id), { passive: true });
 let cropListBuilt = false;
 function renderAnnex() {
   $('annexText').innerHTML = db.annex
@@ -1072,7 +1105,7 @@ function relabel() {
     open = $('detail').open ? detailKey : null;
   if ($('sheetDialog').open) $('sheetDialog').close?.();
   closeCropList();
-  fillOptions();
+  fillOptions(true);
   nextPage = at;
   filter();
   // Views that are not on screen are redrawn when they are next opened (setTab).

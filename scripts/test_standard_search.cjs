@@ -115,6 +115,8 @@ const { chromium } = require('playwright'),
     assert((await p.locator('#range').innerText()).includes('38 more in the Banned section below'));
     assert(!(await p.locator('#bannedLimitRows tr').first().isVisible()));
     await p.locator('#bannedLimitsSummary').click();
+    // The rows are drawn when the section opens.
+    await p.locator('#bannedLimitRows tr').first().waitFor();
     assert.equal(await p.locator('#bannedLimitRows tr').count(), 38);
     assert((await p.locator('#bannedLimitRows').innerText()).includes('Paraquat'));
     // Its link opens the full banned list, which has no tab of its own.

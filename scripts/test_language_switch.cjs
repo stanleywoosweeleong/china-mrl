@@ -5,9 +5,11 @@ const { chromium } = require('playwright'),
   { openTab } = require('./ui_helpers.cjs');
 const url = process.env.AUDIT_URL || 'http://localhost:8089/china-mrl/';
 const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access', 'guide'];
+// The long pesticide and category lists are completed when they are opened, so they are opened first.
 const text = (page) =>
-  page.evaluate(() =>
-    [
+  page.evaluate(() => {
+    for (const id of ['pesticide', 'category']) document.getElementById(id).dispatchEvent(new Event('focus'));
+    return [
       document.title,
       document.documentElement.lang,
       document.body.innerText,
@@ -17,8 +19,8 @@ const text = (page) =>
     ]
       .join('\n')
       .replace(/[ \t]+/g, ' ')
-      .replace(/\n\s*\n+/g, '\n')
-  );
+      .replace(/\n\s*\n+/g, '\n');
+  });
 const firstDifference = (a, b) => {
   const x = a.split('\n'),
     y = b.split('\n');

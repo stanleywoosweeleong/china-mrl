@@ -101,8 +101,8 @@
       const countryLists = {};
       // Built once per language as markup and reused; see fillOptions in app.js.
       const selectMarkup = {};
-      function fillSelects() {
-        const lists = (selectMarkup[I.lang] ??= (() => {
+      function selectLists() {
+        return (selectMarkup[I.lang] ??= (() => {
           const countries = (countryLists[I.lang] ??= data.countries
             .map((c) => ({ ...c, label: countryName(c) }))
             .sort((a, b) => (zh() || ms() ? compare(a.label, b.label) : 0)));
@@ -120,6 +120,9 @@
             )
           };
         })());
+      }
+      function fillSelects() {
+        const lists = selectLists();
         for (const [id, markup] of Object.entries(lists)) {
           const value = el(id).value;
           el(id).innerHTML = markup;
@@ -210,6 +213,20 @@
               .join('')
           : `<p>${t('No crops match this view. Try “All crops” or another produce type. An empty list is not a prohibition or permission.')}</p>`;
       }
+      // The origin shown in the page header and footer.
+      function renderHeader() {
+        const origin = el(ids[0]).value,
+          country = countryOf(origin) || t('Global');
+        const place = origin ? country : t('All origins');
+        el('originBrand').textContent = origin
+          ? t('{country} EXPORT REFERENCE', { country: country.toUpperCase() })
+          : t('GLOBAL EXPORT REFERENCE');
+        el('originRoute').textContent = t('{origin} → Mainland China', { origin: place });
+        el('originEyebrow').textContent = origin
+          ? t('ONE STANDARD. EXPORTING FROM {country}.', { country: country.toUpperCase() })
+          : t('ONE STANDARD. A GLOBAL REFERENCE.');
+        el('originFooter').textContent = t('{origin}. Source-linked limits. Clear scope.', { origin: place });
+      }
       function render() {
         const origin = el(ids[0]).value,
           crop = el(ids[1]).value,
@@ -222,15 +239,7 @@
         currentOrigin = origin;
         renderCatalogue();
         el('originSelector').value = origin;
-        const place = origin ? country : t('All origins');
-        el('originBrand').textContent = origin
-          ? t('{country} EXPORT REFERENCE', { country: country.toUpperCase() })
-          : t('GLOBAL EXPORT REFERENCE');
-        el('originRoute').textContent = t('{origin} → Mainland China', { origin: place });
-        el('originEyebrow').textContent = origin
-          ? t('ONE STANDARD. EXPORTING FROM {country}.', { country: country.toUpperCase() })
-          : t('ONE STANDARD. A GLOBAL REFERENCE.');
-        el('originFooter').textContent = t('{origin}. Source-linked limits. Clear scope.', { origin: place });
+        renderHeader();
         try {
           localStorage.setItem('china-mrl-origin', origin);
         } catch {}
@@ -304,11 +313,13 @@
         if (el(ids[1]).value === cropId || !crops.some((c) => c.id === cropId)) return;
         el(ids[1]).value = cropId;
         el(ids[2]).value = 'fresh';
-        render();
+        // While a redraw is pending the tab is hidden; it is drawn in full when next opened.
+        if (!dirty) render();
       };
       // Opens the checker on one crop (used by the crop card's access banner).
       api.show = (cropId) => {
         if (!crops.some((c) => c.id === cropId)) return;
+        flush();
         el(ids[1]).value = cropId;
         el(ids[2]).value = 'fresh';
         render();
@@ -321,13 +332,32 @@
           render();
         });
       });
-      I.onChange?.(() => {
+      // After a language change only what is on screen is redrawn at once. With the Market access tab
+      // hidden that is the header; the lists and the tab's content are redrawn when they are next used.
+      let dirty = false;
+      const flush = () => {
+        if (!dirty) return;
+        dirty = false;
         fillSelects();
         renderCoverage();
         render();
+      };
+      api.refresh = flush;
+      I.onChange?.(() => {
+        dirty = true;
+        if (!el('access').hidden) return flush();
+        // The origin list in the header is short and visible, so it is redrawn in full.
+        const select = el('originSelector'),
+          origin = select.value;
+        select.innerHTML = selectLists().originSelector;
+        select.value = origin;
+        renderHeader();
       });
+      for (const type of ['pointerdown', 'touchstart', 'mousedown', 'focus', 'keydown'])
+        el('originSelector').addEventListener(type, flush, { passive: true });
       el('originSelector').disabled = false;
       el('originSelector').addEventListener('change', () => {
+        flush();
         el(ids[0]).value = el('originSelector').value;
         const crop = onHeaderChange();
         if (crops.some((c) => c.id === crop)) {
@@ -345,7 +375,16 @@
       );
     }
   }
-  const api = { lookup, catalogue, cropStatus, init, show() {}, sync() {}, simplified: (s) => String(s) };
+  const api = {
+    lookup,
+    catalogue,
+    cropStatus,
+    init,
+    show() {},
+    sync() {},
+    refresh() {},
+    simplified: (s) => String(s)
+  };
   if (typeof module !== 'undefined') module.exports = api;
   else root.MarketAccess = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

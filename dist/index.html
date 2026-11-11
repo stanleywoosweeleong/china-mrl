@@ -52,7 +52,8 @@
           <button data-tab="full">▤ <span>Entire standard</span></button
           ><button data-tab="exempt">◎ <span>Exempt pesticides</span></button
           ><button data-tab="sources">↗ <span>Sources & coverage</span></button
-          ><button data-tab="guide">ⓘ <span>Export essentials</span></button>
+          ><button data-tab="guide">ⓘ <span>Export essentials</span></button
+          ><button type="button" id="shareOpen">⇪ <span>Share this app</span></button>
         </div>
       </nav>
       <div class="sidebar-bottom">
@@ -537,6 +538,26 @@
         <span class="welcome-pill" id="welcomePill" data-keep aria-hidden="true">EN</span>
       </p>
       <button type="button" id="welcomeDone" class="welcome-done">Continue</button>
+    </dialog>
+    <dialog id="shareDialog" class="share" aria-labelledby="shareTitle">
+      <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+      <h2 id="shareTitle">Share this app</h2>
+      <p class="share-hint">Scan this code with a phone camera to open China MRL.</p>
+      <img
+        class="share-qr"
+        src="share-qr.svg"
+        width="220"
+        height="220"
+        alt="QR code that opens the China MRL app"
+      />
+      <p class="share-url" id="shareUrl" data-keep>https://stanleywoosweeleong.github.io/china-mrl/</p>
+      <div class="share-actions">
+        <a id="shareWhatsApp" class="share-wa" href="https://wa.me/" target="_blank" rel="noopener"
+          >Share on WhatsApp</a
+        >
+        <button type="button" id="shareCopy">Copy link</button>
+      </div>
+      <p id="shareStatus" class="share-status" role="status"></p>
     </dialog>
     <dialog id="detail" aria-labelledby="detailTitle">
       <form method="dialog"><button class="close" aria-label="Close details">×</button></form>

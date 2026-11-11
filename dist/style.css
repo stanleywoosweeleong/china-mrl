@@ -643,7 +643,8 @@ dialog::backdrop {
   background: #14281e66;
   backdrop-filter: blur(3px);
 }
-.close {
+.close,
+.dialog-close {
   float: right;
   border: 0;
   background: #f0f4ed;
@@ -2137,7 +2138,8 @@ dialog details.section > summary::-webkit-details-marker {
 dialog details.section[open] {
   padding-bottom: 14px;
 }
-.close {
+.close,
+.dialog-close {
   width: 44px;
   height: 44px;
   cursor: pointer;
@@ -3116,4 +3118,82 @@ dialog.welcome h2 {
 .welcome-done:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+
+/* Share dialog: QR code, the address, WhatsApp and copy. */
+dialog.share {
+  max-width: 380px;
+  padding: 22px 24px 24px;
+  text-align: center;
+}
+dialog.share h2 {
+  margin: 4px 0 6px;
+  font-size: 22px;
+  text-align: left;
+}
+.share-hint {
+  margin: 0 0 14px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+}
+.share-qr {
+  display: block;
+  width: min(220px, 70%);
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.share-url {
+  margin: 12px 0 16px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  user-select: all;
+  -webkit-user-select: all;
+}
+.share-actions {
+  display: grid;
+  gap: 10px;
+}
+.share-actions a,
+.share-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  margin: 0;
+  padding: 8px 16px;
+  border: 2px solid var(--green);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--green);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.share-actions a.share-wa {
+  border-color: #075e54;
+  background: #075e54;
+  color: #fff;
+}
+.share-actions a:focus-visible,
+.share-actions button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.share-status {
+  min-height: 20px;
+  margin: 12px 0 0;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 600;
 }

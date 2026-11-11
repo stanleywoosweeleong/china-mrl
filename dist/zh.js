@@ -534,7 +534,16 @@
     'Choose your language': '选择语言',
     'You can change it later with this button at the top right:': '之后可随时点击右上角的这个按钮更改：',
     'Pesticide residue limits for fresh produce exported to China.': '出口中国的新鲜农产品农药残留限量。',
-    Continue: '继续'
+    Continue: '继续',
+    'Share this app': '分享本应用',
+    'Scan this code with a phone camera to open China MRL.': '用手机相机扫描此二维码即可打开 China MRL。',
+    'QR code that opens the China MRL app': '打开 China MRL 应用的二维码',
+    'Share on WhatsApp': '通过 WhatsApp 分享',
+    'Copy link': '复制链接',
+    'Link copied.': '链接已复制。',
+    'Could not copy. Press and hold the link above to copy it.': '无法复制。请长按上方链接进行复制。',
+    "China MRL: check China's pesticide residue limits for fresh produce before you export.":
+      'China MRL：出口前查清中国对新鲜农产品的农药残留限量。'
   };
   if (typeof module !== 'undefined') module.exports = ZH;
   else root.I18N_ZH = ZH;

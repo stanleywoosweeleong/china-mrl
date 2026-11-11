@@ -127,6 +127,38 @@ const tabs = ['fresh', 'full', 'saved', 'banned', 'exempt', 'sources', 'access',
     await page.waitForFunction(() => document.documentElement.dataset.langReady === 'ms');
     assert.equal((await page.locator('#langButton').innerText()).trim(), 'BM');
     await page.close();
+    // Share: from the More menu, with the QR code, a WhatsApp message and a link that copies.
+    {
+      const ctx = await browser.newContext({
+          viewport: { width: 390, height: 844 },
+          serviceWorkers: 'block',
+          permissions: ['clipboard-read', 'clipboard-write']
+        }),
+        share = await ctx.newPage();
+      await share.goto(url + '?lang=zh');
+      await share.waitForFunction(() => document.getElementById('resultCount').textContent === '89');
+      await share.locator('#navMore').click();
+      await share.locator('#shareOpen').click();
+      assert(await share.locator('#shareDialog').isVisible());
+      const address = 'https://stanleywoosweeleong.github.io/china-mrl/';
+      assert.equal(await share.locator('#shareUrl').innerText(), address);
+      await share.waitForFunction(() => {
+        const img = document.querySelector('.share-qr');
+        return img.complete && img.naturalWidth > 0;
+      });
+      const href = new URL(await share.locator('#shareWhatsApp').getAttribute('href'));
+      assert.equal(href.origin, 'https://wa.me');
+      assert(href.searchParams.get('text').endsWith(' ' + address));
+      assert(href.searchParams.get('text').startsWith('China MRL：'));
+      await share.locator('#shareCopy').click();
+      await share.waitForFunction(
+        () => document.getElementById('shareStatus').textContent === '链接已复制。'
+      );
+      assert.equal(await share.evaluate(() => navigator.clipboard.readText()), address);
+      const box = await share.locator('#shareDialog').boundingBox();
+      assert(box.y >= 0 && box.y + box.height <= 844 && box.x >= 0 && box.x + box.width <= 390);
+      await ctx.close();
+    }
     // First visit: the welcome screen offers the languages, previews the one tapped and keeps it.
     for (const [locale, first] of [
       ['en-US', 'en'],

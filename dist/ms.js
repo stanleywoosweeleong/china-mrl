@@ -519,7 +519,18 @@
       'Anda boleh menukarnya kemudian dengan butang ini di penjuru kanan atas:',
     'Pesticide residue limits for fresh produce exported to China.':
       'Had sisa racun perosak bagi hasil segar yang dieksport ke China.',
-    Continue: 'Teruskan'
+    Continue: 'Teruskan',
+    'Share this app': 'Kongsi aplikasi ini',
+    'Scan this code with a phone camera to open China MRL.':
+      'Imbas kod ini dengan kamera telefon untuk membuka China MRL.',
+    'QR code that opens the China MRL app': 'Kod QR yang membuka aplikasi China MRL',
+    'Share on WhatsApp': 'Kongsi melalui WhatsApp',
+    'Copy link': 'Salin pautan',
+    'Link copied.': 'Pautan disalin.',
+    'Could not copy. Press and hold the link above to copy it.':
+      'Tidak dapat menyalin. Tekan lama pautan di atas untuk menyalinnya.',
+    "China MRL: check China's pesticide residue limits for fresh produce before you export.":
+      'China MRL: semak had sisa racun perosak China bagi hasil segar sebelum anda mengeksport.'
   };
   if (typeof module !== 'undefined') module.exports = MS;
   else root.I18N_MS = MS;

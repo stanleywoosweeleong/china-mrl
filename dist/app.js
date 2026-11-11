@@ -950,6 +950,8 @@ document.addEventListener('click', (e) => {
       details(row.dataset.key);
     return;
   }
+  if (b.id === 'shareOpen') return openShare();
+  if (b.id === 'shareCopy') return copyShareLink();
   if (b.id === 'navMore') {
     b.setAttribute('aria-expanded', String($('navMoreItems').classList.toggle('open')));
     return;
@@ -1186,4 +1188,33 @@ async function migrateSaved() {
   } catch {
     /* Preserve legacy saved state if migration cannot complete. */
   }
+}
+
+// Share: the app's public address as a QR code, a WhatsApp message and a link to copy.
+const SHARE_URL = 'https://stanleywoosweeleong.github.io/china-mrl/';
+function openShare() {
+  const message = t("China MRL: check China's pesticide residue limits for fresh produce before you export.");
+  $('shareWhatsApp').href = 'https://wa.me/?text=' + encodeURIComponent(message + ' ' + SHARE_URL);
+  $('shareStatus').textContent = '';
+  if (!$('shareDialog').open) $('shareDialog').showModal?.();
+}
+async function copyShareLink() {
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(SHARE_URL);
+    copied = true;
+  } catch {
+    // Older browsers, or no clipboard permission: copy through a selection instead.
+    try {
+      const range = document.createRange();
+      range.selectNodeContents($('shareUrl'));
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      copied = document.execCommand('copy');
+    } catch {}
+  }
+  $('shareStatus').textContent = t(
+    copied ? 'Link copied.' : 'Could not copy. Press and hold the link above to copy it.'
+  );
 }

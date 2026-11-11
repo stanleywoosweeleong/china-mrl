@@ -82,6 +82,7 @@ To maintain coverage, review official GACC notices and the origin authority, pre
 - **Phones (up to 760px):** search first, compact result cards that open details on tap, a bottom tab bar (Fresh produce, Market access, Saved, More), and touch targets of at least 44px. Nothing scrolls sideways.
 - **Wide screens (1400px and up):** details open as a side panel beside the table; narrower screens use a dialog. Column headings sort the table; phones get a sort menu.
 - **Detail view:** the limit, Save and the laboratory comparison come first; applicability, source and testing methods are collapsible.
+- **Share this app** (under More): shows a QR code for the public address, a WhatsApp share link and a Copy link button. The code is `dist/share-qr.svg`, written by `python3 scripts/make_qr.py` (needs `segno`); re-run it if the address changes.
 - **Print limit sheet:** prints every limit in the current view (up to 600) with testing methods, in the interface language. On phones and in the installed app it opens on screen first, with a Print button, because printing is not always available there.
 - **Accessibility:** `scripts/test_accessibility.cjs` runs axe-core (WCAG 2.1 A and AA, including colour contrast) on every tab, the crop picker and the detail view in both languages. It cannot measure icon-only glyphs, and it is not a substitute for testing with a screen reader.
 

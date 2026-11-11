@@ -13,7 +13,7 @@ const decode = (s) =>
     .replace(/&#39;/g, "'");
 // Text that is the same in both languages: brand, identifiers, symbols, units.
 const SAME =
-  /^(m|rl|EN|BM|English|Bahasa Melayu|Language · 语言 · Bahasa|China MRL|GB 2763-2026|MRL|mg\/kg|SHA-256: [0-9a-f]+|中文|中|\/|…|[^A-Za-z]*)$/;
+  /^(m|rl|EN|BM|https:\/\/\S+|English|Bahasa Melayu|Language · 语言 · Bahasa|China MRL|GB 2763-2026|MRL|mg\/kg|SHA-256: [0-9a-f]+|中文|中|\/|…|[^A-Za-z]*)$/;
 function staticKeys() {
   let html = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
   html = html.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<!--[\s\S]*?-->/g, '');

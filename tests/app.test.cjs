@@ -106,6 +106,12 @@ test('application navigation, filters, source detail, save and export', async ()
   assert(csv.includes('榴莲'));
   assert(csv.includes('252'));
   assert(created.some((n) => n.clicked));
+  // The printed sheet keeps residue qualifiers such as 以脂肪计 beside the value.
+  vm.runInContext("setTab('full')", ctx);
+  nodes.search.value = 'aldrin';
+  vm.runInContext('filter()', ctx);
+  vm.runInContext('printSheet()', ctx);
+  assert(nodes.printSheet.innerHTML.includes('以脂肪计'));
   vm.runInContext("setTab('exempt')", ctx);
   nodes.exemptSearch.value = 'Bacillus';
   vm.runInContext('renderExempt()', ctx);

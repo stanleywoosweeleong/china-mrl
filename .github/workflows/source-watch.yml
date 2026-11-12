@@ -16,6 +16,7 @@ jobs:
           node-version: 22
       - name: Check sources
         id: check
+        shell: bash
         run: node scripts/check_sources.cjs | tee report.txt
         continue-on-error: true
       - name: Open or update the review issue

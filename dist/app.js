@@ -752,7 +752,7 @@ function printSheet() {
           i === bannedFrom
             ? `<div class="sheet-group">${t('Pesticides banned for use in China · {n} limits', { n: (filtered.length - bannedFrom).toLocaleString() })}</div>`
             : '';
-      return `${head}<div class="sheet-row"><div><strong>${esc(pestName(p))}</strong> <span lang="${altLang}">${esc(pestAlt(p))}</span>${crop ? '' : `<br><em>${esc(c ? cropName(c) : foodName(r))}</em>`}<small>${esc(methodText(p, r, c))}${r.match === 'group' ? ' · ' + esc(r.food) : ''}</small></div><b>${r.mrl}${r.provisional ? '*' : ''}${r.kind === 'EMRL' ? ' <i>EMRL</i>' : ''}</b></div>`;
+      return `${head}<div class="sheet-row"><div><strong>${esc(pestName(p))}</strong> <span lang="${altLang}">${esc(pestAlt(p))}</span>${crop ? '' : `<br><em>${esc(c ? cropName(c) : foodName(r))}</em>`}<small>${esc(methodText(p, r, c))}${r.match === 'group' ? ' · ' + esc(r.food) : ''}</small></div><b>${r.mrl}${r.provisional ? '*' : ''}${r.kind === 'EMRL' ? ' <i>EMRL</i>' : ''}${r.qualifier ? `<small>${esc(r.qualifier)}</small>` : ''}</b></div>`;
     })
     .join('');
   $('printSheet').innerHTML =
